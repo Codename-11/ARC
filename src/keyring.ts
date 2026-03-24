@@ -3,7 +3,7 @@ import path from "node:path";
 import { getProfileDir } from "./paths.js";
 import { warn } from "./display.js";
 
-export const SERVICE_NAME = "multicc";
+export const SERVICE_NAME = "arc";
 
 interface KeyringEntry {
   setPassword(password: string): void;

@@ -142,7 +142,7 @@ export function redact(value: string): string {
 
 // ── Version & Branding ─────────────────────────────
 
-const VERSION = "1.0.5";
+const VERSION = "2.0.0";
 
 export function getVersion(): string {
   return VERSION;
@@ -153,10 +153,10 @@ export function getBanner(): string {
   return (
     pc.magenta("\u25C6") +
     " " +
-    pc.bold(pc.cyan("multicc")) +
+    pc.bold(pc.cyan("arc")) +
     " " +
     pc.dim(`v${VERSION}`) +
-    pc.dim(" \u2500 Multi-Account Manager for Claude Code")
+    pc.dim(" \u2500 Agent Runtime Control")
   );
 }
 
@@ -166,11 +166,11 @@ export function getLargeBanner(): string {
     [
       pc.magenta("\u25C6") +
         "  " +
-        pc.bold(pc.cyan("multicc")) +
+        pc.bold(pc.cyan("ARC")) +
         " " +
         pc.dim(`v${VERSION}`),
-      "   " + pc.dim("Multi-Account Manager"),
-      "   " + pc.dim("for Claude Code"),
+      "   " + pc.dim("Agent Runtime Control"),
+      "   " + pc.dim("Unified profile manager for agent CLIs"),
     ],
     pc.cyan
   );

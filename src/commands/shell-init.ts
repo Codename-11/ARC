@@ -21,12 +21,12 @@ function isValidShellType(value: string): value is ShellType {
 }
 
 function generateBash(): string {
-  return `# Add to your shell profile: eval "$(multicc shell-init)"
-# multicc shell integration (bash/zsh)
+  return `# Add to your shell profile: eval "$(arc shell-init)"
+# arc shell integration (bash/zsh)
 
 claude() {
   local config_dir
-  config_dir=$(multicc _resolve-config-dir 2>/dev/null)
+  config_dir=$(arc _resolve-config-dir 2>/dev/null)
   if [ -n "$config_dir" ]; then
     CLAUDE_CONFIG_DIR="$config_dir" command claude "$@"
   else
@@ -34,16 +34,16 @@ claude() {
   fi
 }
 
-export MULTICC_PROFILE="\${MULTICC_PROFILE:-}"
+export ARC_PROFILE="\${ARC_PROFILE:-}"
 `;
 }
 
 function generateFish(): string {
-  return `# Add to your shell profile: multicc shell-init | source
-# multicc shell integration (fish)
+  return `# Add to your shell profile: arc shell-init | source
+# arc shell integration (fish)
 
 function claude
-  set -l config_dir (multicc _resolve-config-dir 2>/dev/null)
+  set -l config_dir (arc _resolve-config-dir 2>/dev/null)
   if test -n "$config_dir"
     set -x CLAUDE_CONFIG_DIR $config_dir
     command claude $argv
@@ -56,20 +56,7 @@ end
 }
 
 function generatePowershell(): string {
-  return `# Add to your PowerShell profile: multicc shell-init --shell powershell | Invoke-Expression
-# multicc shell integration (powershell)
-
-function claude {
-  $configDir = & multicc _resolve-config-dir 2>$null
-  if ($configDir) {
-    $env:CLAUDE_CONFIG_DIR = $configDir
-    & (Get-Command claude -CommandType Application).Source @args
-    Remove-Item Env:\\CLAUDE_CONFIG_DIR
-  } else {
-    & (Get-Command claude -CommandType Application).Source @args
-  }
-}
-`;
+  return `function claude { $configDir = & arc _resolve-config-dir 2>$null; if ($configDir) { $env:CLAUDE_CONFIG_DIR = $configDir; try { & (Get-Command claude -CommandType Application).Source @args } finally { Remove-Item Env:\\CLAUDE_CONFIG_DIR -ErrorAction SilentlyContinue } } else { & (Get-Command claude -CommandType Application).Source @args } }\n`;
 }
 
 export async function handleShellInit(

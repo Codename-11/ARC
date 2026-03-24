@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { loadConfig } from "../config.js";
-import { getMulticcDir } from "../paths.js";
+import { getArcDir } from "../paths.js";
 import { SERVICE_NAME } from "../keyring.js";
 import { success, error, warn, detail, sectionHeader } from "../display.js";
 import pc from "picocolors";
@@ -41,10 +41,10 @@ async function clearKeyringEntries(profileNames: string[]): Promise<void> {
 }
 
 export async function handlePrune(opts: { force?: boolean }): Promise<void> {
-  const multiccDir = getMulticcDir();
+  const arcDir = getArcDir();
 
-  if (!fs.existsSync(multiccDir)) {
-    error("Nothing to remove. No multicc data directory found.");
+  if (!fs.existsSync(arcDir)) {
+    error("Nothing to remove. No arc data directory found.");
     return;
   }
 
@@ -61,9 +61,9 @@ export async function handlePrune(opts: { force?: boolean }): Promise<void> {
   console.log();
   sectionHeader("Prune");
   console.log();
-  console.log("  This will permanently remove " + pc.bold("all") + " multicc data:");
+  console.log("  This will permanently remove " + pc.bold("all") + " arc data:");
   console.log();
-  detail(`Directory: ${multiccDir}`);
+  detail(`Directory: ${arcDir}`);
   if (profileNames.length > 0) {
     detail(`Profiles:  ${profileNames.join(", ")}`);
     detail("Keyring:   OS keyring entries for each profile");
@@ -103,20 +103,20 @@ export async function handlePrune(opts: { force?: boolean }): Promise<void> {
     await clearKeyringEntries(profileNames);
   }
 
-  // 2. Remove the entire multicc directory
+  // 2. Remove the entire arc directory
   try {
-    fs.rmSync(multiccDir, { recursive: true, force: true });
+    fs.rmSync(arcDir, { recursive: true, force: true });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    error(`Failed to remove ${multiccDir}: ${message}`);
+    error(`Failed to remove ${arcDir}: ${message}`);
     process.exit(1);
   }
 
   console.log();
-  success("All multicc data has been removed.");
+  success("All arc data has been removed.");
   if (profileNames.length > 0) {
     detail(`Removed ${profileNames.length} profile(s): ${profileNames.join(", ")}`);
   }
-  detail(`Deleted: ${multiccDir}`);
+  detail(`Deleted: ${arcDir}`);
   console.log();
 }

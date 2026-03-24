@@ -44,7 +44,7 @@ function hasExistingClaudeConfig(): boolean {
 
 /**
  * Run the first-run onboarding wizard.
- * Called when `multicc` is invoked with no args and no profiles exist.
+ * Called when `arc` is invoked with no args and no profiles exist.
  */
 export async function runOnboarding(): Promise<void> {
   // --- Banner ---
@@ -57,23 +57,23 @@ export async function runOnboarding(): Promise<void> {
   if (!inquirer || !isInteractive()) {
     // Non-interactive fallback: show guidance with highlighted commands
     console.log(
-      "  " + pc.bold("Welcome to multicc!") + " No profiles configured yet."
+      "  " + pc.bold("Welcome to ARC!") + " No profiles configured yet."
     );
     console.log();
     console.log("  To get started, create your first profile:");
     console.log();
-    console.log("    " + cmd("multicc profile create <name> --auth-type oauth"));
+    console.log("    " + cmd("arc profile create <name> --auth-type oauth"));
     console.log();
     if (hasExistingClaudeConfig()) {
       console.log("  Or import your existing Claude Code config:");
       console.log();
-      console.log("    " + cmd("multicc profile import --name default"));
+      console.log("    " + cmd("arc profile import --name default"));
       console.log();
     }
     console.log(
       "  " +
         subtle("Run ") +
-        cmd("multicc --help") +
+        cmd("arc --help") +
         subtle(" for all available commands.")
     );
     console.log();
@@ -86,6 +86,10 @@ export async function runOnboarding(): Promise<void> {
       "  " + pc.bold("Welcome!") + " Let's set up your first profile."
     );
     console.log();
+    console.log(
+      "  " + pc.dim("ARC manages profiles for Claude, Gemini, Codex, and other agent CLIs.")
+    );
+    console.log();
 
     // --- Step 1: Detect existing config & offer import ---
     if (hasExistingClaudeConfig()) {
@@ -96,15 +100,15 @@ export async function runOnboarding(): Promise<void> {
       console.log();
 
       const shouldImport = await inquirer.confirm({
-        message: "Import existing config into multicc?",
+        message: "Import existing Claude config into ARC?",
         default: true,
       });
 
       if (shouldImport) {
         const { handleImport } = await import("./profile.js");
-        await handleImport({ name: "default", from: claudeDir });
+        await handleImport({ name: "default", from: claudeDir, tool: "claude" });
         console.log();
-        printNextSteps("default", "oauth");
+        printNextSteps("default", "oauth", "claude");
         return;
       }
 
@@ -126,19 +130,36 @@ export async function runOnboarding(): Promise<void> {
       },
     });
 
-    // --- Step 3: Auth type ---
+    // --- Step 3: Agent tool ---
+    const tool = await inquirer.select<string>({
+      message: "Agent tool:",
+      choices: [
+        { value: "claude", name: "Claude Code (claude.ai / Anthropic)" },
+        { value: "gemini", name: "Gemini CLI (Google)" },
+        { value: "codex", name: "Codex CLI (OpenAI)" },
+        { value: "other", name: "Other / custom binary" },
+      ],
+      default: "claude",
+    });
+
+    const toolBinary =
+      tool === "other"
+        ? await inquirer.input({ message: "Binary name or path:", default: "claude" })
+        : tool;
+
+    // --- Step 4: Auth type ---
     const authType = await inquirer.select<AuthType>({
       message: "Authentication type:",
       choices: [
         {
           value: "oauth" as const,
-          name: "OAuth (claude.ai account)",
+          name: "OAuth (browser sign-in)",
           description: "Sign in via browser",
         },
         {
           value: "api-key" as const,
-          name: "API Key (Anthropic API)",
-          description: "Use an API key",
+          name: "API Key",
+          description: "Use a provider API key",
         },
         {
           value: "bedrock" as const,
@@ -159,22 +180,23 @@ export async function runOnboarding(): Promise<void> {
       default: "oauth",
     });
 
-    // --- Step 4: Optional description ---
+    // --- Step 5: Optional description ---
     const description = await inquirer.input({
       message: "Description (optional, press Enter to skip):",
     });
 
-    // --- Step 5: Create the profile ---
+    // --- Step 6: Create the profile ---
     console.log();
     const { handleCreate } = await import("./profile.js");
     await handleCreate(profileName, {
       authType,
+      tool: toolBinary,
       description: description || undefined,
     });
 
-    // --- Step 6: Next steps ---
+    // --- Step 7: Next steps ---
     console.log();
-    printNextSteps(profileName, authType);
+    printNextSteps(profileName, authType, toolBinary);
   } catch (err) {
     // Handle Ctrl+C gracefully during prompts
     if (err instanceof Error && err.name === "ExitPromptError") {
@@ -188,14 +210,14 @@ export async function runOnboarding(): Promise<void> {
 /**
  * Print post-setup guidance with contextual next steps.
  */
-function printNextSteps(profileName: string, authType: string): void {
+function printNextSteps(profileName: string, authType: string, tool: string): void {
   sectionHeader("Next Steps");
   console.log();
 
   let stepNum = 1;
 
   if (authType === "api-key") {
-    stepLine(stepNum, "Set API key", `multicc set-key ${profileName}`);
+    stepLine(stepNum, "Set API key", `arc set-key ${profileName}`);
     stepNum++;
   } else if (
     authType === "bedrock" ||
@@ -210,15 +232,19 @@ function printNextSteps(profileName: string, authType: string): void {
     stepNum++;
   }
 
-  stepLine(stepNum, "Launch Claude", `multicc launch ${profileName}`);
+  stepLine(stepNum, `Launch ${tool}`, `arc launch ${profileName}`);
   stepNum++;
-  stepLine(stepNum, "Shell setup", 'eval "$(multicc shell-init)"');
+  if (process.platform === "win32") {
+    stepLine(stepNum, "Complete setup", "arc setup");
+  } else {
+    stepLine(stepNum, "Shell setup", "arc setup");
+  }
 
   console.log();
   console.log(
     "  " +
       subtle("Run ") +
-      cmd("multicc --help") +
+      cmd("arc --help") +
       subtle(" for all available commands.")
   );
   console.log();

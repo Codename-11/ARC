@@ -9,7 +9,7 @@ export async function handleShell(name?: string): Promise<void> {
   const profile = config.profiles[profileName];
 
   if (!profile) {
-    error(`Profile "${profileName}" not found. Run "multicc profile list" to see available profiles.`);
+    error(`Profile "${profileName}" not found. Run "arc profile list" to see available profiles.`);
     process.exit(1);
   }
 
@@ -22,7 +22,7 @@ export async function handleShell(name?: string): Promise<void> {
     shellCmd = process.env["SHELL"] ?? "/bin/bash";
   }
 
-  info(`Entering multicc shell for profile: ${profileName}. Type 'exit' to return.`);
+  info(`Entering arc shell for profile: ${profileName}. Type 'exit' to return.`);
 
   const child = spawn(shellCmd, [], {
     stdio: "inherit",

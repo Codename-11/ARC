@@ -40,7 +40,7 @@ export async function handleSetKey(
   const profile = config.profiles[profileName];
 
   if (!profile) {
-    error(`Profile "${profileName}" not found. Run "multicc profile list" to see available profiles.`);
+    error(`Profile "${profileName}" not found. Run "arc profile list" to see available profiles.`);
     process.exit(1);
   }
 

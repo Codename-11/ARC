@@ -103,10 +103,10 @@ jobs:
             ## Install
 
             ```bash
-            npm install -g multicc
+            npm install -g arccli
             ```
 
             ---
 
-            **Full Changelog**: https://github.com/fmdz387/multicc/compare/v${{ needs.validate.outputs.version }}...master
+            **Full Changelog**: https://github.com/Codename-11/ARC/compare/v${{ needs.validate.outputs.version }}...master
           prerelease: ${{ contains(needs.validate.outputs.version, '-') }}

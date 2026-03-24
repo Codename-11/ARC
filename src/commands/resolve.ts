@@ -1,7 +1,7 @@
 import { loadConfig } from "../config.js";
 
 export async function handleResolveConfigDir(): Promise<void> {
-  const profileName = process.env["MULTICC_PROFILE"];
+  const profileName = process.env["ARC_PROFILE"];
 
   let config;
   try {

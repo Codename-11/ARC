@@ -12,7 +12,7 @@ export async function handleLaunch(
   let passthrough: string[];
 
   if (name && config.profiles[name]) {
-    // Valid profile name — everything after it is for claude
+    // Valid profile name — everything after it is for the agent tool
     profileName = name;
     passthrough = rawArgs.slice(1);
   } else if (name) {
@@ -35,23 +35,24 @@ export async function handleLaunch(
 
   if (!profile) {
     error(
-      `Profile "${profileName}" not found. Run "multicc list" to see available profiles.`
+      `Profile "${profileName}" not found. Run "arc list" to see available profiles.`
     );
     process.exit(1);
   }
 
+  const tool = profile.tool ?? "claude";
   const profileEnv = await buildProfileEnv(profile, profileName);
 
-  info(`Launching claude with profile: ${profileName}`);
+  info(`Launching ${tool} with profile: ${profileName}`);
 
-  const child = spawn("claude", passthrough, {
+  const child = spawn(tool, passthrough, {
     stdio: "inherit",
     env: { ...process.env, ...profileEnv } as NodeJS.ProcessEnv,
     shell: true,
   });
 
   child.on("error", (err) => {
-    error(`Failed to launch claude: ${err.message}`);
+    error(`Failed to launch ${tool}: ${err.message}`);
     process.exit(1);
   });
 

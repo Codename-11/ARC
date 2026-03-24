@@ -7,8 +7,8 @@ export function createProgram(): Command {
   program.enablePositionalOptions();
 
   program
-    .name("multicc")
-    .description("Manage multiple Claude Code accounts")
+    .name("arc")
+    .description("Manage agent runtime profiles for Claude, Gemini, Codex, and more")
     .version(getVersion())
     .addHelpText("before", getBanner() + "\n")
     .action(async () => {
@@ -24,10 +24,10 @@ export function createProgram(): Command {
       const active = config.activeProfile;
       const profile = config.profiles[active];
       if (profile) {
-        info(`Active profile: ${active} (${profile.authType})`);
+        info(`Active profile: ${active} (${profile.tool ?? "claude"} / ${profile.authType})`);
       } else {
         info(
-          'No profiles configured. Run "multicc create <name>" to get started.'
+          'No profiles configured. Run "arc create <name>" to get started.'
         );
       }
     });
@@ -41,9 +41,10 @@ export function createProgram(): Command {
       "--auth-type <type>",
       "Auth type (oauth, api-key, bedrock, vertex, foundry)"
     )
+    .option("--tool <tool>", "Agent tool binary (claude, gemini, codex, ...)")
     .option("--description <desc>", "Profile description")
     .action(
-      async (name: string, opts: { authType?: string; description?: string }) => {
+      async (name: string, opts: { authType?: string; tool?: string; description?: string }) => {
         const mod = await import("./commands/profile.js");
         await mod.handleCreate(name, opts);
       }
@@ -67,25 +68,56 @@ export function createProgram(): Command {
       await mod.handleList();
     });
 
+  // === Lifecycle Commands ===
+
+  program
+    .command("setup")
+    .description("Install local shims, check PATH, and add shell integration")
+    .option("--shell <type>", "Shell type (bash, zsh, fish, powershell)")
+    .option("--no-shell", "Skip shell profile integration")
+    .action(async (opts: { shell?: string; noShell?: boolean }) => {
+      const mod = await import("./commands/setup.js");
+      await mod.handleSetup(opts);
+    });
+
+  program
+    .command("update")
+    .description("Refresh local shims, PATH, and shell integration")
+    .option("--shell <type>", "Shell type (bash, zsh, fish, powershell)")
+    .option("--no-shell", "Skip shell profile integration")
+    .action(async (opts: { shell?: string; noShell?: boolean }) => {
+      const mod = await import("./commands/setup.js");
+      await mod.handleUpdate(opts);
+    });
+
+  program
+    .command("uninstall")
+    .description("Remove local shims, PATH entries, shell integration, and data")
+    .option("--force", "Skip confirmation prompt")
+    .action(async (opts: { force?: boolean }) => {
+      const mod = await import("./commands/setup.js");
+      await mod.handleUninstall(opts);
+    });
+
   // === Session Commands ===
 
   program
     .command("launch [name]")
-    .description("Launch Claude Code with a profile")
+    .description("Launch agent tool with a profile")
     .passThroughOptions()
     .allowUnknownOption()
     .allowExcessArguments()
     .addHelpText(
       "after",
       `
-All flags after the profile name are forwarded to Claude Code.
+All flags after the profile name are forwarded to the agent tool.
 
 Examples:
-  $ multicc launch work
-  $ multicc launch work --model sonnet
-  $ multicc launch work --dangerously-skip-permissions
-  $ multicc launch work -p "explain this code"
-  $ multicc launch -- --model sonnet      (use -- when omitting profile name)
+  $ arc launch work
+  $ arc launch work --model sonnet
+  $ arc launch work --dangerously-skip-permissions
+  $ arc launch work -p "explain this code"
+  $ arc launch -- --model sonnet      (use -- when omitting profile name)
 `
     )
     .action(
@@ -131,9 +163,10 @@ Examples:
       "--auth-type <type>",
       "Auth type (oauth, api-key, bedrock, vertex, foundry)"
     )
+    .option("--tool <tool>", "Agent tool binary (claude, gemini, codex, ...)")
     .option("--description <desc>", "Profile description")
     .action(
-      async (name: string, opts: { authType?: string; description?: string }) => {
+      async (name: string, opts: { authType?: string; tool?: string; description?: string }) => {
         const mod = await import("./commands/profile.js");
         await mod.handleCreate(name, opts);
       }
@@ -177,11 +210,12 @@ Examples:
 
   profile
     .command("import")
-    .description("Import existing Claude config into a profile")
+    .description("Import existing agent tool config into a profile")
     .option("--name <name>", "Profile name", "default")
     .option("--from <path>", "Source config directory")
+    .option("--tool <tool>", "Agent tool this config belongs to (claude, gemini, codex, ...)")
     .option("--force", "Overwrite existing profile")
-    .action(async (opts: { name: string; from?: string; force?: boolean }) => {
+    .action(async (opts: { name: string; from?: string; tool?: string; force?: boolean }) => {
       const mod = await import("./commands/profile.js");
       await mod.handleImport(opts);
     });
@@ -200,9 +234,9 @@ Examples:
 All arguments after the profile name are treated as the command to run.
 
 Examples:
-  $ multicc exec work node app.js --port 3000
-  $ multicc exec work npm test
-  $ multicc exec -- npm test                  (use -- when omitting profile name)
+  $ arc exec work node app.js --port 3000
+  $ arc exec work npm test
+  $ arc exec -- npm test                  (use -- when omitting profile name)
 `
     )
     .action(
@@ -235,7 +269,7 @@ Examples:
 
   program
     .command("prune")
-    .description("Remove all multicc data, profiles, and credentials")
+    .description("Remove all arc data, profiles, and credentials")
     .option("--force", "Skip confirmation prompt")
     .action(async (opts: { force?: boolean }) => {
       const mod = await import("./commands/prune.js");
@@ -263,16 +297,18 @@ Examples:
     "after",
     `
 Examples:
-  $ multicc create work --auth-type oauth
-  $ multicc launch work --model sonnet
-  $ multicc launch work -p "explain this code"
-  $ multicc use personal
-  $ multicc list
-  $ eval "$(multicc shell-init)"
+  $ arc create work --auth-type oauth
+  $ arc create gemini-work --tool gemini --auth-type api-key
+  $ arc setup
+  $ arc launch work --model sonnet
+  $ arc launch work -p "explain this code"
+  $ arc use personal
+  $ arc list
+  $ arc shell-init --shell powershell | Out-String | Invoke-Expression
 
-Tip: Flags after the profile name pass through to Claude Code.
+Tip: Flags after the profile name pass through to the agent tool.
      "create", "use|switch", and "list|ls" are top-level shortcuts.
-     Run "multicc profile --help" for all profile management commands.
+     Run "arc profile --help" for all profile management commands.
 `
   );
 

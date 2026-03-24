@@ -1,16 +1,16 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
-import { getConfigPath, getMulticcDir } from "./paths.js";
-import type { MulticcConfig, Profile } from "./types.js";
+import { getConfigPath, getArcDir } from "./paths.js";
+import type { ArcConfig, Profile } from "./types.js";
 
 const AUTH_TYPES = new Set(["oauth", "api-key", "bedrock", "vertex", "foundry"]);
 
-function defaultConfig(): MulticcConfig {
+function defaultConfig(): ArcConfig {
   return { version: 1, activeProfile: "default", profiles: {} };
 }
 
-export function validateConfig(config: unknown): config is MulticcConfig {
+export function validateConfig(config: unknown): config is ArcConfig {
   if (typeof config !== "object" || config === null) {
     return false;
   }
@@ -44,7 +44,7 @@ export function validateConfig(config: unknown): config is MulticcConfig {
   return true;
 }
 
-export function loadConfig(): MulticcConfig {
+export function loadConfig(): ArcConfig {
   const configPath = getConfigPath();
   if (!fs.existsSync(configPath)) {
     return defaultConfig();
@@ -72,9 +72,9 @@ export function loadConfig(): MulticcConfig {
   return parsed;
 }
 
-export function saveConfig(config: MulticcConfig): void {
+export function saveConfig(config: ArcConfig): void {
   const configPath = getConfigPath();
-  const dir = getMulticcDir();
+  const dir = getArcDir();
 
   fs.mkdirSync(dir, { recursive: true });
 
@@ -90,10 +90,10 @@ export function saveConfig(config: MulticcConfig): void {
   fs.renameSync(tempPath, configPath);
 }
 
-export function getActiveProfile(config: MulticcConfig): Profile | undefined {
+export function getActiveProfile(config: ArcConfig): Profile | undefined {
   return config.profiles[config.activeProfile];
 }
 
-export function resolveProfileName(config: MulticcConfig, name?: string): string {
+export function resolveProfileName(config: ArcConfig, name?: string): string {
   return name ?? config.activeProfile;
 }

@@ -43,12 +43,12 @@ export async function handleStatus(): Promise<void> {
 
   if (names.length === 0) {
     info(
-      'No profiles configured. Run "multicc profile create <name>" to get started.'
+      'No profiles configured. Run "arc profile create <name>" to get started.'
     );
     return;
   }
 
-  const headers = ["Name", "Active", "Auth Type", "Status", "Expiry"];
+  const headers = ["Name", "Active", "Tool", "Auth Type", "Status", "Expiry"];
   const rows: string[][] = [];
 
   for (const name of names) {
@@ -71,6 +71,7 @@ export async function handleStatus(): Promise<void> {
     rows.push([
       name,
       isActive ? "*" : "",
+      profile.tool ?? "claude",
       profile.authType,
       status,
       expiry,

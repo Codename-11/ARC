@@ -41,7 +41,7 @@ async function promptAuthType(): Promise<AuthType> {
       message: "Select authentication type:",
       choices: [
         { value: "oauth" as const, name: "OAuth (claude.ai account)" },
-        { value: "api-key" as const, name: "API Key (Anthropic API)" },
+        { value: "api-key" as const, name: "API Key (Anthropic / provider API)" },
         { value: "bedrock" as const, name: "AWS Bedrock" },
         { value: "vertex" as const, name: "Google Vertex AI" },
         { value: "foundry" as const, name: "Foundry" },
@@ -67,7 +67,7 @@ async function promptDescription(): Promise<string | undefined> {
 
 export async function handleCreate(
   name: string,
-  opts: { authType?: string; description?: string }
+  opts: { authType?: string; tool?: string; description?: string }
 ): Promise<void> {
   const nameError = validateProfileName(name);
   if (nameError) {
@@ -96,12 +96,14 @@ export async function handleCreate(
   }
 
   const description = opts.description ?? (await promptDescription());
+  const tool = opts.tool ?? "claude";
 
   const profileDir = getProfileDir(name);
   fs.mkdirSync(profileDir, { recursive: true });
 
   config.profiles[name] = {
     authType,
+    tool,
     configDir: profileDir,
     description,
     createdAt: new Date().toISOString(),
@@ -115,6 +117,7 @@ export async function handleCreate(
   saveConfig(config);
 
   success(`Profile "${name}" created.`);
+  info(`Tool:          ${tool}`);
   info(`Config directory: ${profileDir}`);
 
   if (isFirstProfile) {
@@ -122,9 +125,9 @@ export async function handleCreate(
   }
 
   if (authType === "oauth") {
-    info(`Run "multicc launch ${name}" to start Claude Code and sign in.`);
+    info(`Run "arc launch ${name}" to start ${tool} and sign in.`);
   } else if (authType === "api-key") {
-    info(`Run "multicc set-key ${name}" to store your API key.`);
+    info(`Run "arc set-key ${name}" to store your API key.`);
   }
 }
 
@@ -134,7 +137,7 @@ export async function handleList(): Promise<void> {
 
   if (names.length === 0) {
     info(
-      'No profiles configured. Run "multicc profile create <name>" to get started.'
+      'No profiles configured. Run "arc profile create <name>" to get started.'
     );
     return;
   }
@@ -166,6 +169,7 @@ export async function handleShow(name?: string): Promise<void> {
   const isActive = resolved === config.activeProfile;
 
   process.stdout.write(`Name:        ${resolved}${isActive ? " (active)" : ""}\n`);
+  process.stdout.write(`Tool:        ${profile.tool ?? "claude"}\n`);
   process.stdout.write(`Auth Type:   ${profile.authType}\n`);
   process.stdout.write(`Config Dir:  ${profile.configDir}\n`);
   if (profile.description) {
@@ -257,8 +261,9 @@ function shouldCopyEntry(name: string): boolean {
 }
 
 export async function handleImport(
-  opts: { name: string; from?: string; force?: boolean }
+  opts: { name: string; from?: string; tool?: string; force?: boolean }
 ): Promise<void> {
+  const tool = opts.tool ?? "claude";
   const sourceDir = opts.from ?? getClaudeDefaultDir();
   const profileName = opts.name;
 
@@ -324,7 +329,7 @@ export async function handleImport(
   // $CLAUDE_CONFIG_DIR/.claude.json. The default location is ~/.claude.json
   // (home root, NOT inside ~/.claude/). Custom CLAUDE_CONFIG_DIR installs
   // store it inside the config dir itself.
-  if (!copiedItems.includes(".claude.json")) {
+  if (tool === "claude" && !copiedItems.includes(".claude.json")) {
     const claudeJsonInSource = path.join(sourceDir, ".claude.json");
     const claudeJsonInHome = path.join(os.homedir(), ".claude.json");
     const claudeJsonSrc = fs.existsSync(claudeJsonInSource)
@@ -343,6 +348,7 @@ export async function handleImport(
 
   config.profiles[profileName] = {
     authType,
+    tool,
     configDir: profileDir,
     description: `Imported from ${sourceDir}`,
     createdAt: new Date().toISOString(),
@@ -355,6 +361,7 @@ export async function handleImport(
   saveConfig(config);
 
   success(`Profile "${profileName}" imported from ${sourceDir}`);
+  detail(`Tool:   ${tool}`);
   detail(`Copied: ${copiedItems.join(", ")}`);
   detail(`Config: ${profileDir}`);
 }

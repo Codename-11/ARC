@@ -35,7 +35,7 @@ export async function handleExec(
 
   if (!profile) {
     error(
-      `Profile "${profileName}" not found. Run "multicc list" to see available profiles.`
+      `Profile "${profileName}" not found. Run "arc list" to see available profiles.`
     );
     process.exit(1);
   }
@@ -44,11 +44,11 @@ export async function handleExec(
     error(
       "No command specified.\n\n" +
         "Usage:\n" +
-        "  multicc exec [profile] <command...>\n\n" +
+        "  arc exec [profile] <command...>\n\n" +
         "Examples:\n" +
-        "  multicc exec work node app.js\n" +
-        "  multicc exec work npm test\n" +
-        "  multicc exec -- npm test"
+        "  arc exec work node app.js\n" +
+        "  arc exec work npm test\n" +
+        "  arc exec -- npm test"
     );
     process.exit(1);
   }
