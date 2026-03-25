@@ -18,13 +18,13 @@ The bootstrap is the primary install path. It clones the repo, installs dependen
 **PowerShell (Windows):**
 
 ```powershell
-irm https://raw.githubusercontent.com/Codename-11/ARC/main/scripts/bootstrap.ps1 | iex
+irm https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/bootstrap.ps1 | iex
 ```
 
 **macOS / Linux:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Codename-11/ARC/main/scripts/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/bootstrap.sh | bash
 ```
 
 What the bootstrap does:
@@ -55,12 +55,12 @@ Re-run the same one-liner — the script is idempotent (pulls latest code, reins
 
 **PowerShell:**
 ```powershell
-irm https://raw.githubusercontent.com/Codename-11/ARC/main/scripts/bootstrap.ps1 | iex
+irm https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/bootstrap.ps1 | iex
 ```
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Codename-11/ARC/main/scripts/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/bootstrap.sh | bash
 ```
 
 ### npm install

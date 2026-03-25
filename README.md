@@ -41,13 +41,13 @@ Unified profile and environment manager for agent CLIs. Maintains isolated confi
 **PowerShell:**
 
 ```powershell
-irm https://raw.githubusercontent.com/Codename-11/ARC/main/scripts/bootstrap.ps1 | iex
+irm https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/bootstrap.ps1 | iex
 ```
 
 **macOS / Linux:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Codename-11/ARC/main/scripts/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/bootstrap.sh | bash
 ```
 
 The bootstrap clones the repo into `~/.arc-install/repo`, installs dependencies, runs `arc setup`, and launches the interactive setup wizard — all in one step.
@@ -73,12 +73,12 @@ Re-run the same one-liner — it is idempotent (pulls latest code, reinstalls de
 
 **PowerShell:**
 ```powershell
-irm https://raw.githubusercontent.com/Codename-11/ARC/main/scripts/bootstrap.ps1 | iex
+irm https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/bootstrap.ps1 | iex
 ```
 
 **macOS / Linux:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Codename-11/ARC/main/scripts/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/bootstrap.sh | bash
 ```
 
 ### npm install
