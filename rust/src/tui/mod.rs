@@ -69,6 +69,7 @@ impl View {
         }
     }
 
+    #[allow(dead_code)]
     pub fn title(&self) -> &'static str {
         match self {
             View::Dashboard => "Dashboard",
@@ -82,6 +83,7 @@ impl View {
 // ── ProfileData ───────────────────────────────────────────────────────────
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct ProfileData {
     pub name: String,
     pub tool: String,

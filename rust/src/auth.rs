@@ -6,6 +6,7 @@ use crate::keyring::retrieve_secret;
 use crate::types::{AuthType, Profile};
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct CredentialStatus {
     pub authenticated: bool,
     pub auth_type: AuthType,
