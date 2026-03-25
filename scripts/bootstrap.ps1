@@ -25,13 +25,36 @@ function Fail($message) {
 
 Info "Bootstrap starting..."
 
+# ── Prerequisites ─────────────────────────────────────────────────────────────
+
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-  Fail "git is required but was not found on PATH."
+  Fail "git is required but was not found. Install from https://git-scm.com and re-run."
 }
 
 if (-not (Get-Command cargo -ErrorAction SilentlyContinue)) {
-  Fail "Rust (cargo) is required. Install from https://rustup.rs then re-run this script."
+  Info "Rust not found — installing via rustup..."
+
+  $rustupInit = Join-Path $env:TEMP "rustup-init.exe"
+  Invoke-WebRequest -Uri "https://win.rustup.rs/x86_64" -OutFile $rustupInit
+  & $rustupInit -y --no-modify-path
+  Remove-Item $rustupInit -Force
+
+  # Source the cargo environment for this session
+  $cargoEnv = Join-Path $HOME ".cargo\env.ps1"
+  if (Test-Path $cargoEnv) {
+    . $cargoEnv
+  } else {
+    $env:PATH = "$HOME\.cargo\bin;$env:PATH"
+  }
+
+  if (-not (Get-Command cargo -ErrorAction SilentlyContinue)) {
+    Fail "Rust installation failed. Please install manually from https://rustup.rs and re-run."
+  }
+
+  Info "Rust installed successfully."
 }
+
+# ── Clone / update repo ───────────────────────────────────────────────────────
 
 New-Item -ItemType Directory -Force -Path $installRoot | Out-Null
 
@@ -47,12 +70,15 @@ if (Test-Path (Join-Path $repoDir ".git")) {
   git clone $repoUrl $repoDir
 }
 
-Info "Building arc binary (this may take a minute on first run)..."
+# ── Build ─────────────────────────────────────────────────────────────────────
+
+Info "Building arc binary (first run compiles dependencies — ~2 min)..."
 Push-Location (Join-Path $repoDir "rust")
 cargo build --release
 Pop-Location
 
-# Copy binary to user bin dir
+# ── Install binary ────────────────────────────────────────────────────────────
+
 New-Item -ItemType Directory -Force -Path $userBinDir | Out-Null
 $binarySource = Join-Path $repoDir "rust\target\release\arc.exe"
 $binaryDest   = Join-Path $userBinDir "arc.exe"
@@ -68,14 +94,15 @@ if (-not $alreadyInPath) {
   Info "Added $userBinDir to your Windows user PATH."
 }
 
-# Add to current session PATH so we can run arc immediately
+# Make available in this session immediately
 $env:PATH = "$userBinDir;$env:PATH"
 
-Info "Running arc setup (shell integration)..."
+# ── Shell integration + launch ────────────────────────────────────────────────
+
+Info "Running arc setup..."
 & $binaryDest setup --shell powershell
 
-Info "Bootstrap complete — launching ARC..."
+Info "Bootstrap complete — open a new terminal, then run: arc"
 Write-Host ""
 
-# Launch the interactive CLI (onboarding wizard on first run, dashboard if profiles exist)
 & $binaryDest

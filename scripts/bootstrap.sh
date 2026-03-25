@@ -17,8 +17,25 @@ fail() {
 
 info "Bootstrap starting..."
 
-command -v git   >/dev/null 2>&1 || fail "git is required but was not found on PATH."
-command -v cargo >/dev/null 2>&1 || fail "Rust (cargo) is required. Install from https://rustup.rs then re-run this script."
+# ── Prerequisites ──────────────────────────────────────────────────────────────
+
+command -v git >/dev/null 2>&1 || fail "git is required. Install it and re-run."
+
+if ! command -v cargo >/dev/null 2>&1; then
+  info "Rust not found — installing via rustup..."
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
+
+  # Source cargo env for this session
+  # shellcheck disable=SC1091
+  source "$HOME/.cargo/env" 2>/dev/null || export PATH="$HOME/.cargo/bin:$PATH"
+
+  command -v cargo >/dev/null 2>&1 \
+    || fail "Rust installation failed. Install manually from https://rustup.rs and re-run."
+
+  info "Rust installed successfully."
+fi
+
+# ── Clone / update repo ────────────────────────────────────────────────────────
 
 mkdir -p "$INSTALL_ROOT"
 
@@ -32,22 +49,25 @@ else
   git clone "$REPO_URL" "$REPO_DIR"
 fi
 
-info "Building arc binary (this may take a minute on first run)..."
+# ── Build ──────────────────────────────────────────────────────────────────────
+
+info "Building arc binary (first run compiles dependencies — ~2 min)..."
 cargo build --release --manifest-path "$REPO_DIR/rust/Cargo.toml"
 
-# Install binary
+# ── Install binary ─────────────────────────────────────────────────────────────
+
 mkdir -p "$USER_BIN_DIR"
 cp -f "$REPO_DIR/rust/target/release/arc" "$USER_BIN_DIR/arc"
 chmod +x "$USER_BIN_DIR/arc"
 
-# Ensure user bin dir is on PATH for this session
 export PATH="$USER_BIN_DIR:$PATH"
 
-info "Running arc setup (shell integration)..."
+# ── Shell integration + launch ─────────────────────────────────────────────────
+
+info "Running arc setup..."
 "$USER_BIN_DIR/arc" setup
 
-info "Bootstrap complete — launching ARC..."
+info "Bootstrap complete — open a new terminal, then run: arc"
 printf '\n'
 
-# Launch the interactive CLI (onboarding wizard on first run, dashboard if profiles exist)
 "$USER_BIN_DIR/arc"
