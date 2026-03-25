@@ -81,8 +81,16 @@ pub fn handle_launch(name: Option<&str>, raw_args: &[String]) -> Result<()> {
         }
     }
 
+    // Prepend stored per-profile launch args before CLI passthrough args
+    let mut all_args: Vec<String> = profile
+        .launch_args
+        .as_deref()
+        .unwrap_or(&[])
+        .to_vec();
+    all_args.extend(passthrough);
+
     let status = Command::new(tool)
-        .args(&passthrough)
+        .args(&all_args)
         .envs(&env_vars)
         .status()?;
 

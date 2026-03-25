@@ -176,7 +176,7 @@ export async function handleUpdate(opts: {
     const packageRoot = getPackageRoot();
     info("Bootstrap install detected — pulling latest code...");
     runCommand("git", ["fetch", "--all", "--prune"], packageRoot);
-    runCommand("git", ["reset", "--hard", "origin/main"], packageRoot);
+    runCommand("git", ["reset", "--hard", "origin/master"], packageRoot);
     info("Installing dependencies...");
     runCommand("npm", ["install"], packageRoot);
     success("Code updated.");

@@ -58,6 +58,8 @@ pub struct Profile {
     pub use_shared: Option<bool>,
     pub use_shared_memory: Option<bool>,
     pub use_shared_projects: Option<bool>,
+    /// Default flags passed to the agent tool on every launch (e.g. ["--dangerously-skip-permissions"]).
+    pub launch_args: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -66,4 +68,6 @@ pub struct ArcConfig {
     pub version: u32,
     pub active_profile: String,
     pub profiles: HashMap<String, Profile>,
+    /// Display order of profile names. Profiles not listed appear after those that are.
+    pub profile_order: Option<Vec<String>>,
 }

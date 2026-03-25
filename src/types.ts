@@ -18,12 +18,16 @@ export interface Profile {
   useSharedMemory?: boolean;
   /** Whether this profile's projects/ dir is linked to ~/.arc/shared/projects/. */
   useSharedProjects?: boolean;
+  /** Default flags passed to the agent tool on every launch. */
+  launchArgs?: string[];
 }
 
 export interface ArcConfig {
   version: 1;
   activeProfile: string;
   profiles: Record<string, Profile>;
+  /** Display order of profile names. */
+  profileOrder?: string[];
 }
 
 /** @deprecated Use ArcConfig */

@@ -11,6 +11,7 @@ pub fn default_config() -> ArcConfig {
         version: 1,
         active_profile: "default".to_string(),
         profiles: HashMap::new(),
+        profile_order: None,
     }
 }
 

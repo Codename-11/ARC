@@ -131,6 +131,7 @@ pub fn handle_create(
             use_shared: None,
             use_shared_memory: None,
             use_shared_projects: None,
+            launch_args: None,
         },
     );
 
@@ -476,6 +477,7 @@ pub fn handle_import(opts: ImportOptions) -> Result<()> {
             use_shared: None,
             use_shared_memory: None,
             use_shared_projects: None,
+            launch_args: None,
         },
     );
 
