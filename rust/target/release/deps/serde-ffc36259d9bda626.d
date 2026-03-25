@@ -1,0 +1,14 @@
+C:\Users\Bailey\Desktop\Open-Projects\ARC\rust\target\release\deps\serde-ffc36259d9bda626.d: C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\lib.rs C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\integer128.rs C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\mod.rs C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\de.rs C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\ser.rs C:\Users\Bailey\Desktop\Open-Projects\ARC\rust\target\release\build\serde-c80429f12c5b658a\out/private.rs
+
+C:\Users\Bailey\Desktop\Open-Projects\ARC\rust\target\release\deps\libserde-ffc36259d9bda626.rlib: C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\lib.rs C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\integer128.rs C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\mod.rs C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\de.rs C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\ser.rs C:\Users\Bailey\Desktop\Open-Projects\ARC\rust\target\release\build\serde-c80429f12c5b658a\out/private.rs
+
+C:\Users\Bailey\Desktop\Open-Projects\ARC\rust\target\release\deps\libserde-ffc36259d9bda626.rmeta: C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\lib.rs C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\integer128.rs C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\mod.rs C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\de.rs C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\ser.rs C:\Users\Bailey\Desktop\Open-Projects\ARC\rust\target\release\build\serde-c80429f12c5b658a\out/private.rs
+
+C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\lib.rs:
+C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\integer128.rs:
+C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\mod.rs:
+C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\de.rs:
+C:\Users\Bailey\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.228\src\private\ser.rs:
+C:\Users\Bailey\Desktop\Open-Projects\ARC\rust\target\release\build\serde-c80429f12c5b658a\out/private.rs:
+
+# env-dep:OUT_DIR=C:\\Users\\Bailey\\Desktop\\Open-Projects\\ARC\\rust\\target\\release\\build\\serde-c80429f12c5b658a\\out

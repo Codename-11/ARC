@@ -1,7 +1,28 @@
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { loadConfig } from "../config.js";
 import { buildProfileEnv } from "../auth.js";
-import { error, info } from "../display.js";
+import { error, info, warn, cmd } from "../display.js";
+
+/** Check whether a command binary is available on PATH. */
+export function findBinary(name: string): boolean {
+  const command = process.platform === "win32" ? "where" : "which";
+  const result = spawnSync(command, [name], { shell: true, stdio: "ignore" });
+  return result.status === 0;
+}
+
+/** Suggest an install command for known agent tool binaries. */
+function getInstallHint(tool: string): string {
+  switch (tool) {
+    case "claude":
+      return `Install with: ${cmd("npm install -g @anthropic-ai/claude-code")}`;
+    case "gemini":
+      return `See Google's documentation for Gemini CLI installation instructions.`;
+    case "codex":
+      return `Install with: ${cmd("npm install -g @openai/codex")}`;
+    default:
+      return `Ensure "${tool}" is installed and available on your PATH.`;
+  }
+}
 
 export async function handleLaunch(
   name: string | undefined,
@@ -42,6 +63,12 @@ export async function handleLaunch(
 
   const tool = profile.tool ?? "claude";
   const profileEnv = await buildProfileEnv(profile, profileName);
+
+  if (!findBinary(tool)) {
+    error(`Binary "${tool}" not found on PATH.`);
+    warn(getInstallHint(tool));
+    process.exit(1);
+  }
 
   info(`Launching ${tool} with profile: ${profileName}`);
 

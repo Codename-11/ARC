@@ -260,6 +260,52 @@ function shouldCopyEntry(name: string): boolean {
   return true;
 }
 
+/**
+ * Detect the auth type from a source config directory by inspecting
+ * which credential files / env markers are present.
+ */
+function detectAuthType(sourceDir: string): AuthType {
+  // Check for environment-based auth types first (most specific)
+  if (
+    process.env["AWS_PROFILE"] ||
+    process.env["AWS_ACCESS_KEY_ID"] ||
+    process.env["CLAUDE_CODE_USE_BEDROCK"] === "1"
+  ) {
+    return "bedrock";
+  }
+  if (
+    process.env["GOOGLE_APPLICATION_CREDENTIALS"] ||
+    process.env["CLAUDE_CODE_USE_VERTEX"] === "1"
+  ) {
+    return "vertex";
+  }
+  if (process.env["FOUNDRY_API_KEY"]) {
+    return "foundry";
+  }
+
+  // Check for file-based auth indicators
+  if (fs.existsSync(path.join(sourceDir, ".api-key"))) {
+    return "api-key";
+  }
+
+  if (fs.existsSync(path.join(sourceDir, ".credentials.json"))) {
+    try {
+      const raw = fs.readFileSync(
+        path.join(sourceDir, ".credentials.json"),
+        "utf-8"
+      );
+      const creds = JSON.parse(raw) as Record<string, unknown>;
+      if (creds["accessToken"] || creds["refreshToken"]) {
+        return "oauth";
+      }
+    } catch {
+      // Malformed JSON — fall through to default
+    }
+  }
+
+  return "oauth";
+}
+
 export async function handleImport(
   opts: { name: string; from?: string; tool?: string; force?: boolean }
 ): Promise<void> {
@@ -301,10 +347,7 @@ export async function handleImport(
   }
   fs.mkdirSync(profileDir, { recursive: true });
 
-  let authType: AuthType = "oauth";
-  if (fs.existsSync(path.join(sourceDir, ".credentials.json"))) {
-    authType = "oauth";
-  }
+  const authType = detectAuthType(sourceDir);
 
   // Copy all config files and directories from source
   const copiedItems: string[] = [];

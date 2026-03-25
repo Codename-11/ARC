@@ -11,7 +11,8 @@ export function createProgram(): Command {
     .description("Manage agent runtime profiles for Claude, Gemini, Codex, and more")
     .version(getVersion())
     .addHelpText("before", getBanner() + "\n")
-    .action(async () => {
+    .option("--no-tui", "Skip the TUI dashboard and print status instead")
+    .action(async (opts: { tui?: boolean }) => {
       const config = loadConfig();
       const hasProfiles = Object.keys(config.profiles).length > 0;
 
@@ -21,15 +22,16 @@ export function createProgram(): Command {
         return;
       }
 
-      const active = config.activeProfile;
-      const profile = config.profiles[active];
-      if (profile) {
-        info(`Active profile: ${active} (${profile.tool ?? "claude"} / ${profile.authType})`);
-      } else {
-        info(
-          'No profiles configured. Run "arc create <name>" to get started.'
-        );
+      // Launch TUI dashboard when running in an interactive terminal (unless suppressed)
+      if (process.stdout.isTTY && opts.tui !== false) {
+        const { renderDashboard } = await import("./tui/render.js");
+        renderDashboard();
+        return;
       }
+
+      // Non-TUI fallback: print status
+      const { handleStatus } = await import("./commands/status.js");
+      await handleStatus();
     });
 
   // === Quick Commands (most common operations at top level) ===
@@ -68,6 +70,59 @@ export function createProgram(): Command {
       await mod.handleList();
     });
 
+  program
+    .command("import [name]")
+    .description("Import detected tool config into a profile")
+    .option("--all", "Import all detected tool configs")
+    .option("--from <path>", "Source config directory")
+    .option("--tool <tool>", "Agent tool this config belongs to (claude, gemini, codex, ...)")
+    .option("--force", "Overwrite existing profiles")
+    .action(
+      async (
+        name: string | undefined,
+        opts: { all?: boolean; from?: string; tool?: string; force?: boolean }
+      ) => {
+        if (opts.all) {
+          const { detectToolConfigs } = await import("./detect.js");
+          const { handleImport } = await import("./commands/profile.js");
+          const detected = detectToolConfigs();
+
+          if (detected.length === 0) {
+            const { error: showError } = await import("./display.js");
+            showError("No tool configs detected. Nothing to import.");
+            process.exit(1);
+          }
+
+          for (const dt of detected) {
+            await handleImport({
+              name: dt.tool,
+              from: dt.configDir,
+              tool: dt.tool,
+              force: opts.force,
+            });
+          }
+        } else {
+          const profileName = name ?? "default";
+          const mod = await import("./commands/profile.js");
+          await mod.handleImport({
+            name: profileName,
+            from: opts.from,
+            tool: opts.tool,
+            force: opts.force,
+          });
+        }
+      }
+    );
+
+  program
+    .command("dashboard")
+    .alias("dash")
+    .description("Open the interactive TUI dashboard")
+    .action(async () => {
+      const { renderDashboard } = await import("./tui/render.js");
+      renderDashboard();
+    });
+
   // === Lifecycle Commands ===
 
   program
@@ -97,6 +152,14 @@ export function createProgram(): Command {
     .action(async (opts: { force?: boolean }) => {
       const mod = await import("./commands/setup.js");
       await mod.handleUninstall(opts);
+    });
+
+  program
+    .command("doctor")
+    .description("Run diagnostics and check system health")
+    .action(async () => {
+      const mod = await import("./commands/doctor.js");
+      await mod.handleDoctor();
     });
 
   // === Session Commands ===
@@ -220,6 +283,75 @@ Examples:
       await mod.handleImport(opts);
     });
 
+  // === Shared Layer ===
+
+  const shared = program
+    .command("shared")
+    .description(
+      "Manage the shared config layer — MCPs and commands shared across profiles"
+    );
+
+  shared
+    .command("status")
+    .description("Show shared layer contents and per-profile enable status")
+    .action(async () => {
+      const mod = await import("./commands/shared.js");
+      await mod.handleSharedStatus();
+    });
+
+  shared
+    .command("enable [name]")
+    .description(
+      "Enable the shared layer for a profile and sync it (default: active profile)"
+    )
+    .option("--memory", "Link profile memory/ to shared/memory/ (junction/symlink)")
+    .option("--projects", "Link profile projects/ to shared/projects/ (junction/symlink)")
+    .option("--claude-md", "Prepend shared CLAUDE.md to profile CLAUDE.md")
+    .action(
+      async (
+        name: string | undefined,
+        opts: { memory?: boolean; projects?: boolean; claudeMd?: boolean }
+      ) => {
+        const mod = await import("./commands/shared.js");
+        await mod.handleSharedEnable(name, opts);
+      }
+    );
+
+  shared
+    .command("disable [name]")
+    .description(
+      "Disable the shared layer for a profile and remove synced items (default: active profile)"
+    )
+    .option("--memory", "Only unlink the shared memory/ junction/symlink")
+    .option("--projects", "Only unlink the shared projects/ junction/symlink")
+    .action(
+      async (
+        name: string | undefined,
+        opts: { memory?: boolean; projects?: boolean }
+      ) => {
+        const mod = await import("./commands/shared.js");
+        await mod.handleSharedDisable(name, opts);
+      }
+    );
+
+  shared
+    .command("sync")
+    .description("Re-apply the shared layer to enabled profiles")
+    .option("--all", "Sync all profiles that have the shared layer enabled")
+    .option("--name <name>", "Profile name to sync (default: active profile)")
+    .action(async (opts: { all?: boolean; name?: string }) => {
+      const mod = await import("./commands/shared.js");
+      await mod.handleSharedSync(opts);
+    });
+
+  shared
+    .command("show")
+    .description("Print the current shared settings.json")
+    .action(async () => {
+      const mod = await import("./commands/shared.js");
+      await mod.handleSharedShow();
+    });
+
   // === Advanced Commands ===
 
   program
@@ -299,6 +431,8 @@ Examples:
 Examples:
   $ arc create work --auth-type oauth
   $ arc create gemini-work --tool gemini --auth-type api-key
+  $ arc import                          (import Claude config as "default")
+  $ arc import --all                    (import all detected tool configs)
   $ arc setup
   $ arc launch work --model sonnet
   $ arc launch work -p "explain this code"
@@ -307,7 +441,7 @@ Examples:
   $ arc shell-init --shell powershell | Out-String | Invoke-Expression
 
 Tip: Flags after the profile name pass through to the agent tool.
-     "create", "use|switch", and "list|ls" are top-level shortcuts.
+     "create", "use|switch", "list|ls", and "import" are top-level shortcuts.
      Run "arc profile --help" for all profile management commands.
 `
   );

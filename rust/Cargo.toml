@@ -1,0 +1,26 @@
+[package]
+name = "arc"
+version = "2.0.0"
+edition = "2021"
+
+[[bin]]
+name = "arc"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+anyhow = "1"
+dirs = "5"
+keyring = "3"
+which = "6"
+colored = "2"
+rand = "0.8"
+ratatui = "0.29"
+crossterm = { version = "0.28", features = ["event-stream"] }
+
+[profile.release]
+opt-level = 3
+lto = true
+strip = true

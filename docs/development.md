@@ -15,6 +15,8 @@ pnpm install
 ```bash
 pnpm build           # Compile TypeScript via tsup → dist/
 pnpm dev             # Run from source (tsx, no build step)
+pnpm dev:dash        # Run TUI dashboard from source
+pnpm dev:watch       # Rebuild on file change (tsup --watch)
 pnpm typecheck       # TypeScript strict-mode check
 ```
 
@@ -23,6 +25,26 @@ pnpm typecheck       # TypeScript strict-mode check
 ```bash
 pnpm cli -- --help          # Run the built CLI (arc) from dist/
 pnpm cli:dev -- --help      # Run from source (no build step required)
+pnpm dev:dash               # Launch TUI dashboard from source (no build)
+```
+
+### TUI development
+
+The TUI uses [Ink](https://github.com/vadimdemedes/ink) (React for the terminal). Components live in `src/tui/`.
+
+**Fastest iteration loop:**
+
+```bash
+pnpm dev:dash        # Runs tsx src/index.ts dashboard — no build step
+```
+
+tsx supports JSX natively, so edits to `.tsx` files take effect immediately on next run.
+
+**Watch mode** (for testing the production bundle):
+
+```bash
+pnpm dev:watch       # Rebuilds dist/ on every file change
+node dist/index.js dashboard   # Test the built output
 ```
 
 ### Linking globally for testing
@@ -89,6 +111,14 @@ src/
     status.ts          # status command (shows tool column)
     prune.ts           # prune command
     resolve.ts         # _resolve-config-dir (internal, used by shell wrapper)
+  tui/
+    Dashboard.tsx      # Root Ink component (keyboard nav, actions)
+    render.tsx         # Entry point — renders Ink app with TTY guard
+    useProfiles.ts     # React hook — loads profiles + auth status
+    components/
+      Header.tsx       # Branded header bar
+      ProfileList.tsx  # Interactive multi-column profile table
+      Footer.tsx       # Keybinding hints
 scripts/
   bootstrap.ps1        # Windows one-liner bootstrap
   bootstrap.sh         # macOS/Linux one-liner bootstrap

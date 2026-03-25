@@ -21,6 +21,30 @@ export function getProfileDir(name: string): string {
   return path.join(getArcDir(), "profiles", name);
 }
 
+export function getSharedDir(): string {
+  return path.join(getArcDir(), "shared");
+}
+
+export function getSharedSettingsPath(): string {
+  return path.join(getSharedDir(), "settings.json");
+}
+
+export function getSharedCommandsDir(): string {
+  return path.join(getSharedDir(), "commands");
+}
+
+export function getSharedClaudeMdPath(): string {
+  return path.join(getSharedDir(), "CLAUDE.md");
+}
+
+export function getSharedMemoryDir(): string {
+  return path.join(getSharedDir(), "memory");
+}
+
+export function getSharedProjectsDir(): string {
+  return path.join(getSharedDir(), "projects");
+}
+
 export function getClaudeDefaultDir(): string {
   return path.join(os.homedir(), ".claude");
 }

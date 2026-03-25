@@ -12,6 +12,12 @@ export interface Profile {
   createdAt: string;
   apiKeyStorage?: "keyring" | "file";
   envOverrides?: Record<string, string>;
+  /** Whether this profile inherits from the shared layer (~/.arc/shared/). */
+  useShared?: boolean;
+  /** Whether this profile's memory/ dir is linked to ~/.arc/shared/memory/. */
+  useSharedMemory?: boolean;
+  /** Whether this profile's projects/ dir is linked to ~/.arc/shared/projects/. */
+  useSharedProjects?: boolean;
 }
 
 export interface ArcConfig {

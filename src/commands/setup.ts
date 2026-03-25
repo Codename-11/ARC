@@ -37,6 +37,24 @@ function getUninstallScriptPath(): string {
   return path.join(getPackageRoot(), "scripts", "uninstall.js");
 }
 
+/**
+ * Returns true if ARC is running from a bootstrap git install
+ * (i.e. the package root is inside ~/.arc-install).
+ * Dev repo installs and npm global installs return false.
+ */
+function isBootstrapInstall(): boolean {
+  const packageRoot = getPackageRoot();
+  const bootstrapRoot = path.join(os.homedir(), ".arc-install");
+  return packageRoot.startsWith(bootstrapRoot);
+}
+
+function runCommand(cmd: string, args: string[], cwd: string): void {
+  const result = spawnSync(cmd, args, { stdio: "inherit", cwd, shell: true });
+  if (result.status !== 0) {
+    process.exit(result.status ?? 1);
+  }
+}
+
 function runNodeScript(scriptPath: string, args: string[] = []): void {
   const result = spawnSync(process.execPath, [scriptPath, ...args], {
     stdio: "inherit",
@@ -153,7 +171,19 @@ export async function handleUpdate(opts: {
   console.log();
   sectionHeader("Update");
   console.log();
-  info("Refreshing local CLI install, PATH, and shell integration...");
+
+  if (isBootstrapInstall()) {
+    const packageRoot = getPackageRoot();
+    info("Bootstrap install detected — pulling latest code...");
+    runCommand("git", ["fetch", "--all", "--prune"], packageRoot);
+    runCommand("git", ["reset", "--hard", "origin/main"], packageRoot);
+    info("Installing dependencies...");
+    runCommand("npm", ["install"], packageRoot);
+    success("Code updated.");
+    console.log();
+  }
+
+  info("Refreshing shims and shell integration...");
   await handleSetup(opts);
 }
 

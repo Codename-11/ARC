@@ -31,6 +31,7 @@ Unified profile and environment manager for agent CLIs. Maintains isolated confi
 | **Shell Integration** | Wraps agent commands in bash, zsh, fish, and PowerShell |
 | **Windows-First** | Local shim install, user PATH management, PowerShell support |
 | **Env Isolation** | Auth env vars sanitized between profiles to prevent credential leaks |
+| **TUI Dashboard** | Interactive terminal UI for profile management, launching, and status |
 | **Lifecycle CLI** | `setup`, `update`, `uninstall` managed from the same tool |
 
 ## Installation
@@ -49,7 +50,9 @@ irm https://raw.githubusercontent.com/Codename-11/ARC/main/scripts/bootstrap.ps1
 curl -fsSL https://raw.githubusercontent.com/Codename-11/ARC/main/scripts/bootstrap.sh | bash
 ```
 
-The bootstrap clones the repo into `~/.arc-install/repo`, installs dependencies, runs `arc setup`, and adds shell integration — all in one step. Open a new terminal and confirm with `arc --help`.
+The bootstrap clones the repo into `~/.arc-install/repo`, installs dependencies, runs `arc setup`, and launches the interactive setup wizard — all in one step.
+
+> **Note:** On Windows, open a new terminal after the bootstrap completes so PATH changes are active before running `arc`.
 
 ### npm
 
@@ -58,7 +61,42 @@ npm install -g arccli
 arc setup              # Install shims and shell integration
 ```
 
+> **Note:** Open a new terminal after `arc setup` on a first install — PATH changes require a fresh session.
+
 See [Getting Started](./docs/getting-started.md) for requirements and platform notes.
+
+## Updating
+
+### Bootstrap install
+
+Re-run the same one-liner — it is idempotent (pulls latest code, reinstalls deps, refreshes shims):
+
+**PowerShell:**
+```powershell
+irm https://raw.githubusercontent.com/Codename-11/ARC/main/scripts/bootstrap.ps1 | iex
+```
+
+**macOS / Linux:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/Codename-11/ARC/main/scripts/bootstrap.sh | bash
+```
+
+### npm install
+
+```bash
+npm update -g arccli
+arc update             # Refresh shims and shell integration
+```
+
+### From source (development)
+
+```bash
+git pull
+pnpm build             # Rebuild dist/ — shims point here, so this is enough
+arc update             # Only needed if shims or shell integration may have changed
+```
+
+> **What `arc update` does:** refreshes the local shims in `~/.local/bin` and re-writes shell integration. It does **not** pull new code — that is handled by re-running the bootstrap or `git pull`.
 
 ## Quick Start
 
@@ -80,7 +118,7 @@ arc launch work
 arc use personal
 ```
 
-Running `arc` with no arguments and no profiles opens the interactive onboarding wizard.
+Running `arc` with no arguments opens the **TUI dashboard** (or the onboarding wizard on first run).
 
 ## Usage
 
@@ -93,6 +131,13 @@ arc use <name>                     # Switch active profile
 arc profile show [name]            # Show profile details
 arc profile delete <name>          # Delete a profile
 arc profile import                 # Import existing tool config
+```
+
+### Dashboard
+
+```bash
+arc                                # Open TUI dashboard (interactive terminal)
+arc dashboard                      # Same — explicit command
 ```
 
 ### Session commands
@@ -173,8 +218,11 @@ git clone https://github.com/Codename-11/ARC.git
 cd ARC
 pnpm install
 pnpm build
-pnpm cli -- --help         # Run built CLI (arc)
-pnpm cli:dev -- --help     # Run from source
+
+pnpm cli -- --help         # Run built CLI
+pnpm cli:dev -- --help     # Run from source (no build step)
+pnpm dev:dash              # Run TUI dashboard from source
+pnpm dev:watch             # Rebuild on file change
 pnpm typecheck
 ```
 

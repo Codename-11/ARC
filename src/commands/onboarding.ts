@@ -1,7 +1,5 @@
-import fs from "node:fs";
-import path from "node:path";
 import pc from "picocolors";
-import { getClaudeDefaultDir } from "../paths.js";
+import { detectToolConfigs } from "../detect.js";
 import {
   getLargeBanner,
   cmd,
@@ -32,17 +30,6 @@ function isInteractive(): boolean {
 }
 
 /**
- * Check if existing Claude Code config exists at ~/.claude
- */
-function hasExistingClaudeConfig(): boolean {
-  const claudeDir = getClaudeDefaultDir();
-  return (
-    fs.existsSync(path.join(claudeDir, ".credentials.json")) ||
-    fs.existsSync(path.join(claudeDir, "settings.json"))
-  );
-}
-
-/**
  * Run the first-run onboarding wizard.
  * Called when `arc` is invoked with no args and no profiles exist.
  */
@@ -56,6 +43,8 @@ export async function runOnboarding(): Promise<void> {
   const inquirer = await tryLoadInquirer();
   if (!inquirer || !isInteractive()) {
     // Non-interactive fallback: show guidance with highlighted commands
+    const detectedNonTTY = detectToolConfigs();
+
     console.log(
       "  " + pc.bold("Welcome to ARC!") + " No profiles configured yet."
     );
@@ -64,10 +53,26 @@ export async function runOnboarding(): Promise<void> {
     console.log();
     console.log("    " + cmd("arc profile create <name> --auth-type oauth"));
     console.log();
-    if (hasExistingClaudeConfig()) {
-      console.log("  Or import your existing Claude Code config:");
-      console.log();
-      console.log("    " + cmd("arc profile import --name default"));
+    if (detectedNonTTY.length > 0) {
+      if (detectedNonTTY.length === 1) {
+        console.log(
+          `  Or import your existing ${detectedNonTTY[0].displayName} config:`
+        );
+        console.log();
+        console.log("    " + cmd(`arc import --name ${detectedNonTTY[0].tool}`));
+      } else {
+        console.log("  Or import detected tool configs:");
+        console.log();
+        for (const dt of detectedNonTTY) {
+          console.log(
+            "    " + cmd(`arc import --name ${dt.tool} --from ${dt.configDir} --tool ${dt.tool}`)
+          );
+        }
+        console.log();
+        console.log("  Or import all at once:");
+        console.log();
+        console.log("    " + cmd("arc import --all"));
+      }
       console.log();
     }
     console.log(
@@ -92,24 +97,65 @@ export async function runOnboarding(): Promise<void> {
     console.log();
 
     // --- Step 1: Detect existing config & offer import ---
-    if (hasExistingClaudeConfig()) {
-      const claudeDir = getClaudeDefaultDir();
-      console.log(
-        "  Found existing Claude Code config at " + pc.cyan(claudeDir)
-      );
+    const detected = detectToolConfigs();
+
+    if (detected.length > 0) {
+      for (const dt of detected) {
+        console.log(
+          "  Found existing " +
+            pc.bold(dt.displayName) +
+            " config at " +
+            pc.cyan(dt.configDir)
+        );
+      }
       console.log();
 
-      const shouldImport = await inquirer.confirm({
-        message: "Import existing Claude config into ARC?",
-        default: true,
-      });
+      if (detected.length === 1) {
+        // Single tool detected -- simple yes/no like before
+        const dt = detected[0];
+        const shouldImport = await inquirer.confirm({
+          message: `Import existing ${dt.displayName} config into ARC?`,
+          default: true,
+        });
 
-      if (shouldImport) {
-        const { handleImport } = await import("./profile.js");
-        await handleImport({ name: "default", from: claudeDir, tool: "claude" });
-        console.log();
-        printNextSteps("default", "oauth", "claude");
-        return;
+        if (shouldImport) {
+          const { handleImport } = await import("./profile.js");
+          await handleImport({ name: dt.tool, from: dt.configDir, tool: dt.tool });
+          console.log();
+          printNextSteps(dt.tool, "oauth", dt.tool);
+          return;
+        }
+      } else {
+        // Multiple tools detected -- offer to import all or pick
+        const importChoice = await inquirer.select<string>({
+          message: "Multiple tool configs detected. What would you like to do?",
+          choices: [
+            { value: "all", name: "Import all detected configs" },
+            ...detected.map((dt) => ({
+              value: dt.tool,
+              name: `Import ${dt.displayName} only`,
+            })),
+            { value: "skip", name: "Skip import, create a new profile" },
+          ],
+          default: "all",
+        });
+
+        if (importChoice !== "skip") {
+          const { handleImport } = await import("./profile.js");
+          const toImport =
+            importChoice === "all"
+              ? detected
+              : detected.filter((dt) => dt.tool === importChoice);
+
+          for (const dt of toImport) {
+            await handleImport({ name: dt.tool, from: dt.configDir, tool: dt.tool });
+          }
+
+          console.log();
+          const last = toImport[toImport.length - 1];
+          printNextSteps(last.tool, "oauth", last.tool);
+          return;
+        }
       }
 
       console.log();

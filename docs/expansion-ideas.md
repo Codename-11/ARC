@@ -55,15 +55,14 @@ This project is expanding beyond a Claude-only multi-account manager into a tool
 
 ## TUI Direction
 
-- A built-in TUI dashboard would be a strong optional surface for setup, profile management, imports, auth status, updates, and diagnostics.
-- The TUI should be optional, not required. The plain CLI must remain the primary automation-friendly interface.
-- It could provide:
-  - profile switching and launch actions
-  - setup/update/uninstall flows
+**Status: v1 shipped.** The TUI dashboard (`arc` / `arc dashboard`) is implemented using Ink (React for the terminal). It provides profile listing, navigation, launching, and switching from an interactive terminal UI.
+
+Remaining TUI work:
+  - setup/update/uninstall flows inside the TUI
   - import/migration flows
   - doctor results and repair actions
-  - active tool/profile/session visibility
   - statusline/shell integration management
+  - search/filter for large profile lists
 
 ## External Reference
 
@@ -78,4 +77,4 @@ This project is expanding beyond a Claude-only multi-account manager into a tool
 2. Finish the unified setup/update/uninstall/doctor lifecycle.
 3. Add importer/migration flows for existing local tool installations.
 4. Add workspace-aware profile selection and project-local config.
-5. Design and prototype an optional TUI control surface.
+5. ~~Design and prototype an optional TUI control surface.~~ **Done** — expand TUI with setup/import/doctor flows.

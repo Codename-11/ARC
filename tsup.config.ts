@@ -12,4 +12,7 @@ export default defineConfig({
     js: "#!/usr/bin/env node",
   },
   external: ["@napi-rs/keyring", "@inquirer/prompts"],
+  esbuildOptions(options) {
+    options.jsx = "automatic";
+  },
 });

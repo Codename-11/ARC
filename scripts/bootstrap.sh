@@ -4,6 +4,7 @@ set -euo pipefail
 REPO_URL="https://github.com/Codename-11/ARC.git"
 INSTALL_ROOT="${ARC_INSTALL_DIR:-$HOME/.arc-install}"
 REPO_DIR="$INSTALL_ROOT/repo"
+USER_BIN_DIR="${ARC_LOCAL_BIN_DIR:-$HOME/.local/bin}"
 
 info() {
   printf '[arc] %s\n' "$1"
@@ -16,9 +17,8 @@ fail() {
 
 info "Bootstrap starting..."
 
-command -v git >/dev/null 2>&1 || fail "git is required but was not found on PATH."
-command -v node >/dev/null 2>&1 || fail "Node.js 18+ is required but was not found on PATH."
-command -v npm >/dev/null 2>&1 || fail "npm is required but was not found on PATH."
+command -v git   >/dev/null 2>&1 || fail "git is required but was not found on PATH."
+command -v cargo >/dev/null 2>&1 || fail "Rust (cargo) is required. Install from https://rustup.rs then re-run this script."
 
 mkdir -p "$INSTALL_ROOT"
 
@@ -32,11 +32,22 @@ else
   git clone "$REPO_URL" "$REPO_DIR"
 fi
 
-info "Installing dependencies"
-npm install --prefix "$REPO_DIR"
+info "Building arc binary (this may take a minute on first run)..."
+cargo build --release --manifest-path "$REPO_DIR/rust/Cargo.toml"
 
-info "Running arc setup"
-npm run cli --prefix "$REPO_DIR" -- setup
+# Install binary
+mkdir -p "$USER_BIN_DIR"
+cp -f "$REPO_DIR/rust/target/release/arc" "$USER_BIN_DIR/arc"
+chmod +x "$USER_BIN_DIR/arc"
 
-info "Bootstrap complete."
-printf 'Open a new shell, then run: arc --help\n'
+# Ensure user bin dir is on PATH for this session
+export PATH="$USER_BIN_DIR:$PATH"
+
+info "Running arc setup (shell integration)..."
+"$USER_BIN_DIR/arc" setup
+
+info "Bootstrap complete — launching ARC..."
+printf '\n'
+
+# Launch the interactive CLI (onboarding wizard on first run, dashboard if profiles exist)
+"$USER_BIN_DIR/arc"

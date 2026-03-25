@@ -13,7 +13,7 @@
 
 ### Bootstrap (recommended — especially on Windows)
 
-The bootstrap is the primary install path. It clones the repo, installs dependencies, runs `arc setup`, and adds shell integration in one step.
+The bootstrap is the primary install path. It clones the repo, installs dependencies, runs `arc setup`, and launches the interactive setup wizard — all in one step.
 
 **PowerShell (Windows):**
 
@@ -32,13 +32,11 @@ What the bootstrap does:
 1. Clones or updates the repo into `~/.arc-install/repo`
 2. Runs `npm install`
 3. Runs `arc setup` — installs shims into `~/.local/bin`, adds to user `PATH` (Windows), writes shell integration
-4. Prompts you to open a new terminal
+4. Launches `arc` — the onboarding wizard walks you through creating your first profile
 
-After bootstrap, open a new terminal and confirm:
+After bootstrap, open a new terminal and run `arc` to open the **TUI dashboard**.
 
-```bash
-arc --help
-```
+> **Windows:** A new terminal is required after the first install for PATH changes to take effect.
 
 ### npm
 
@@ -47,7 +45,40 @@ npm install -g arccli
 arc setup
 ```
 
-The `arc setup` step is required after npm install on any platform — it installs local shims and adds shell integration.
+The `arc setup` step is required after npm install on any platform — it installs local shims and adds shell integration. Open a new terminal after `arc setup` on first install.
+
+## Updating
+
+### Bootstrap install
+
+Re-run the same one-liner — the script is idempotent (pulls latest code, reinstalls deps, refreshes shims):
+
+**PowerShell:**
+```powershell
+irm https://raw.githubusercontent.com/Codename-11/ARC/main/scripts/bootstrap.ps1 | iex
+```
+
+**macOS / Linux:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/Codename-11/ARC/main/scripts/bootstrap.sh | bash
+```
+
+### npm install
+
+```bash
+npm update -g arccli
+arc update
+```
+
+### From source (development)
+
+```bash
+git pull
+pnpm build             # Shims point at dist/, so a rebuild is all that's needed
+arc update             # Run this if shims or shell integration may have changed
+```
+
+> **What `arc update` does:** refreshes the local shims in `~/.local/bin` and rewrites shell integration. It does **not** pull or install new code.
 
 ## First Profile
 
@@ -63,11 +94,13 @@ ARC copies credentials and settings from `~/.claude` into `~/.arc/profiles/defau
 
 ### Create a new profile
 
-Start the interactive wizard:
+Start the interactive wizard (runs automatically if no profiles exist):
 
 ```bash
 arc
 ```
+
+Once profiles exist, `arc` opens the **TUI dashboard** where you can navigate, switch, and launch profiles interactively.
 
 Or create directly:
 
