@@ -302,7 +302,7 @@ pub fn handle_update(shell: Option<&str>, no_shell: bool) -> Result<()> {
                 .current_dir(&repo_root)
                 .status();
             let git_reset = Command::new("git")
-                .args(["reset", "--hard", "origin/main"])
+                .args(["reset", "--hard", "origin/master"])
                 .current_dir(&repo_root)
                 .status();
 

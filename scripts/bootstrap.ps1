@@ -61,7 +61,7 @@ New-Item -ItemType Directory -Force -Path $installRoot | Out-Null
 if (Test-Path (Join-Path $repoDir ".git")) {
   Info "Updating existing repo at $repoDir"
   git -C $repoDir fetch --all --prune
-  git -C $repoDir reset --hard origin/main
+  git -C $repoDir reset --hard origin/master
 } else {
   if (Test-Path $repoDir) {
     Remove-Item -Recurse -Force $repoDir

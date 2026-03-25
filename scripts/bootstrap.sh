@@ -42,7 +42,7 @@ mkdir -p "$INSTALL_ROOT"
 if [ -d "$REPO_DIR/.git" ]; then
   info "Updating existing repo at $REPO_DIR"
   git -C "$REPO_DIR" fetch --all --prune
-  git -C "$REPO_DIR" reset --hard origin/main
+  git -C "$REPO_DIR" reset --hard origin/master
 else
   rm -rf "$REPO_DIR"
   info "Cloning repo into $REPO_DIR"
