@@ -42,6 +42,7 @@ pub fn render_footer(f: &mut Frame, area: Rect, app: &App) {
     if app.selected_view == View::Profiles {
         left_spans.extend(key_hint("s", "switch"));
         left_spans.extend(key_hint("d", "delete"));
+        left_spans.extend(key_hint("⇧↑↓", "reorder"));
     }
 
     left_spans.extend(key_hint("c", "create"));

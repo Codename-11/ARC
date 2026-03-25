@@ -18,10 +18,10 @@ pub fn render_profile_list(f: &mut Frame, area: Rect, app: &App) {
     let bg_block = Block::default().borders(Borders::NONE).style(bg_style);
     f.render_widget(bg_block, area);
 
-    let mut profiles_sorted: Vec<_> = app.profiles.iter().collect();
-    profiles_sorted.sort_by(|(a, _), (b, _)| a.cmp(b));
+    // Use ordered names (respects profile_order)
+    let ordered_names = app.ordered_profile_names();
 
-    if profiles_sorted.is_empty() {
+    if ordered_names.is_empty() {
         let empty_lines = vec![
             Line::from(Span::styled("No profiles yet.", Style::default().fg(theme::TEXT_DIM))),
             Line::from(vec![
@@ -35,10 +35,16 @@ pub fn render_profile_list(f: &mut Frame, area: Rect, app: &App) {
         return;
     }
 
+    // Collect profile data in display order
+    let profiles_ordered: Vec<(&String, &crate::tui::ProfileData)> = ordered_names
+        .iter()
+        .filter_map(|name| app.profiles.get(name).map(|p| (name, p)))
+        .collect();
+
     // Compute column widths
-    let name_w = profiles_sorted.iter().map(|(n, _)| n.len()).max().unwrap_or(4).max(4);
-    let tool_w = profiles_sorted.iter().map(|(_, p)| p.tool.len()).max().unwrap_or(4).max(4);
-    let auth_w = profiles_sorted.iter().map(|(_, p)| p.auth_type.len()).max().unwrap_or(4).max(4);
+    let name_w = profiles_ordered.iter().map(|(n, _)| n.len()).max().unwrap_or(4).max(4);
+    let tool_w = profiles_ordered.iter().map(|(_, p)| p.tool.len()).max().unwrap_or(4).max(4);
+    let auth_w = profiles_ordered.iter().map(|(_, p)| p.auth_type.len()).max().unwrap_or(4).max(4);
 
     // Header row: NAME  TOOL  AUTH  STATUS
     if area.height < 3 {
@@ -71,7 +77,7 @@ pub fn render_profile_list(f: &mut Frame, area: Rect, app: &App) {
     let rows_start_y = area.y + 2;
     let selected_idx = app.selected_profile_idx;
 
-    for (i, (name, profile)) in profiles_sorted.iter().enumerate() {
+    for (i, (name, profile)) in profiles_ordered.iter().enumerate() {
         let row_y = rows_start_y + i as u16;
         if row_y >= area.y + area.height {
             break;

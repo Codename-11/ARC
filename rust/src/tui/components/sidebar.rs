@@ -173,8 +173,11 @@ pub fn render_sidebar(f: &mut Frame, area: Rect, app: &App, focused: bool) {
     // ── Queue list ────────────────────────────────────────────────────────
     {
         let q = chunks[5];
-        let mut profiles_sorted: Vec<_> = app.profiles.values().collect();
-        profiles_sorted.sort_by(|a, b| a.name.cmp(&b.name));
+        let ordered_names = app.ordered_profile_names();
+        let profiles_sorted: Vec<_> = ordered_names
+            .iter()
+            .filter_map(|name| app.profiles.get(name))
+            .collect();
 
         if profiles_sorted.is_empty() {
             f.render_widget(
