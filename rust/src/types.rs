@@ -2,12 +2,16 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "kebab-case")]
 pub enum AuthType {
+    #[serde(rename = "oauth")]
     OAuth,
+    #[serde(rename = "api-key")]
     ApiKey,
+    #[serde(rename = "bedrock")]
     Bedrock,
+    #[serde(rename = "vertex")]
     Vertex,
+    #[serde(rename = "foundry")]
     Foundry,
 }
 
