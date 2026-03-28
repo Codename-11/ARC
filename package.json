@@ -84,7 +84,7 @@
     "typescript": "^5.7"
   },
   "optionalDependencies": {
-    "@inquirer/prompts": "^7",
+    "@inquirer/prompts": "^8",
     "@napi-rs/keyring": "^1"
   }
 }
