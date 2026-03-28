@@ -86,7 +86,14 @@ jobs:
       - run: pnpm build
 
       - name: Publish to npm
-        run: npm publish --access public
+        run: |
+          TAG_VERSION="${{ needs.validate.outputs.version }}"
+          if echo "$TAG_VERSION" | grep -q '-'; then
+            DIST_TAG=$(echo "$TAG_VERSION" | sed 's/.*-//' | sed 's/\..*//')
+            npm publish --access public --tag "$DIST_TAG"
+          else
+            npm publish --access public
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
