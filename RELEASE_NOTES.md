@@ -1,6 +1,6 @@
-# ARC v0.1.0-beta
+# ARC v0.1.0
 
-First public beta of ARC — Agent Runtime Control.
+First public release of ARC — Agent Runtime Control.
 
 ## Highlights
 
