@@ -1,6 +1,6 @@
 {
   "name": "@axiom-labs/arc-cli",
-  "version": "0.1.0-beta",
+  "version": "0.1.0",
   "type": "module",
   "description": "ARC — Agent Runtime Control. Unified CLI for managing profiles and environments for agent tools (Claude, Gemini, Codex, and more).",
   "main": "./dist/index.js",
