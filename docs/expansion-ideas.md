@@ -55,14 +55,31 @@ This project is expanding beyond a Claude-only multi-account manager into a tool
 
 ## TUI Direction
 
-**Status: v1 shipped.** The TUI dashboard (`arc` / `arc dashboard`) is implemented using Ink (React for the terminal). It provides profile listing, navigation, launching, and switching from an interactive terminal UI.
+**Status: v1 shipped.** The TUI dashboard (`arc` / `arc dashboard`) provides:
+
+  - 6 views: Dash (landing), Workspace, Profiles, Log, Doctor, Settings
+  - Photon (light, default) and Carbon Night (dark) themes with persistence
+  - ASCII logo on Dash with at-a-glance status overview
+  - Ctrl+P command palette, Ctrl+T theme toggle, Ctrl+Q quit
+  - Sidebar shortcuts: q (quit), t (theme), c (create), ? (help)
+  - Profile creation wizard overlay (name → tool → auth → confirm)
+  - Slash commands in workspace: /launch, /switch, /dash, /profiles, /doctor, /settings, /help, /create, /clear
+  - Mouse scroll capture to prevent buffer disruption
+  - Responsive layout with min-size guard (72x18)
+
+Shipped since v1:
+  - Fullscreen TUI onboarding wizard (OnboardingScreen) with auto-detect + stepped profile creation
+  - Doctor repair actions: install hints, re-auth instructions, PATH/shell fix hints inline
+  - Auto-detect import step in CreateProfileOverlay (import detected tools or create new)
+  - Shared layer sync status in SettingsView (per-profile sync details) and ProfileList (shared indicator)
+  - GitHub repo link on DashView and HelpOverlay
+  - Complete help overlay overhaul (global, sidebar, workspace, profiles sections)
 
 Remaining TUI work:
   - setup/update/uninstall flows inside the TUI
-  - import/migration flows
-  - doctor results and repair actions
   - statusline/shell integration management
   - search/filter for large profile lists
+  - activity log persistence (currently placeholder)
 
 ## External Reference
 
@@ -75,6 +92,6 @@ Remaining TUI work:
 
 1. Define a tool-adapter architecture that keeps Claude working while making room for Codex and Gemini.
 2. Finish the unified setup/update/uninstall/doctor lifecycle.
-3. Add importer/migration flows for existing local tool installations.
+3. ~~Add importer/migration flows for existing local tool installations.~~ **Done** — OnboardingScreen and CreateProfileOverlay auto-detect and import existing tool configs.
 4. Add workspace-aware profile selection and project-local config.
 5. ~~Design and prototype an optional TUI control surface.~~ **Done** — expand TUI with setup/import/doctor flows.

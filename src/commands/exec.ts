@@ -1,7 +1,9 @@
-import { spawn } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { loadConfig } from "../config.js";
 import { buildProfileEnv } from "../auth.js";
 import { error } from "../display.js";
+
+const isWindows = process.platform === "win32";
 
 export async function handleExec(
   name: string | undefined,
@@ -55,19 +57,18 @@ export async function handleExec(
 
   const profileEnv = await buildProfileEnv(profile, profileName);
   const [cmd, ...args] = passthrough;
+  const env = { ...process.env, ...profileEnv } as NodeJS.ProcessEnv;
 
-  const child = spawn(cmd, args, {
-    stdio: "inherit",
-    env: { ...process.env, ...profileEnv } as NodeJS.ProcessEnv,
-    shell: true,
-  });
+  // spawnSync with stdio:"inherit" — child owns the terminal.
+  // On Windows, use cmd /c to resolve .cmd shims without shell:true (avoids DEP0190).
+  const result = isWindows
+    ? spawnSync("cmd", ["/c", cmd, ...args], { stdio: "inherit", env })
+    : spawnSync(cmd, args, { stdio: "inherit", env });
 
-  child.on("error", (err) => {
-    error(`Failed to execute command: ${err.message}`);
+  if (result.error) {
+    error(`Failed to execute command: ${result.error.message}`);
     process.exit(1);
-  });
+  }
 
-  child.on("close", (code) => {
-    process.exit(code ?? 0);
-  });
+  process.exit(result.status ?? 0);
 }

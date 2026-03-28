@@ -1,23 +1,34 @@
-# ARC — Agent Runtime Control
+<p align="center">
+  <img src="assets/logo.svg" alt="ARC" width="120">
+</p>
 
-[![npm version](https://img.shields.io/npm/v/arccli.svg)](https://www.npmjs.com/package/arccli)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/node/v/arccli.svg)](https://nodejs.org)
-
-Unified profile and environment manager for agent CLIs. Maintains isolated config directories per profile and injects the right credentials and environment before launching any agent tool.
-
-> **Tool-agnostic by design.** Claude Code is the baseline today — Gemini CLI, Codex CLI, and others are first-class citizens going forward.
+<h1 align="center">ARC — Agent Runtime Control</h1>
 
 <p align="center">
-  <img src="assets/multicc.png" alt="ARC" width="700">
+  Unified profile and environment manager for agent CLIs.<br>
+  Isolated configs, credentials, and environments — one tool to launch them all.
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@axiom-labs/arc-cli"><img src="https://img.shields.io/npm/v/@axiom-labs/arc-cli.svg" alt="npm"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT"></a>
+  <a href="https://nodejs.org"><img src="https://img.shields.io/node/v/@axiom-labs/arc-cli.svg" alt="Node"></a>
+  <a href="https://github.com/Codename-11/ARC/actions/workflows/ci.yml"><img src="https://github.com/Codename-11/ARC/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
 <p align="center">
   <a href="./docs/getting-started.md">Install</a> ·
   <a href="./docs/profiles.md">Profiles</a> ·
   <a href="./docs/authentication.md">Auth</a> ·
+  <a href="./docs/advanced.md#shared-layer">Shared Layer</a> ·
   <a href="./docs/shell-integration.md">Shell</a> ·
   <a href="./docs/index.md">Docs</a>
+</p>
+
+---
+
+<p align="center">
+  <img src="assets/screenshots/dash-dark.png" alt="ARC Dashboard" width="700">
 </p>
 
 ## Features
@@ -31,8 +42,11 @@ Unified profile and environment manager for agent CLIs. Maintains isolated confi
 | **Shell Integration** | Wraps agent commands in bash, zsh, fish, and PowerShell |
 | **Windows-First** | Local shim install, user PATH management, PowerShell support |
 | **Env Isolation** | Auth env vars sanitized between profiles to prevent credential leaks |
-| **TUI Dashboard** | Interactive terminal UI for profile management, launching, and status |
-| **Lifecycle CLI** | `setup`, `update`, `uninstall` managed from the same tool |
+| **Shared Layer** | Sync MCP servers, commands, memory, and CLAUDE.md across profiles |
+| **TUI Dashboard** | Interactive terminal UI with profiles, diagnostics, settings, and guide |
+| **Persistent Launch Flags** | Default flags per profile (e.g. `--dangerously-skip-permissions`) |
+| **Credential Hot-Swap** | [experimental] Switch accounts without changing MCPs or settings |
+| **Self-Update** | Built-in version check and `arc update` for self-updating |
 
 ## Installation
 
@@ -50,82 +64,48 @@ irm https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/bootstrap.p
 curl -fsSL https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/bootstrap.sh | bash
 ```
 
-The bootstrap clones the repo into `~/.arc-install/repo`, installs dependencies, runs `arc setup`, and launches the interactive setup wizard — all in one step.
-
-> **Note:** On Windows, open a new terminal after the bootstrap completes so PATH changes are active before running `arc`.
-
 ### npm
 
 ```bash
-npm install -g arccli
-arc setup              # Install shims and shell integration
+npm install -g @axiom-labs/arc-cli
+arc setup
+arc
 ```
-
-> **Note:** Open a new terminal after `arc setup` on a first install — PATH changes require a fresh session.
 
 See [Getting Started](./docs/getting-started.md) for requirements and platform notes.
-
-## Updating
-
-### Bootstrap install
-
-Re-run the same one-liner — it is idempotent (pulls latest code, reinstalls deps, refreshes shims):
-
-**PowerShell:**
-```powershell
-irm https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/bootstrap.ps1 | iex
-```
-
-**macOS / Linux:**
-```bash
-curl -fsSL https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/bootstrap.sh | bash
-```
-
-### npm install
-
-```bash
-npm update -g arccli
-arc update             # Refresh shims and shell integration
-```
-
-### From source (development)
-
-```bash
-git pull
-pnpm build             # Rebuild dist/ — shims point here, so this is enough
-arc update             # Only needed if shims or shell integration may have changed
-```
-
-> **What `arc update` does:** refreshes the local shims in `~/.local/bin` and re-writes shell integration. It does **not** pull new code — that is handled by re-running the bootstrap or `git pull`.
 
 ## Quick Start
 
 ```bash
-# Import your existing Claude Code config
-arc profile import --name default
-
-# Or create a new profile interactively
-arc
-
-# Create a profile for a specific tool
-arc create claude-work --tool claude --auth-type oauth
-arc create gemini-work --tool gemini --auth-type api-key
-
-# Launch the agent tool for a profile
-arc launch work
-
-# Switch the active profile
-arc use personal
+arc                    # Open TUI — onboarding wizard on first run
 ```
 
-Running `arc` with no arguments opens the **TUI dashboard** (or the onboarding wizard on first run).
+The onboarding wizard auto-detects installed tools (Claude, Gemini, Codex) and offers to import their configs as profiles.
+
+```bash
+arc create work --tool claude --auth-type oauth
+arc launch work
+arc use personal
+arc status
+```
+
+## Screenshots
+
+| | |
+|---|---|
+| ![First Launch](assets/screenshots/first-launch.png) | ![Dashboard](assets/screenshots/dash.png) |
+| First launch — onboarding wizard | Dashboard — light mode |
+| ![Dashboard Dark](assets/screenshots/dash-dark.png) | ![Profiles](assets/screenshots/profiles-dark.png) |
+| Dashboard — dark mode | Profile management |
+| ![Doctor](assets/screenshots/doctor-dark.png) | |
+| Diagnostics | |
 
 ## Usage
 
-### Profile management
+### Profiles
 
 ```bash
-arc create <name>                  # Create a profile (prompts for tool + auth)
+arc create <name>                  # Create a profile
 arc list                           # List all profiles
 arc use <name>                     # Switch active profile
 arc profile show [name]            # Show profile details
@@ -133,70 +113,63 @@ arc profile delete <name>          # Delete a profile
 arc profile import                 # Import existing tool config
 ```
 
-### Dashboard
-
-```bash
-arc                                # Open TUI dashboard (interactive terminal)
-arc dashboard                      # Same — explicit command
-```
-
-### Session commands
+### Launch
 
 ```bash
 arc launch [name]                  # Launch agent tool with profile
-arc set-key [name]                 # Store an API key
-arc status                         # Show status of all profiles
+arc launch [name] -- --model opus  # Pass flags through to the tool
+```
+
+### Dashboard
+
+```bash
+arc                                # Open TUI dashboard
+arc dashboard                      # Same — explicit command
+```
+
+### Shared layer
+
+```bash
+arc shared pull [name]             # Push config to shared layer
+arc shared enable [name]           # Sync shared config to a profile
+arc shared sync                    # Re-apply to all enabled profiles
 ```
 
 ### Lifecycle
 
 ```bash
 arc setup                          # Install shims, PATH, shell integration
-arc update                         # Refresh shims and integration
-arc uninstall                      # Remove shims, PATH, integration, and data
+arc update                         # Refresh shims and self-update
+arc doctor                         # Run diagnostics
+arc status                         # Show all profiles and auth status
 ```
 
-### Advanced
-
-```bash
-arc exec [name] -- <cmd>           # Run a command with profile environment
-arc shell [name]                   # Open a subshell with profile environment
-arc shell-init                     # Output shell integration code
-arc prune                          # Remove all arc data
-```
-
-See [Advanced Usage](./docs/advanced.md) for details.
+See the [full command reference](./docs/index.md) for all commands.
 
 ## Shell Integration
 
 After `arc setup`, agent tool commands automatically use the active profile:
 
 ```bash
-# bash / zsh
-eval "$(arc shell-init)"
-
-# fish
-arc shell-init --shell fish | source
-
-# PowerShell
-arc shell-init --shell powershell | Out-String | Invoke-Expression
+eval "$(arc shell-init)"                                              # bash / zsh
+arc shell-init --shell fish | source                                  # fish
+arc shell-init --shell powershell | Out-String | Invoke-Expression    # PowerShell
 ```
-
-See [Shell Integration](./docs/shell-integration.md).
 
 ## Data Layout
 
 ```
 ~/.arc/
-  config.json              # Profile registry and active profile
+  config.json              # Profile registry, active profile, settings
   profiles/
-    <name>/                # Each profile is an isolated tool config dir
-      .credentials.json    # OAuth tokens
-      .api-key             # Plaintext API key fallback
+    <name>/                # Isolated tool config dir per profile
+      .credentials.json    # OAuth tokens (Claude)
+      oauth_creds.json     # OAuth tokens (Gemini)
+      auth.json            # OAuth tokens (Codex)
       settings.json        # Tool settings
+  shared/                  # Shared layer (synced across profiles)
+  credentials/             # [experimental] Hot-swap snapshots
 ```
-
-See [Configuration](./docs/configuration.md).
 
 ## Documentation
 
@@ -206,7 +179,7 @@ See [Configuration](./docs/configuration.md).
 | [Profiles](./docs/profiles.md) | Create, switch, import, delete |
 | [Authentication](./docs/authentication.md) | OAuth, API key, Bedrock, Vertex, Foundry |
 | [Shell Integration](./docs/shell-integration.md) | Bash, zsh, fish, PowerShell |
-| [Advanced Usage](./docs/advanced.md) | exec, subshell, env overrides, prune |
+| [Advanced Usage](./docs/advanced.md) | Shared layer, credential hot-swap, exec, subshell |
 | [Configuration](./docs/configuration.md) | Data layout and config schema |
 | [Development](./docs/development.md) | Build, test, contribute |
 | [Troubleshooting](./docs/troubleshooting.md) | Common issues and fixes |
@@ -215,19 +188,25 @@ See [Configuration](./docs/configuration.md).
 
 ```bash
 git clone https://github.com/Codename-11/ARC.git
-cd ARC
-pnpm install
-pnpm build
+cd ARC && pnpm install
 
-pnpm cli -- --help         # Run built CLI
-pnpm cli:dev -- --help     # Run from source (no build step)
-pnpm dev:dash              # Run TUI dashboard from source
-pnpm dev:watch             # Rebuild on file change
-pnpm typecheck
+pnpm install:local         # Build + install arc command (shims + PATH)
+pnpm uninstall:local       # Remove shims (keeps ~/.arc/ config)
+
+pnpm dev:tui               # Run TUI from source
+pnpm dev:tui:watch         # TUI with hot-reload
+pnpm typecheck             # TypeScript strict-mode check
 ```
 
 See [Development](./docs/development.md) for the full guide.
 
 ## License
 
-[MIT](LICENSE) — Copyright (c) 2025 fmdz387
+[MIT](LICENSE) — Copyright (c) 2025 [Bailey Dixon](https://github.com/Codename-11)
+
+---
+
+<p align="center">
+  Built with the help of AI coding assistants and humans, with &lt;3<br><br>
+  <a href="https://ko-fi.com/L4L31Q8LJ1"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="ko-fi"></a>
+</p>

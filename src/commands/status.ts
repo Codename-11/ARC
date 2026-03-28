@@ -62,7 +62,14 @@ export async function handleStatus(): Promise<void> {
       const cred = await getCredentialStatus(profile);
       status = formatAuthStatus(cred.authenticated, cred.expired);
       if (cred.expiresAt !== undefined) {
-        expiry = formatExpiry(cred.expiresAt);
+        const raw = formatExpiry(cred.expiresAt);
+        // Show "token refresh needed" instead of confusing "expired Xh ago"
+        // when the profile is still authenticated via refresh token
+        if (cred.authenticated && cred.expiresAt < Date.now()) {
+          expiry = "token auto-refreshes";
+        } else {
+          expiry = raw;
+        }
       }
     } catch {
       status = pc.red("error");

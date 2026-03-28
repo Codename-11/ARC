@@ -142,7 +142,7 @@ export function redact(value: string): string {
 
 // ── Version & Branding ─────────────────────────────
 
-const VERSION = "2.0.0";
+import { VERSION } from "./version.js";
 
 export function getVersion(): string {
   return VERSION;
@@ -151,7 +151,9 @@ export function getVersion(): string {
 /** Compact single-line banner for --help output. */
 export function getBanner(): string {
   return (
-    pc.magenta("\u25C6") +
+    pc.dim("[") +
+    pc.bold(pc.cyan(">")) +
+    pc.dim("]") +
     " " +
     pc.bold(pc.cyan("arc")) +
     " " +
@@ -164,7 +166,9 @@ export function getBanner(): string {
 export function getLargeBanner(): string {
   return box(
     [
-      pc.magenta("\u25C6") +
+      pc.dim("[") +
+        pc.bold(pc.cyan(">")) +
+        pc.dim("]") +
         "  " +
         pc.bold(pc.cyan("ARC")) +
         " " +

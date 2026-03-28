@@ -19,9 +19,9 @@ const FILES = [
     },
   },
   {
-    path: join(ROOT_DIR, 'src', 'display.ts'),
+    path: join(ROOT_DIR, 'src', 'version.ts'),
     update: (content, version) =>
-      content.replace(/const VERSION = "[^"]+";/, `const VERSION = "${version}";`),
+      content.replace(/export const VERSION = "[^"]+";/, `export const VERSION = "${version}";`),
   },
 ];
 

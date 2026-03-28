@@ -1,6 +1,6 @@
 {
-  "name": "arccli",
-  "version": "2.0.0",
+  "name": "@axiom-labs/arc-cli",
+  "version": "0.1.0-beta",
   "type": "module",
   "description": "ARC — Agent Runtime Control. Unified CLI for managing profiles and environments for agent tools (Claude, Gemini, Codex, and more).",
   "main": "./dist/index.js",
@@ -14,19 +14,19 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsx src/index.ts",
-    "dev:dash": "tsx src/index.ts dashboard",
+    "dev:tui": "tsx src/index.ts dashboard",
+    "dev:tui:watch": "node scripts/dev-tui.mjs",
     "dev:watch": "tsup --watch",
-    "dev:rust": "cargo watch --manifest-path rust/Cargo.toml -c -q -x 'run --'",
-    "dev:rust:tui": "cargo watch --manifest-path rust/Cargo.toml -c -q -x 'run -- dashboard'",
-    "dev:rust:check": "cargo watch --manifest-path rust/Cargo.toml -c -q -x check",
-    "build:rust": "cargo build --release --manifest-path rust/Cargo.toml",
     "cli": "node ./dist/index.js",
     "cli:dev": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
+    "postinstall": "node scripts/postinstall.js",
     "prepublishOnly": "pnpm typecheck && pnpm build",
     "prepare": "tsup",
     "link:global": "pnpm build && pnpm link --global",
     "link:global:npm": "npm run build && npm link",
+    "install:local": "node scripts/install-local.js",
+    "uninstall:local": "node scripts/uninstall-local.js",
     "setup:local-bin": "npm run build && node scripts/setup-local-bin.js",
     "bootstrap:windows": "powershell -ExecutionPolicy Bypass -File scripts/bootstrap.ps1",
     "bootstrap:unix": "bash scripts/bootstrap.sh",
@@ -34,8 +34,8 @@
     "version:set": "node scripts/version.js",
     "tag": "node scripts/tag.js",
     "tag:repush": "node scripts/tag.js --repush",
-    "uninstall": "node scripts/uninstall.js",
-    "uninstall:force": "node scripts/uninstall.js --force"
+    "teardown": "node scripts/uninstall.js",
+    "teardown:force": "node scripts/uninstall.js --force"
   },
   "keywords": [
     "cli",
@@ -51,7 +51,7 @@
     "command-line",
     "arc"
   ],
-  "author": "fmdz387",
+  "author": "Bailey Dixon (https://github.com/Codename-11)",
   "license": "MIT",
   "repository": {
     "type": "git",

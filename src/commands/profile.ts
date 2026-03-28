@@ -5,6 +5,7 @@ import type { AuthType } from "../types.js";
 import { loadConfig, saveConfig, resolveProfileName } from "../config.js";
 import { getProfileDir, getClaudeDefaultDir } from "../paths.js";
 import { success, error, info, detail, profileTable } from "../display.js";
+import { shouldCopyEntry, detectAuthType } from "../import-utils.js";
 
 const VALID_AUTH_TYPES = new Set<string>([
   "oauth",
@@ -197,7 +198,10 @@ export async function handleSwitch(name: string): Promise<void> {
   success(`Switched to profile "${name}".`);
 }
 
-export async function handleDelete(name: string): Promise<void> {
+export async function handleDelete(
+  name: string,
+  opts?: { force?: boolean }
+): Promise<void> {
   const config = loadConfig();
 
   if (!config.profiles[name]) {
@@ -211,7 +215,28 @@ export async function handleDelete(name: string): Promise<void> {
     process.exit(1);
   }
 
+  // Require confirmation unless --force
+  if (!opts?.force) {
+    const readline = await import("node:readline");
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    const answer = await new Promise<string>((resolve) => {
+      rl.question(`  Delete profile "${name}" and all its config data? This cannot be undone. [y/N] `, resolve);
+    });
+    rl.close();
+    if (answer.toLowerCase() !== "y") {
+      info("Cancelled.");
+      return;
+    }
+  }
+
   const profileDir = config.profiles[name].configDir;
+
+  // Delete directory first, then update config (safer order)
+  try {
+    fs.rmSync(profileDir, { recursive: true, force: true });
+  } catch {
+    // Directory may not exist or be inaccessible — continue with config cleanup
+  }
 
   delete config.profiles[name];
 
@@ -222,89 +247,10 @@ export async function handleDelete(name: string): Promise<void> {
   }
 
   saveConfig(config);
-
-  try {
-    fs.rmSync(profileDir, { recursive: true, force: true });
-  } catch {
-    // Directory may not exist or be inaccessible -- config is already updated
-  }
-
   success(`Profile "${name}" deleted.`);
 }
 
-// Ephemeral / generated data to skip during import — everything else is copied.
-const IMPORT_SKIP = new Set([
-  "cache",
-  "debug",
-  "telemetry",
-  "statsig",
-  "usage-data",
-  "shell-snapshots",
-  "paste-cache",
-  "file-history",
-  "chrome",
-  "downloads",
-  "projects",
-  "tasks",
-  "teams",
-  "todos",
-  "plans",
-  "history.jsonl",
-  ".update.lock",
-  "stats-cache.json",
-]);
-
-function shouldCopyEntry(name: string): boolean {
-  if (IMPORT_SKIP.has(name)) return false;
-  if (name.includes(".backup.")) return false;
-  return true;
-}
-
-/**
- * Detect the auth type from a source config directory by inspecting
- * which credential files / env markers are present.
- */
-function detectAuthType(sourceDir: string): AuthType {
-  // Check for environment-based auth types first (most specific)
-  if (
-    process.env["AWS_PROFILE"] ||
-    process.env["AWS_ACCESS_KEY_ID"] ||
-    process.env["CLAUDE_CODE_USE_BEDROCK"] === "1"
-  ) {
-    return "bedrock";
-  }
-  if (
-    process.env["GOOGLE_APPLICATION_CREDENTIALS"] ||
-    process.env["CLAUDE_CODE_USE_VERTEX"] === "1"
-  ) {
-    return "vertex";
-  }
-  if (process.env["FOUNDRY_API_KEY"]) {
-    return "foundry";
-  }
-
-  // Check for file-based auth indicators
-  if (fs.existsSync(path.join(sourceDir, ".api-key"))) {
-    return "api-key";
-  }
-
-  if (fs.existsSync(path.join(sourceDir, ".credentials.json"))) {
-    try {
-      const raw = fs.readFileSync(
-        path.join(sourceDir, ".credentials.json"),
-        "utf-8"
-      );
-      const creds = JSON.parse(raw) as Record<string, unknown>;
-      if (creds["accessToken"] || creds["refreshToken"]) {
-        return "oauth";
-      }
-    } catch {
-      // Malformed JSON — fall through to default
-    }
-  }
-
-  return "oauth";
-}
+// IMPORT_SKIP, shouldCopyEntry, detectAuthType are imported from ../import-utils.js
 
 export async function handleImport(
   opts: { name: string; from?: string; tool?: string; force?: boolean }

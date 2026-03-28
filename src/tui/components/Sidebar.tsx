@@ -2,13 +2,15 @@ import { Box, Text, useInput } from "ink";
 import { useTheme } from "../theme.js";
 import type { ProfileEntry } from "../useProfiles.js";
 
-export type ViewName = "workspace" | "profiles" | "settings" | "doctor";
+export type ViewName = "dash" | "workspace" | "profiles" | "about" | "doctor" | "settings";
 
-const NAV_ITEMS: { view: ViewName; label: string; icon: string }[] = [
-  { view: "workspace", label: "Workspace", icon: "◇" },
-  { view: "profiles", label: "Profiles", icon: "◎" },
-  { view: "doctor", label: "Doctor", icon: "+" },
-  { view: "settings", label: "Settings", icon: ":" },
+const NAV_ITEMS: { view: ViewName; label: string }[] = [
+  { view: "dash", label: "Dash" },
+  { view: "workspace", label: "Work" },
+  { view: "profiles", label: "Profiles" },
+  { view: "doctor", label: "Doctor" },
+  { view: "settings", label: "Settings" },
+  { view: "about", label: "Guide" },
 ];
 
 interface SidebarProps {
@@ -52,15 +54,21 @@ export function Sidebar({
   );
 
   return (
-    <Box flexDirection="column" flexGrow={1} paddingX={1} paddingY={1}>
-      <Box flexDirection="column" paddingLeft={1} marginBottom={1}>
-        <Text color={colors.secondary} bold>
-          ARC shell
-        </Text>
-        <Text color={colors.dimmed}>Launch-first workspace</Text>
+    <Box flexDirection="column" flexGrow={1} paddingX={0} paddingY={0}>
+      {/* Logo mark — [>] ARC */}
+      <Box paddingX={1}>
+        <Text color={colors.dimmed}>[</Text>
+        <Text color={colors.primary} bold>{">"}</Text>
+        <Text color={colors.dimmed}>]</Text>
+        <Text> </Text>
+        <Text color={colors.primary} bold>ARC</Text>
+      </Box>
+      <Box paddingX={1} marginBottom={1}>
+        <Text color={colors.border}>{"─".repeat(14)}</Text>
       </Box>
 
-      <Box flexDirection="column" gap={0}>
+      {/* Navigation */}
+      <Box flexDirection="column">
         {NAV_ITEMS.map((item, index) => {
           const isActive = item.view === activeView;
           const isHighlighted = isFocused && index === navIndex;
@@ -75,14 +83,8 @@ export function Sidebar({
               paddingX={1}
               backgroundColor={isHighlighted && !isActive ? colors.bgSelected : undefined}
             >
-              <Text
-                color={isActive ? colors.primary : colors.border}
-                bold={isActive}
-              >
-                {isActive ? "▶ " : "  "}
-              </Text>
-              <Text color={isActive ? colors.secondary : colors.dimmed}>
-                {item.icon}{" "}
+              <Text color={isActive ? colors.primary : colors.border} bold={isActive}>
+                {isActive ? "▸ " : "  "}
               </Text>
               <Text color={textColor} bold={isActive}>
                 {item.label}
@@ -92,53 +94,34 @@ export function Sidebar({
         })}
       </Box>
 
-      <Box marginY={1} paddingLeft={1}>
-        <Text color={colors.border}>status</Text>
+      {/* Active profile */}
+      <Box flexDirection="column" paddingX={1} marginTop={1}>
+        <Text color={colors.border}>{"─".repeat(14)}</Text>
+        <Text color={colors.dimmed}>active</Text>
+        <Text color={activeProfile ? colors.text : colors.dimmed} bold={Boolean(activeProfile)}>
+          {activeProfile?.name ?? "none"}
+        </Text>
+        <Text color={colors.dimmed}>
+          {readyCount}/{profiles.length} ready
+        </Text>
       </Box>
 
-      <Box flexDirection="column" paddingLeft={1} gap={1}>
-        <Box flexDirection="column">
-          <Text color={colors.dimmed}>active profile</Text>
-          <Text color={activeProfile ? colors.text : colors.dimmed} bold={Boolean(activeProfile)}>
-            {activeProfile?.name ?? "none"}
-          </Text>
-        </Box>
-        <Box flexDirection="column">
-          <Text color={colors.dimmed}>profiles ready</Text>
-          <Text color={profiles.length > 0 ? colors.text : colors.dimmed}>
-            {readyCount}/{profiles.length}
-          </Text>
-        </Box>
-      </Box>
-
-      <Box marginY={1} paddingLeft={1}>
-        <Text color={colors.border}>queue</Text>
-      </Box>
-
-      <Box flexDirection="column" paddingLeft={1}>
+      {/* Queue */}
+      <Box flexDirection="column" paddingX={1} marginTop={1}>
+        <Text color={colors.border}>{"─".repeat(14)}</Text>
         {profiles.length === 0 ? (
-          <Box gap={1}>
-            <Text color={colors.dimmed}>○</Text>
-            <Text color={colors.dimmed}>none</Text>
-          </Box>
+          <Text color={colors.dimmed}>no profiles</Text>
         ) : (
           profiles.slice(0, 5).map((profile) => (
-            <Box key={profile.name} gap={1} alignItems="center">
+            <Box key={profile.name}>
               <Text color={profile.active ? colors.accent : colors.dimmed}>
-                {profile.active ? "●" : "○"}
+                {profile.active ? "● " : "○ "}
               </Text>
               <Text
                 color={profile.active ? colors.text : colors.dimmed}
                 bold={profile.active}
               >
                 {profile.name}
-              </Text>
-              <Text
-                color={
-                  profile.credential?.authenticated ? colors.success : colors.dimmed
-                }
-              >
-                {profile.credential?.authenticated ? "ready" : "setup"}
               </Text>
             </Box>
           ))

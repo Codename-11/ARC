@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 720" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="240" y1="80" x2="1360" y2="640" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1220"/>
+      <stop offset="1" stop-color="#04070D"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(510 244) rotate(34.138) scale(634.451 387.089)">
+      <stop stop-color="#2563EB" stop-opacity=".28"/>
+      <stop offset=".52" stop-color="#1D4ED8" stop-opacity=".08"/>
+      <stop offset="1" stop-color="#020617" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" stroke="#334155" stroke-opacity=".18"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#020617" flood-opacity=".45"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="720" rx="40" fill="url(#bg)"/>
+  <rect width="1600" height="720" rx="40" fill="url(#grid)"/>
+  <rect width="1600" height="720" rx="40" fill="url(#glow)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="96" y="96" width="1408" height="528" rx="28" fill="#0A0F1A" fill-opacity=".88" stroke="#1E293B"/>
+    <rect x="136" y="136" width="424" height="448" rx="24" fill="#050A13" stroke="#23324A"/>
+    <rect x="588" y="136" width="876" height="448" rx="24" fill="#070C15" stroke="#1E293B"/>
+  </g>
+
+  <g opacity=".82">
+    <path d="M134 220H562" stroke="#1E293B"/>
+    <path d="M134 276H562" stroke="#1E293B"/>
+    <path d="M134 332H562" stroke="#1E293B"/>
+    <path d="M134 388H562" stroke="#1E293B"/>
+    <path d="M134 444H562" stroke="#1E293B"/>
+    <path d="M134 500H562" stroke="#1E293B"/>
+  </g>
+
+  <g transform="translate(222 224)">
+    <rect x="-38" y="-38" width="280" height="280" rx="24" fill="#0F172A" stroke="#334155"/>
+    <polyline points="38 26 6 26 6 178 38 178" stroke="#94A3B8" stroke-width="22" stroke-linecap="square" stroke-linejoin="miter"/>
+    <polyline points="100 74 164 102 100 130" stroke="#3B82F6" stroke-width="22" stroke-linecap="square" stroke-linejoin="miter"/>
+    <polyline points="226 26 258 26 258 178 226 178" stroke="#94A3B8" stroke-width="22" stroke-linecap="square" stroke-linejoin="miter"/>
+    <rect x="-10" y="268" width="116" height="34" rx="17" fill="#0F172A" stroke="#334155"/>
+    <text x="48" y="290" fill="#93C5FD" font-family="JetBrains Mono, SFMono-Regular, Menlo, monospace" font-size="18" text-anchor="middle">[&gt;]</text>
+  </g>
+
+  <g font-family="JetBrains Mono, SFMono-Regular, Menlo, monospace">
+    <text x="632" y="248" fill="#F8FAFC" font-size="114" font-weight="800" letter-spacing="-10">ARC</text>
+    <text x="632" y="310" fill="#93C5FD" font-size="28" font-weight="700" letter-spacing="6">AGENT RUNTIME CONTROL</text>
+    <text x="632" y="382" fill="#CBD5E1" font-size="32">
+      Profile-aware native terminal runtime
+    </text>
+    <text x="632" y="426" fill="#94A3B8" font-size="28">
+      for serious agent workflows.
+    </text>
+  </g>
+
+  <g font-family="JetBrains Mono, SFMono-Regular, Menlo, monospace" font-size="24" font-weight="700">
+    <rect x="632" y="478" width="164" height="44" rx="22" fill="#0B1220" stroke="#2563EB"/>
+    <text x="714" y="506" fill="#BFDBFE" text-anchor="middle">profiles</text>
+    <rect x="816" y="478" width="154" height="44" rx="22" fill="#0B1220" stroke="#334155"/>
+    <text x="893" y="506" fill="#CBD5E1" text-anchor="middle">context</text>
+    <rect x="990" y="478" width="160" height="44" rx="22" fill="#0B1220" stroke="#334155"/>
+    <text x="1070" y="506" fill="#CBD5E1" text-anchor="middle">sessions</text>
+    <rect x="1170" y="478" width="148" height="44" rx="22" fill="#0B1220" stroke="#334155"/>
+    <text x="1244" y="506" fill="#CBD5E1" text-anchor="middle">memory</text>
+  </g>
+
+  <g opacity=".9" font-family="JetBrains Mono, SFMono-Regular, Menlo, monospace" font-size="22">
+    <text x="140" y="164" fill="#64748B">runtime identity</text>
+    <text x="632" y="164" fill="#64748B">native terminal welcome</text>
+    <text x="1380" y="164" fill="#334155" text-anchor="end">arc</text>
+  </g>
+</svg>

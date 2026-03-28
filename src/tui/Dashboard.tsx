@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Box, Text, useApp, useInput } from "ink";
+import { Spinner } from "@inkjs/ui";
 import { useScreenSize } from "fullscreen-ink";
 import { Layout } from "./components/Layout.js";
 import { Sidebar, type ViewName } from "./components/Sidebar.js";
@@ -7,41 +8,66 @@ import { SessionView } from "./views/SessionView.js";
 import { ProfilesView } from "./views/ProfilesView.js";
 import { SettingsView } from "./views/SettingsView.js";
 import { DoctorView } from "./views/DoctorView.js";
+import { AboutView } from "./views/AboutView.js";
+import { DashView } from "./views/DashView.js";
 import { CommandPalette, type PaletteItem } from "./views/CommandPalette.js";
 import { HelpOverlay } from "./views/HelpOverlay.js";
+import { CreateProfileOverlay } from "./views/CreateProfileOverlay.js";
+import { Overlay } from "./components/Overlay.js";
+import { SwapOverlay } from "./views/SwapOverlay.js";
+import { SharedDetailOverlay } from "./views/SharedDetailOverlay.js";
+import { ProfileInfoOverlay } from "./views/ProfileInfoOverlay.js";
+import { OnboardingScreen } from "./views/OnboardingScreen.js";
 import { useProfiles } from "./useProfiles.js";
 import { useTheme } from "./theme.js";
+import { runSelfUpdate } from "../update.js";
+import { handleLaunch } from "../commands/launch.js";
+import { markLaunchPending } from "./render.js";
 
 const MIN_WIDTH = 72;
 const MIN_HEIGHT = 18;
-type OverlayName = "palette" | "help" | null;
+type OverlayName = "palette" | "help" | "create" | "updating" | "swap" | "about" | "shared-detail" | "profile-info" | null;
 
 export function Dashboard() {
   const { profiles, loading, config, reload } = useProfiles();
   const { exit } = useApp();
   const { toggleTheme, theme } = useTheme();
   const { width, height } = useScreenSize();
-  const [activeView, setActiveView] = useState<ViewName>("workspace");
+  const [activeView, setActiveView] = useState<ViewName>("dash");
   const [focusedPane, setFocusedPane] = useState<"sidebar" | "content">("sidebar");
   const [overlay, setOverlay] = useState<OverlayName>(null);
   const [paletteIndex, setPaletteIndex] = useState(0);
   const [workspaceTyping, setWorkspaceTyping] = useState(false);
+  const [activity, setActivity] = useState<import("./views/SessionView.js").ActivityEntry[]>([]);
+  const [infoProfile, setInfoProfile] = useState<string | null>(null);
 
   const paletteItems: PaletteItem[] = [
+    { id: "dash", label: "Dashboard", description: "Overview and status" },
     { id: "workspace", label: "Workspace", description: "Open the session shell" },
     { id: "profiles", label: "Profiles", description: "Manage launch targets" },
+    { id: "about", label: "Guide", description: "Profiles, shared layer, hot-swap docs" },
     { id: "doctor", label: "Doctor", description: "Run diagnostics" },
     { id: "settings", label: "Settings", description: "Inspect shell config" },
     { id: "theme", label: "Toggle Theme", description: "Switch light and dark mode" },
-    { id: "create", label: "Create Profile", description: "Exit and show create command" },
+    { id: "create", label: "Create Profile", description: "Import or create a new profile" },
+    { id: "swap", label: "Swap Credentials", description: "[experimental] Switch accounts, keep config" },
+    { id: "shared-detail", label: "Shared Layer", description: "View shared MCPs, commands, and sync state" },
   ];
 
-  const handleCreateHint = () => {
-    exit();
-    setImmediate(() => {
-      process.stdout.write(
-        "Run: arc create <name> --tool <tool> --auth-type <type>\n"
-      );
+  const [updateResult, setUpdateResult] = useState<{ ok: boolean; message: string } | null>(null);
+
+  const handleCreateSuccess = (name: string) => {
+    setOverlay(null);
+    reload();
+    setActiveView("profiles");
+    setFocusedPane("content");
+  };
+
+  const handleTriggerUpdate = () => {
+    setOverlay("updating");
+    setUpdateResult(null);
+    runSelfUpdate().then((result) => {
+      setUpdateResult(result);
     });
   };
 
@@ -54,7 +80,17 @@ export function Dashboard() {
     }
 
     if (item.id === "create") {
-      handleCreateHint();
+      setOverlay("create");
+      return;
+    }
+
+    if (item.id === "swap") {
+      setOverlay("swap");
+      return;
+    }
+
+    if (item.id === "shared-detail") {
+      setOverlay("shared-detail");
       return;
     }
 
@@ -62,12 +98,10 @@ export function Dashboard() {
     setFocusedPane("content");
   };
 
+  const showOnboarding = !loading && profiles.length === 0;
+
   useInput((input, key) => {
-    const workspaceCapturesKeys =
-      activeView === "workspace" &&
-      focusedPane === "content" &&
-      overlay === null &&
-      workspaceTyping;
+    const sidebarFocused = focusedPane === "sidebar";
 
     if (overlay) {
       if (key.escape) {
@@ -76,41 +110,75 @@ export function Dashboard() {
       return;
     }
 
+    // --- Global shortcuts (Ctrl-modified, work in any pane) ---
     if (key.ctrl && input === "p") {
       setPaletteIndex(0);
       setOverlay("palette");
       return;
     }
 
-    if (input === "?" && !workspaceCapturesKeys) {
-      setOverlay("help");
-      return;
-    }
-
-    if (input === "q" && !workspaceCapturesKeys) {
+    if (key.ctrl && (input === "q" || input === "c")) {
       exit();
       return;
     }
 
-    if (input === "t" && !workspaceCapturesKeys) {
+    if (key.ctrl && input === "t") {
       toggleTheme();
-      return;
-    }
-
-    if (input === "c" && !workspaceCapturesKeys) {
-      handleCreateHint();
       return;
     }
 
     if (key.tab) {
       setFocusedPane((current) => (current === "sidebar" ? "content" : "sidebar"));
+      return;
     }
-  });
+
+    // --- Dash quick-launch (Enter when content pane is focused on dash) ---
+    if (key.return && activeView === "dash" && !sidebarFocused) {
+      const active = profiles.find((p) => p.active);
+      if (active) {
+        markLaunchPending();
+        setTimeout(() => {
+          handleLaunch(active.name, [], { beforeSpawn: exit });
+        }, 0);
+      }
+      return;
+    }
+
+    // --- Sidebar-only shortcuts (bare keys safe — no text input in sidebar) ---
+    if (!sidebarFocused) return;
+
+    if (input === "?") {
+      setOverlay("help");
+      return;
+    }
+
+    if (input === "q") {
+      exit();
+      return;
+    }
+
+    if (input === "t") {
+      toggleTheme();
+      return;
+    }
+
+    if (input === "c") {
+      setOverlay("create");
+      return;
+    }
+
+    if (input === "u" && activeView === "dash") {
+      handleTriggerUpdate();
+      return;
+    }
+  }, { isActive: !showOnboarding });
 
   const tooSmall = width < MIN_WIDTH || height < MIN_HEIGHT;
 
   const content = useMemo(() => {
     switch (activeView) {
+      case "dash":
+        return <DashView profiles={profiles} onTriggerUpdate={handleTriggerUpdate} />;
       case "workspace":
         return (
           <SessionView
@@ -121,6 +189,10 @@ export function Dashboard() {
             onViewChange={setActiveView}
             inputEnabled={overlay === null}
             onTypingChange={setWorkspaceTyping}
+            onCreateProfile={() => setOverlay("create")}
+            onExitApp={exit}
+            activity={activity}
+            onActivityChange={setActivity}
           />
         );
       case "profiles":
@@ -131,10 +203,18 @@ export function Dashboard() {
             reload={reload}
             focusedPane={focusedPane}
             inputEnabled={overlay === null}
+            onCreateProfile={() => setOverlay("create")}
+            onExitApp={exit}
+            onShowInfo={(name) => {
+              setInfoProfile(name);
+              setOverlay("profile-info");
+            }}
           />
         );
       case "settings":
-        return <SettingsView config={config} profiles={profiles} />;
+        return <SettingsView config={config} profiles={profiles} focusedPane={focusedPane} inputEnabled={overlay === null} reload={reload} />;
+      case "about":
+        return <AboutView focusedPane={focusedPane} inputEnabled={overlay === null} />;
       case "doctor":
         return <DoctorView profiles={profiles} />;
       default:
@@ -147,6 +227,10 @@ export function Dashboard() {
             onViewChange={setActiveView}
             inputEnabled={overlay === null}
             onTypingChange={setWorkspaceTyping}
+            onCreateProfile={() => setOverlay("create")}
+            onExitApp={exit}
+            activity={activity}
+            onActivityChange={setActivity}
           />
         );
     }
@@ -162,7 +246,63 @@ export function Dashboard() {
       />
     ) : overlay === "help" ? (
       <HelpOverlay />
+    ) : overlay === "create" ? (
+      <CreateProfileOverlay
+        existingNames={profiles.map((p) => p.name)}
+        existingTools={profiles.map((p) => p.tool)}
+        onSuccess={handleCreateSuccess}
+        onCancel={() => setOverlay(null)}
+      />
+    ) : overlay === "swap" ? (
+      <SwapOverlay
+        onClose={() => setOverlay(null)}
+        onSwapped={reload}
+      />
+    ) : overlay === "shared-detail" ? (
+      <SharedDetailOverlay
+        config={config}
+        onClose={() => setOverlay(null)}
+      />
+    ) : overlay === "profile-info" && infoProfile ? (
+      (() => {
+        const entry = profiles.find((p) => p.name === infoProfile);
+        const profile = config.profiles[infoProfile];
+        if (!entry || !profile) return null;
+        return (
+          <ProfileInfoOverlay
+            entry={entry}
+            profile={profile}
+            onClose={() => {
+              setOverlay(null);
+              setInfoProfile(null);
+            }}
+          />
+        );
+      })()
+    ) : overlay === "updating" ? (
+      <Overlay title="Update" subtitle="Self-update ARC via npm">
+        <Box flexDirection="column">
+          {updateResult ? (
+            <Box flexDirection="column">
+              <Text color={updateResult.ok ? theme.colors.success : theme.colors.error}>
+                {updateResult.message}
+              </Text>
+              <Box marginTop={1}>
+                <Text color={theme.colors.dimmed}>Press esc to close.</Text>
+              </Box>
+            </Box>
+          ) : (
+            <Spinner label="Updating ARC..." />
+          )}
+        </Box>
+      </Overlay>
     ) : null;
+
+  // ── Fullscreen onboarding when no profiles exist ────────────────────
+  // Placed after all hooks to satisfy Rules of Hooks (no early returns before hooks).
+  if (showOnboarding && !tooSmall) {
+    return <OnboardingScreen onComplete={reload} />;
+  }
 
   if (tooSmall) {
     return (
@@ -174,8 +314,10 @@ export function Dashboard() {
         backgroundColor={theme.colors.bg}
       >
         <Box gap={1}>
-          <Text color={theme.colors.secondary} bold>◆</Text>
-          <Text bold color={theme.colors.primary}>ARC</Text>
+          <Text color={theme.colors.dimmed}>[</Text>
+          <Text color={theme.colors.primary} bold>{">"}</Text>
+          <Text color={theme.colors.dimmed}>]</Text>
+          <Text bold color={theme.colors.primary}> ARC</Text>
         </Box>
         <Box marginTop={1} flexDirection="column">
           <Text color={theme.colors.warning}>Terminal too small</Text>
@@ -184,11 +326,11 @@ export function Dashboard() {
         </Box>
         <Box marginTop={1} gap={2}>
           <Box gap={0}>
-            <Text bold color={theme.colors.primary}>[t]</Text>
+            <Text bold color={theme.colors.primary}>[ctrl+t]</Text>
             <Text color={theme.colors.dimmed}> theme</Text>
           </Box>
           <Box gap={0}>
-            <Text bold color={theme.colors.primary}>[q]</Text>
+            <Text bold color={theme.colors.primary}>[ctrl+q]</Text>
             <Text color={theme.colors.dimmed}> quit</Text>
           </Box>
         </Box>

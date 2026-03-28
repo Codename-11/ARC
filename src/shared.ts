@@ -87,6 +87,14 @@ export function getSharedSettings(): Record<string, unknown> | null {
   return readJson(getSharedSettingsPath());
 }
 
+/** Returns the tool that last pushed to the shared layer, if tagged. */
+export function getSharedSourceTool(): string | null {
+  const settings = getSharedSettings();
+  if (!settings) return null;
+  const tool = settings["_sourceTool"];
+  return typeof tool === "string" ? tool : null;
+}
+
 export function getSharedManifest(profileConfigDir: string): SharedManifest | null {
   const manifest = readJson(path.join(profileConfigDir, MANIFEST_FILE));
   if (!manifest) return null;
@@ -238,8 +246,9 @@ export interface SyncOptions {
  */
 export function syncSharedToProfile(
   profileConfigDir: string,
-  opts: SyncOptions = {}
-): void {
+  opts: SyncOptions = {},
+  targetTool?: string
+): { warning?: string } {
   const sharedSettings = getSharedSettings();
   const sharedCommandsDir = getSharedCommandsDir();
   const existingManifest = getSharedManifest(profileConfigDir);
@@ -359,6 +368,16 @@ export function syncSharedToProfile(
     memoryLinked: syncMemoryFlag,
     projectsLinked: syncProjectsFlag,
   } satisfies SharedManifest);
+
+  // Check for cross-tool mismatch
+  const sourceTool = getSharedSourceTool();
+  if (targetTool && sourceTool && targetTool !== sourceTool && syncedMcpKeys.length > 0) {
+    return {
+      warning: `Shared layer was configured for ${sourceTool} — MCP server config may not be compatible with ${targetTool}.`,
+    };
+  }
+
+  return {};
 }
 
 /**
@@ -405,4 +424,75 @@ export function unsyncSharedFromProfile(profileConfigDir: string): void {
 
   const manifestPath = path.join(profileConfigDir, MANIFEST_FILE);
   if (fs.existsSync(manifestPath)) fs.unlinkSync(manifestPath);
+}
+
+// ── Pull: profile → shared layer ──────────────────────────────────────────
+
+export interface PullResult {
+  mcpServers: string[];
+  commands: string[];
+  claudeMd: boolean;
+}
+
+/**
+ * Pull a profile's MCP servers, commands, and CLAUDE.md into the shared layer.
+ * This makes the profile's config available to all other profiles that enable sharing.
+ */
+export function pullProfileToShared(profileConfigDir: string, sourceTool?: string): PullResult {
+  const sharedDir = path.dirname(getSharedSettingsPath());
+  fs.mkdirSync(sharedDir, { recursive: true });
+
+  const result: PullResult = { mcpServers: [], commands: [], claudeMd: false };
+
+  // ── MCP servers from profile settings.json ──
+  const profileSettings = readJson(path.join(profileConfigDir, "settings.json"));
+  if (profileSettings) {
+    const mcpServers = (profileSettings["mcpServers"] ?? {}) as Record<string, unknown>;
+    const keys = Object.keys(mcpServers);
+    if (keys.length > 0) {
+      // Merge into shared settings (preserving any existing non-MCP keys)
+      const sharedSettings = readJson(getSharedSettingsPath()) ?? {};
+      const existing = (sharedSettings["mcpServers"] ?? {}) as Record<string, unknown>;
+      for (const [key, value] of Object.entries(mcpServers)) {
+        existing[key] = value;
+      }
+      sharedSettings["mcpServers"] = existing;
+      if (sourceTool) {
+        sharedSettings["_sourceTool"] = sourceTool;
+      }
+      writeJson(getSharedSettingsPath(), sharedSettings);
+      result.mcpServers = keys;
+    }
+  }
+
+  // ── Commands directory ──
+  const profileCommandsDir = path.join(profileConfigDir, "commands");
+  if (fs.existsSync(profileCommandsDir)) {
+    const commandsDir = getSharedCommandsDir();
+    fs.mkdirSync(commandsDir, { recursive: true });
+    const files = fs.readdirSync(profileCommandsDir).filter((f) => !f.startsWith("."));
+    for (const file of files) {
+      fs.copyFileSync(
+        path.join(profileCommandsDir, file),
+        path.join(commandsDir, file)
+      );
+      result.commands.push(file);
+    }
+  }
+
+  // ── CLAUDE.md ──
+  const profileClaudeMd = path.join(profileConfigDir, "CLAUDE.md");
+  if (fs.existsSync(profileClaudeMd)) {
+    const content = fs.readFileSync(profileClaudeMd, "utf-8").trim();
+    // Strip any existing shared block markers before copying
+    const cleaned = content
+      .replace(new RegExp(`${CLAUDE_MD_START}[\\s\\S]*?${CLAUDE_MD_END}`, "g"), "")
+      .trim();
+    if (cleaned) {
+      fs.writeFileSync(getSharedClaudeMdPath(), cleaned + "\n", "utf-8");
+      result.claudeMd = true;
+    }
+  }
+
+  return result;
 }

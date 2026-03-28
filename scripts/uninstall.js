@@ -136,9 +136,9 @@ function removeGlobalLink() {
       shell: true,
     });
 
-    if (pnpmResult.stdout && pnpmResult.stdout.includes('arccli')) {
+    if (pnpmResult.stdout && pnpmResult.stdout.includes('@axiom-labs/arc-cli')) {
       log('Found pnpm global link, removing...');
-      spawnSync('pnpm', ['unlink', '--global', 'arccli'], { encoding: 'utf-8', shell: true });
+      spawnSync('pnpm', ['unlink', '--global', '@axiom-labs/arc-cli'], { encoding: 'utf-8', shell: true });
       log('Removed pnpm global link', 'success');
       return true;
     }
@@ -152,9 +152,9 @@ function removeGlobalLink() {
       shell: true,
     });
 
-    if (npmResult.stdout && npmResult.stdout.includes('arccli')) {
+    if (npmResult.stdout && npmResult.stdout.includes('@axiom-labs/arc-cli')) {
       log('Found npm global link, removing...');
-      spawnSync('npm', ['uninstall', '-g', 'arccli'], { encoding: 'utf-8', shell: true });
+      spawnSync('npm', ['uninstall', '-g', '@axiom-labs/arc-cli'], { encoding: 'utf-8', shell: true });
       log('Removed npm global link', 'success');
       return true;
     }
@@ -353,9 +353,9 @@ async function main() {
   if (allSuccess) {
     log('ARC has been completely removed from your system!', 'success');
     console.log('\nIf you installed via npm/pnpm globally, you may also want to run:');
-    console.log('  npm uninstall -g arccli');
+    console.log('  npm uninstall -g @axiom-labs/arc-cli');
     console.log('  # or');
-    console.log('  pnpm uninstall -g arccli\n');
+    console.log('  pnpm uninstall -g @axiom-labs/arc-cli\n');
   } else {
     log('Uninstall completed with some warnings (see above)', 'warn');
   }

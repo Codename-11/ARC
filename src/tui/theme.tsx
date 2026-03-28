@@ -28,44 +28,46 @@ export interface Theme {
 }
 
 // ── Theme definitions ──────────────────────────────────────────────────
-
+// Carbon Night — aligned with Rust DarkCarbonNight spec
 export const DARK_THEME: Theme = {
   name: "dark",
   colors: {
-    primary: "#7dd3fc",      // sky-300 — bright cyan-blue
-    secondary: "#c084fc",    // purple-400
-    text: "#e2e8f0",         // slate-200
-    dimmed: "#64748b",       // slate-500
-    border: "#334155",       // slate-700
-    borderFocused: "#7dd3fc",// sky-300 (matches primary)
-    accent: "#4ade80",       // green-400
-    warning: "#fbbf24",      // amber-400
-    error: "#f87171",        // red-400
-    activeBg: "#0f172a",     // slate-900
-    success: "#4ade80",      // green-400
-    bg: "#0f172a",           // slate-900
-    bgPanel: "#1e293b",      // slate-800
-    bgSelected: "#1e3a5f",   // deep blue highlight
+    primary: "#25C2FF",      // bright cyan — main accent
+    secondary: "#B392F0",    // soft lavender
+    text: "#E6EDF3",         // carbon foreground
+    dimmed: "#8B949E",       // carbon text_dim
+    border: "#535558",       // carbon border — visible against dark bg
+    borderFocused: "#6A6D72",// carbon border_focused
+    accent: "#3FB950",       // carbon success green
+    warning: "#D29922",      // carbon warning amber
+    error: "#F85149",        // carbon error red
+    activeBg: "#17202A",     // carbon selection
+    success: "#3FB950",      // carbon success
+    bg: "#0B0D10",           // carbon background
+    bgPanel: "#161B22",      // slightly lighter than bg for panels
+    bgSelected: "#1F2937",   // selection blue-gray
   },
 };
 
+// Photon — aligned with Rust LightPhoton spec
+// Contrast targets: dimmed ≥ 4.5:1 on bg, border visible (≥ 2:1 decorative)
 export const LIGHT_THEME: Theme = {
   name: "light",
   colors: {
-    primary: "#2563eb",      // blue-600
-    secondary: "#7c3aed",    // violet-600
-    text: "#1e293b",         // slate-800
-    dimmed: "#94a3b8",       // slate-400
-    border: "#cbd5e1",       // slate-300
-    borderFocused: "#2563eb",// blue-600
-    accent: "#16a34a",       // green-600
-    warning: "#d97706",      // amber-600
-    error: "#dc2626",        // red-600
-    activeBg: "#dbeafe",     // blue-100
-    success: "#16a34a",      // green-600
-    bg: "#f8fafc",           // slate-50
-    bgPanel: "#f1f5f9",      // slate-100
-    bgSelected: "#dbeafe",   // blue-100
+    primary: "#0969DA",      // photon info blue
+    secondary: "#6E59CB",    // photon keyword purple
+    text: "#1F2328",         // photon foreground
+    dimmed: "#57606A",       // photon text_dim — darkened for ≥ 4.5:1 contrast
+    border: "#B8C0C8",       // photon border — darkened so lines are visible
+    borderFocused: "#8B949E",// photon border_focused
+    accent: "#1A7F37",       // photon success
+    warning: "#9A6700",      // photon warning
+    error: "#CF222E",        // photon error
+    activeBg: "#EAF2FF",     // photon selection
+    success: "#1A7F37",      // photon success
+    bg: "#FAFAFA",           // photon background
+    bgPanel: "#F0F4F8",      // slightly tinted panel bg
+    bgSelected: "#DDF4FF",   // light blue selection
   },
 };
 
@@ -83,14 +85,20 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 interface ThemeProviderProps {
   children: ReactNode;
+  initialTheme?: ThemeName;
+  onThemeChange?: (name: ThemeName) => void;
 }
 
-export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [themeName, setThemeName] = useState<ThemeName>("dark");
+export function ThemeProvider({ children, initialTheme, onThemeChange }: ThemeProviderProps) {
+  const [themeName, setThemeName] = useState<ThemeName>(initialTheme ?? "light");
 
   const toggleTheme = useCallback(() => {
-    setThemeName((prev) => (prev === "dark" ? "light" : "dark"));
-  }, []);
+    setThemeName((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      onThemeChange?.(next);
+      return next;
+    });
+  }, [onThemeChange]);
 
   const theme = themeName === "dark" ? DARK_THEME : LIGHT_THEME;
   const isDark = themeName === "dark";

@@ -14,7 +14,7 @@ Add `<prefix>/bin` (macOS/Linux) or `<prefix>` (Windows) to your `PATH`.
 
 **Local checkout (Windows):**
 
-Use `npm run cli -- <args>` or run `npm run setup:local-bin` to install shims into `~\.local\bin`. The setup command also adds that directory to your user `PATH` if needed.
+Run `pnpm install:local` to build and install shims into `~\.local\bin`. This also adds that directory to your user `PATH` if needed. To remove: `pnpm uninstall:local`.
 
 **Bootstrap install:**
 
@@ -87,13 +87,13 @@ To install the native keyring module, ensure build tools are available and reins
 
 ```bash
 # Windows — install Visual C++ Build Tools, then:
-npm install -g arccli
+npm install -g @axiom-labs/arc-cli
 
 # macOS
-xcode-select --install && npm install -g arccli
+xcode-select --install && npm install -g @axiom-labs/arc-cli
 
 # Linux
-sudo apt install build-essential libsecret-1-dev && npm install -g arccli
+sudo apt install build-essential libsecret-1-dev && npm install -g @axiom-labs/arc-cli
 ```
 
 ---

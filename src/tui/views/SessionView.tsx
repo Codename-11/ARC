@@ -1,10 +1,15 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { exec } from "node:child_process";
+import { useEffect, useState } from "react";
 import { Box, Text, useInput } from "ink";
+import { useScreenSize } from "fullscreen-ink";
 import { Spinner } from "@inkjs/ui";
 import { ImportHint } from "../components/ImportHint.js";
 import { useTheme } from "../theme.js";
 import { loadConfig, saveConfig } from "../../config.js";
+import { buildProfileEnv } from "../../auth.js";
 import { handleLaunch } from "../../commands/launch.js";
+import { markLaunchPending } from "../render.js";
+import { getSharedManifest } from "../../shared.js";
 import type { ProfileEntry } from "../useProfiles.js";
 import type { ViewName } from "../components/Sidebar.js";
 
@@ -16,94 +21,24 @@ interface Props {
   onViewChange: (view: ViewName) => void;
   inputEnabled: boolean;
   onTypingChange: (typing: boolean) => void;
+  onCreateProfile?: () => void;
+  onExitApp?: () => void;
+  activity: ActivityEntry[];
+  onActivityChange: (updater: (current: ActivityEntry[]) => ActivityEntry[]) => void;
 }
 
-interface ActivityEntry {
+export interface ActivityEntry {
   role: string;
   text: string;
   tone?: "default" | "success" | "warning";
 }
 
-function SectionTitle({
-  title,
-  subtitle,
-}: {
-  title: string;
-  subtitle?: string;
-}) {
+function Section({ label }: { label: string }) {
   const { theme } = useTheme();
-
   return (
-    <Box flexDirection="column" marginBottom={1}>
-      <Text bold color={theme.colors.primary}>
-        {title}
-      </Text>
-      {subtitle ? (
-        <Text color={theme.colors.dimmed}>{subtitle}</Text>
-      ) : null}
-    </Box>
-  );
-}
-
-function Panel({
-  title,
-  subtitle,
-  children,
-}: {
-  title: string;
-  subtitle?: string;
-  children: ReactNode;
-}) {
-  const { theme } = useTheme();
-  const { colors } = theme;
-
-  return (
-    <Box
-      flexDirection="column"
-      borderStyle="round"
-      borderColor={colors.border}
-      paddingX={1}
-      paddingY={1}
-      backgroundColor={colors.bgPanel}
-    >
-      <SectionTitle title={title} subtitle={subtitle} />
-      {children}
-    </Box>
-  );
-}
-
-function TranscriptMessage({
-  role,
-  text,
-  tone = "default",
-}: {
-  role: string;
-  text: string;
-  tone?: "default" | "success" | "warning";
-}) {
-  const { theme } = useTheme();
-  const { colors } = theme;
-
-  const roleColor =
-    role === "system"
-      ? colors.secondary
-      : role === "arc"
-        ? colors.primary
-        : colors.text;
-
-  const textColor =
-    tone === "success"
-      ? colors.success
-      : tone === "warning"
-        ? colors.warning
-        : colors.text;
-
-  return (
-    <Box flexDirection="column" marginBottom={1}>
-      <Text color={roleColor} bold>
-        {role}
-      </Text>
-      <Text color={textColor}>{text}</Text>
+    <Box gap={1}>
+      <Text color={theme.colors.dimmed}>{label}</Text>
+      <Text color={theme.colors.border}>{"─".repeat(Math.max(1, 30 - label.length))}</Text>
     </Box>
   );
 }
@@ -117,33 +52,28 @@ function QueueRow({
 }) {
   const { theme } = useTheme();
   const { colors } = theme;
-  const health = profile.credError
-    ? { icon: "!", color: colors.error, label: "check failed" }
+  const status = profile.credError
+    ? { icon: "✖", color: colors.error }
     : profile.credential?.expired
-      ? { icon: "!", color: colors.warning, label: "expired" }
+      ? { icon: "!", color: colors.warning }
       : profile.credential?.authenticated
-        ? { icon: "●", color: colors.success, label: "ready" }
-        : { icon: "○", color: colors.dimmed, label: "setup needed" };
+        ? { icon: "●", color: colors.success }
+        : { icon: "○", color: colors.dimmed };
 
   return (
-    <Box
-      justifyContent="space-between"
-      backgroundColor={selected ? colors.bgSelected : undefined}
-      paddingX={1}
-    >
-      <Box gap={1}>
-        <Text color={selected ? colors.primary : colors.border}>
-          {selected ? ">" : " "}
-        </Text>
-        <Text color={profile.active ? colors.accent : colors.text} bold={profile.active}>
+    <Box backgroundColor={selected ? colors.bgSelected : undefined}>
+      <Text color={selected ? colors.primary : colors.dimmed}>
+        {selected ? " ▸ " : "   "}
+      </Text>
+      <Box width={12}>
+        <Text color={profile.active ? colors.accent : colors.text} bold={profile.active || selected}>
           {profile.name}
         </Text>
+      </Box>
+      <Box width={10}>
         <Text color={colors.dimmed}>{profile.tool}</Text>
       </Box>
-      <Box gap={1}>
-        <Text color={health.color}>{health.icon}</Text>
-        <Text color={health.color}>{health.label}</Text>
-      </Box>
+      <Text color={status.color}>{status.icon}</Text>
     </Box>
   );
 }
@@ -156,12 +86,18 @@ export function SessionView({
   onViewChange,
   inputEnabled,
   onTypingChange,
+  onCreateProfile,
+  onExitApp,
+  activity,
+  onActivityChange: setActivity,
 }: Props) {
   const { theme } = useTheme();
   const { colors } = theme;
+  const { width: screenWidth } = useScreenSize();
+  // Content pane = screen - sidebar(20) - sidebar border(1) - content paddingX(2) - activity prefix(4)
+  const maxLineWidth = Math.max(40, screenWidth - 27);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [composer, setComposer] = useState("");
-  const [activity, setActivity] = useState<ActivityEntry[]>([]);
   const activeProfile = profiles.find((profile) => profile.active) ?? profiles[0];
   const readyProfiles = profiles.filter((profile) => profile.credential?.authenticated);
   const pendingProfiles = profiles.filter((profile) => !profile.credential?.authenticated);
@@ -172,63 +108,6 @@ export function SessionView({
   useEffect(() => {
     setSelectedIndex((current) => Math.min(current, Math.max(0, queue.length - 1)));
   }, [queue.length]);
-
-  const transcript = useMemo<ActivityEntry[]>(() => {
-    if (!activeProfile) {
-      return [
-        {
-          role: "system",
-          text: "No profiles found yet. Create or import one to populate the workspace.",
-          tone: "warning",
-        },
-      ];
-    }
-
-    return [
-      {
-        role: "system",
-        text: `ARC is focused on ${activeProfile.name}. Use this surface for launch, switch, and diagnostics instead of bouncing between static pages.`,
-      },
-      {
-        role: "user",
-        text: `Prepare ${activeProfile.tool} with the ${activeProfile.authType} profile and keep the environment isolated.`,
-      },
-      {
-        role: "arc",
-        text: activeProfile.credential?.authenticated
-          ? `Ready to launch ${activeProfile.name}. Credentials are present and the workspace shell can now center around session history and command entry.`
-          : `Profile ${activeProfile.name} still needs credentials or setup. This is where ARC should surface guided recovery steps next.`,
-        tone: activeProfile.credential?.authenticated ? "success" : "warning",
-      },
-      ...activity,
-    ];
-  }, [activeProfile, activity]);
-
-  const commandSuggestions = useMemo(() => {
-    const items = [
-      { command: "/launch", desc: "Launch the selected or named profile." },
-      { command: "/switch", desc: "Set the selected or named profile active." },
-      { command: "/profiles", desc: "Open the profiles queue view." },
-      { command: "/doctor", desc: "Open diagnostics." },
-      { command: "/settings", desc: "Open settings." },
-      { command: "/clear", desc: "Clear activity from this workspace." },
-    ];
-
-    if (!composer.startsWith("/")) {
-      return items.slice(0, 3);
-    }
-
-    return items.filter((item) => item.command.startsWith(composer.trim()));
-  }, [composer]);
-
-  const recentCommands = useMemo(
-    () =>
-      activity
-        .filter((entry) => entry.role === "user" && entry.text.startsWith("/"))
-        .slice(-3)
-        .reverse(),
-    [activity]
-  );
 
   useEffect(() => {
     onTypingChange(composer.length > 0);
@@ -285,7 +164,8 @@ export function SessionView({
               tone: "success",
             },
           ]);
-          await handleLaunch(selectedProfile.name, []);
+          markLaunchPending();
+          await handleLaunch(selectedProfile.name, [], { beforeSpawn: onExitApp });
           return;
         }
 
@@ -340,7 +220,8 @@ export function SessionView({
             },
           ]);
           setComposer("");
-          await handleLaunch(target.name, []);
+          markLaunchPending();
+          await handleLaunch(target.name, [], { beforeSpawn: onExitApp });
           return;
         }
 
@@ -395,7 +276,7 @@ export function SessionView({
           return;
         }
 
-        if (command === "/profiles" || command === "/doctor" || command === "/settings") {
+        if (command === "/dash" || command === "/profiles" || command === "/doctor" || command === "/settings") {
           const destination = command.slice(1) as ViewName;
           setActivity((current) => [
             ...current,
@@ -423,7 +304,7 @@ export function SessionView({
             },
             {
               role: "arc",
-              text: "Use Ctrl+P for the palette, ? for help, Enter to launch the selected queue item, and /switch to change the active profile.",
+              text: "Ctrl+P for palette, Ctrl+T for theme, Ctrl+Q to quit. Enter launches the selected profile. /switch changes the active profile.",
               tone: "success",
             },
           ]);
@@ -431,16 +312,72 @@ export function SessionView({
           return;
         }
 
+        if (command === "/status") {
+          setActivity((current) => {
+            const lines: ActivityEntry[] = [
+              { role: "user", text: value },
+            ];
+            if (!activeProfile) {
+              lines.push({ role: "arc", text: "No active profile.", tone: "warning" });
+              return [...current, ...lines];
+            }
+            const cfg = loadConfig();
+            const profile = cfg.profiles[activeProfile.name];
+            const authLabel = activeProfile.credential?.authenticated
+              ? "ready" : activeProfile.credential?.expired
+                ? "expired" : "not set";
+            const tierSuffix = activeProfile.credential?.accountTier
+              ? `, ${activeProfile.credential.accountTier}` : "";
+            const flags = profile?.launchArgs?.length
+              ? profile.launchArgs.join(" ")
+              : "none";
+            const manifest = profile ? getSharedManifest(profile.configDir) : null;
+            const sharedLabel = manifest
+              ? `enabled (${manifest.mcpServers.length} MCPs)`
+              : "disabled";
+            const configDir = profile?.configDir ?? "unknown";
+
+            lines.push(
+              { role: "arc", text: `Profile: ${activeProfile.name} (${activeProfile.tool})` },
+              { role: "arc", text: `Auth: ${activeProfile.authType} (${authLabel}${tierSuffix})` },
+              { role: "arc", text: `Flags: ${flags}` },
+              { role: "arc", text: `Shared: ${sharedLabel}` },
+              { role: "arc", text: `Config: ${configDir}` },
+            );
+            return [...current, ...lines];
+          });
+          setComposer("");
+          return;
+        }
+
         if (command === "/create") {
+          setComposer("");
+          if (onCreateProfile) {
+            onCreateProfile();
+          } else {
+            setActivity((current) => [
+              ...current,
+              { role: "user", text: value },
+              { role: "arc", text: "Profile creation is not available.", tone: "warning" },
+            ]);
+          }
+          return;
+        }
+
+        if (command === "/clear") {
+          setActivity(() => []);
+          setComposer("");
+          return;
+        }
+
+        // Unknown /command → show help
+        if (value.startsWith("/")) {
           setActivity((current) => [
             ...current,
-            {
-              role: "user",
-              text: value,
-            },
+            { role: "user", text: value },
             {
               role: "arc",
-              text: "Leave the TUI and run: arc create <name> --tool <tool> --auth-type <type>",
+              text: "Commands: /launch, /switch, /status, /dash, /profiles, /doctor, /settings, /help, /create, /clear. Or type shell commands directly.",
               tone: "warning",
             },
           ]);
@@ -448,25 +385,62 @@ export function SessionView({
           return;
         }
 
-        if (command === "/clear") {
-          setActivity([]);
+        // ── Shell command execution ────────────────────────
+        // Non-slash input → run as shell command with active profile env
+        if (!activeProfile) {
+          setActivity((current) => [
+            ...current,
+            { role: "user", text: value },
+            { role: "arc", text: "No active profile. Create one first.", tone: "warning" },
+          ]);
           setComposer("");
           return;
         }
 
         setActivity((current) => [
           ...current,
-          {
-            role: "user",
-            text: value,
-          },
-          {
-            role: "arc",
-            text: "Commands available today: /launch, /switch, /profiles, /doctor, /settings, /help, /create, /clear.",
-            tone: "warning",
-          },
+          { role: "user", text: value },
+          { role: "arc", text: "Running...", tone: "default" },
         ]);
         setComposer("");
+
+        const config = loadConfig();
+        const profile = config.profiles[activeProfile.name];
+        if (!profile) return;
+
+        const profileEnv = await buildProfileEnv(profile, activeProfile.name);
+        // On Windows, wrap in cmd /c so .cmd/.bat scripts resolve properly.
+        const shellCmd = process.platform === "win32" ? `cmd /c ${value}` : value;
+        exec(shellCmd, {
+          env: { ...process.env, ...profileEnv } as NodeJS.ProcessEnv,
+          timeout: 30_000,
+          maxBuffer: 1024 * 256,
+        }, (_err, stdout, stderr) => {
+          const raw = (stdout || stderr || "").trim();
+          // Strip ANSI escape sequences so they don't corrupt Ink's rendering
+          const clean = raw.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, "");
+          setActivity((current) => {
+            const filtered = current.slice(0, -1);
+            if (clean) {
+              const lineMax = maxLineWidth;
+              const lines = clean.split("\n")
+                .map((l) => l.trimEnd())
+                .filter((l) => l.length > 0)
+                .slice(0, 8)
+                .map((l) => l.length > lineMax ? l.slice(0, lineMax - 3) + "..." : l);
+              const truncated = clean.split("\n").filter((l) => l.trim()).length > 8;
+              return [
+                ...filtered,
+                ...lines.map((line) => ({ role: "shell" as string, text: line, tone: "default" as const })),
+                ...(truncated ? [{ role: "arc" as string, text: `(${clean.split("\n").filter((l) => l.trim()).length - 8} more lines truncated)`, tone: "default" as const }] : []),
+              ];
+            }
+            return [
+              ...filtered,
+              { role: "arc", text: _err ? `Error: ${_err.message}` : "Done (no output).", tone: _err ? "warning" as const : "success" as const },
+            ];
+          });
+        });
         return;
       }
 
@@ -485,161 +459,88 @@ export function SessionView({
     );
   }
 
+  const statusIcon = activeProfile?.credential?.authenticated
+    ? { icon: "●", color: colors.success, label: "ready" }
+    : activeProfile?.credential?.expired
+      ? { icon: "!", color: colors.warning, label: "credentials expired" }
+      : activeProfile
+        ? { icon: "○", color: colors.warning, label: "needs setup" }
+        : { icon: "—", color: colors.dimmed, label: "no active profile" };
+
   return (
-    <Box flexDirection="column" gap={1}>
-      <Box gap={1} justifyContent="space-between">
-        <Box flexDirection="column">
-          <Text color={colors.secondary} bold>
-            Session Workspace
-          </Text>
+    <Box flexDirection="column" flexGrow={1}>
+      {/* Active profile status */}
+      {activeProfile ? (
+        <Box flexDirection="column" marginBottom={1}>
+          <Box gap={2}>
+            <Text color={statusIcon.color}>{statusIcon.icon}</Text>
+            <Text color={colors.text} bold>{activeProfile.name}</Text>
+            <Text color={colors.dimmed}>{activeProfile.tool}</Text>
+            <Text color={colors.dimmed}>{activeProfile.authType}</Text>
+            <Text color={statusIcon.color}>{statusIcon.label}</Text>
+          </Box>
+        </Box>
+      ) : (
+        <Box marginBottom={1}>
+          <Text color={colors.dimmed}>No active profile. Press </Text>
+          <Text color={colors.primary} bold>c</Text>
+          <Text color={colors.dimmed}> to create one.</Text>
+        </Box>
+      )}
+
+      {/* Activity log — grows to fill space */}
+      <Box flexDirection="column" flexGrow={1}>
+        {activity.length > 0 ? (
+          activity.slice(-12).map((entry, index) => {
+            const toneColor =
+              entry.tone === "success" ? colors.success
+              : entry.tone === "warning" ? colors.warning
+              : colors.dimmed;
+
+            const prefix = entry.role === "shell" ? "$" : entry.role === "user" ? ">" : "\u203A";
+
+            return (
+              <Box key={`act-${index}`}>
+                <Box width={4} flexShrink={0}>
+                  <Text color={entry.role === "shell" ? colors.text : toneColor}>{prefix}</Text>
+                </Box>
+                <Text color={entry.role === "shell" ? colors.dimmed : colors.text} wrap="truncate">{entry.text}</Text>
+              </Box>
+            );
+          })
+        ) : (
           <Text color={colors.dimmed}>
-            Shape the shell around launch flow, agent state, and fast switching.
+            Type a /command or shell command. Enter launches the selected profile.
           </Text>
-        </Box>
-        <Box gap={2}>
-          <Box flexDirection="column" alignItems="flex-end">
-            <Text color={colors.dimmed}>Profiles online</Text>
-            <Text color={colors.text} bold>
-              {readyProfiles.length}/{profiles.length}
-            </Text>
-          </Box>
-          <Box flexDirection="column" alignItems="flex-end">
-            <Text color={colors.dimmed}>Active tool</Text>
-            <Text color={colors.text} bold>
-              {activeProfile?.tool ?? "none"}
-            </Text>
-          </Box>
-        </Box>
+        )}
       </Box>
 
-      <Box gap={1}>
-        <Box flexDirection="column" flexGrow={1} gap={1}>
-          <Panel
-            title="Transcript"
-            subtitle="A Code-style center pane for live status, prompts, and launch intent."
-          >
-            {transcript.length > 0 ? (
-              transcript.slice(-6).map((entry, index) => (
-                <TranscriptMessage
-                  key={`${entry.role}-${index}-${entry.text}`}
-                  role={entry.role}
-                  text={entry.text}
-                  tone={entry.tone}
-                />
-              ))
-            ) : (
-              <TranscriptMessage
-                role="system"
-                text="No transcript entries yet."
-                tone="warning"
-              />
-            )}
-          </Panel>
+      {/* Profiles queue */}
+      <Section label="profiles" />
+      <Box flexDirection="column">
+        {queue.length > 0 ? (
+          queue.map((profile, index) => (
+            <QueueRow
+              key={profile.name}
+              profile={profile}
+              selected={index === selectedIndex}
+            />
+          ))
+        ) : (
+          <Text color={colors.dimmed}>  No profiles configured.</Text>
+        )}
+      </Box>
 
-          <Panel
-            title="Composer"
-            subtitle="The footer and input model should eventually behave like a command-first agent shell."
-          >
-            <Box
-              borderStyle="single"
-              borderColor={colors.border}
-              paddingX={1}
-              paddingY={1}
-            >
-              <Text color={composer ? colors.text : colors.dimmed}>
-                {composer ||
-                  (activeProfile
-                    ? `/launch ${activeProfile.name}`
-                    : "Type /profiles or /settings to get started")}
-              </Text>
-            </Box>
-            <Box marginTop={1} gap={2}>
-              {commandSuggestions.map((item) => (
-                <Box key={item.command} flexDirection="column" marginRight={2}>
-                  <Text color={colors.primary}>{item.command}</Text>
-                  <Text color={colors.dimmed}>{item.desc}</Text>
-                </Box>
-              ))}
-            </Box>
-          </Panel>
-        </Box>
-
-        <Box flexDirection="column" width={34} gap={1}>
-          <Panel
-            title="Queue"
-            subtitle="Profiles staged for quick launch and follow-up."
-          >
-            {queue.length > 0 ? (
-              <Box flexDirection="column" gap={0}>
-                {queue.map((profile, index) => (
-                  <QueueRow
-                    key={profile.name}
-                    profile={profile}
-                    selected={index === selectedIndex}
-                  />
-                ))}
-              </Box>
-            ) : (
-              <Text color={colors.dimmed}>No profiles available yet.</Text>
-            )}
-          </Panel>
-
-          <Panel
-            title="Inspector"
-            subtitle="Details for the currently active profile."
-          >
-            {activeProfile ? (
-              <Box flexDirection="column" gap={1}>
-                <Box justifyContent="space-between">
-                  <Text color={colors.dimmed}>Name</Text>
-                  <Text color={colors.text} bold>
-                    {selectedProfile?.name ?? activeProfile.name}
-                  </Text>
-                </Box>
-                <Box justifyContent="space-between">
-                  <Text color={colors.dimmed}>Tool</Text>
-                  <Text color={colors.text}>{selectedProfile?.tool ?? activeProfile.tool}</Text>
-                </Box>
-                <Box justifyContent="space-between">
-                  <Text color={colors.dimmed}>Auth</Text>
-                  <Text color={colors.text}>
-                    {selectedProfile?.authType ?? activeProfile.authType}
-                  </Text>
-                </Box>
-                <Box justifyContent="space-between">
-                  <Text color={colors.dimmed}>State</Text>
-                  <Text
-                    color={
-                      selectedProfile?.credential?.authenticated
-                        ? colors.success
-                        : colors.warning
-                    }
-                  >
-                    {selectedProfile?.credential?.authenticated ? "ready" : "attention needed"}
-                  </Text>
-                </Box>
-                <Box flexDirection="column" marginTop={1}>
-                  <Text color={colors.dimmed}>Next shell steps</Text>
-                  <Text color={colors.text}>Enter: launch selected profile</Text>
-                  <Text color={colors.text}>/switch: make it active</Text>
-                  <Text color={colors.text}>/doctor: open diagnostics</Text>
-                </Box>
-                {recentCommands.length > 0 ? (
-                  <Box flexDirection="column" marginTop={1}>
-                    <Text color={colors.dimmed}>Recent commands</Text>
-                    {recentCommands.map((entry, index) => (
-                      <Text key={`${entry.text}-${index}`} color={colors.text}>
-                        {entry.text}
-                      </Text>
-                    ))}
-                  </Box>
-                ) : null}
-              </Box>
-            ) : (
-              <Text color={colors.dimmed}>Select a profile to inspect it.</Text>
-            )}
-          </Panel>
-        </Box>
+      {/* Command input */}
+      <Section label="command" />
+      <Box>
+        <Text color={colors.primary} bold>{"› "}</Text>
+        <Text color={composer ? colors.text : colors.dimmed}>
+          {composer ||
+            (activeProfile
+              ? `/launch ${activeProfile.name}`
+              : "/help for commands")}
+        </Text>
       </Box>
 
       <ImportHint profiles={profiles} />

@@ -41,7 +41,7 @@ After bootstrap, open a new terminal and run `arc` to open the **TUI dashboard**
 ### npm
 
 ```bash
-npm install -g arccli
+npm install -g @axiom-labs/arc-cli
 arc setup
 ```
 
@@ -66,7 +66,7 @@ curl -fsSL https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/boot
 ### npm install
 
 ```bash
-npm update -g arccli
+npm update -g @axiom-labs/arc-cli
 arc update
 ```
 
@@ -74,11 +74,10 @@ arc update
 
 ```bash
 git pull
-pnpm build             # Shims point at dist/, so a rebuild is all that's needed
-arc update             # Run this if shims or shell integration may have changed
+pnpm install:local     # Rebuild + refresh shims (idempotent)
 ```
 
-> **What `arc update` does:** refreshes the local shims in `~/.local/bin` and rewrites shell integration. It does **not** pull or install new code.
+See [Development](./development.md) for the full local dev workflow.
 
 ## First Profile
 

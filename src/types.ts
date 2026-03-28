@@ -22,13 +22,21 @@ export interface Profile {
   launchArgs?: string[];
 }
 
+export interface ArcSettings {
+  /** Show a confirmation prompt before launching a profile (default: false). */
+  confirmLaunch?: boolean;
+}
+
 export interface ArcConfig {
   version: 1;
   activeProfile: string;
   profiles: Record<string, Profile>;
   /** Display order of profile names. */
   profileOrder?: string[];
+  /** Persisted TUI theme preference. */
+  theme?: "dark" | "light";
+  /** Profile whose config auto-populates the shared layer on sync. */
+  sharedSource?: string;
+  /** User-configurable settings. */
+  settings?: ArcSettings;
 }
-
-/** @deprecated Use ArcConfig */
-export type MulticcConfig = ArcConfig;

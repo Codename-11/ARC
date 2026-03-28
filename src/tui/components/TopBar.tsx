@@ -2,8 +2,7 @@ import { Box, Text } from "ink";
 import { useScreenSize } from "fullscreen-ink";
 import { useTheme } from "../theme.js";
 import type { ProfileEntry } from "../useProfiles.js";
-
-const VERSION = "2.0.0";
+import { VERSION } from "../../version.js";
 
 interface Props {
   activeView: string;
@@ -21,18 +20,20 @@ export function TopBar({ activeView, profiles }: Props) {
     <Box
       width={width}
       justifyContent="space-between"
-      paddingX={2}
+      paddingX={1}
       paddingY={0}
     >
       <Box gap={1} alignItems="center">
-        <Text color={colors.secondary} bold>◆</Text>
+        <Text color={colors.dimmed}>[</Text>
+        <Text color={colors.primary} bold>{">"}</Text>
+        <Text color={colors.dimmed}>]</Text>
         <Text bold color={colors.primary}>ARC</Text>
         <Text color={colors.dimmed}>v{VERSION}</Text>
         <Text color={colors.border}>│</Text>
         <Text color={colors.dimmed}>
-          {activeProfile ? `${activeProfile.name} · ${activeProfile.tool}` : "no active profile"}
+          {activeProfile ? activeProfile.name : "—"}
         </Text>
-        <Text color={colors.border}>│</Text>
+        <Text color={colors.border}>·</Text>
         <Text color={colors.dimmed}>
           {readyCount}/{profiles.length} ready
         </Text>
@@ -41,15 +42,9 @@ export function TopBar({ activeView, profiles }: Props) {
       <Box gap={1} alignItems="center">
         <Text color={colors.dimmed}>{activeView}</Text>
         <Text color={colors.border}>│</Text>
-        <Text color={colors.dimmed}>
-          {isDark ? "◐" : "○"}
-        </Text>
         <Text color={isDark ? colors.text : colors.dimmed}>
-          {isDark ? "dark" : "light"}
+          {isDark ? "◐ carbon" : "○ photon"}
         </Text>
-        <Text color={colors.border}>│</Text>
-        <Text color={colors.dimmed}>t</Text>
-        <Text color={colors.dimmed}> toggle</Text>
       </Box>
     </Box>
   );

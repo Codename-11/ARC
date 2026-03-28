@@ -132,13 +132,16 @@ export async function handleSharedEnable(
 
   saveConfig(config);
 
-  syncSharedToProfile(profile.configDir, {
+  const syncResult = syncSharedToProfile(profile.configDir, {
     claudeMd: opts.claudeMd,
     memory: profile.useSharedMemory,
     projects: profile.useSharedProjects,
-  });
+  }, profile.tool ?? "claude");
 
   success(`Shared layer enabled and synced for profile "${profileName}".`);
+  if (syncResult.warning) {
+    warn(syncResult.warning);
+  }
 }
 
 export async function handleSharedDisable(
@@ -219,11 +222,14 @@ export async function handleSharedSync(opts: {
   }
 
   for (const [profileName, profile] of targets) {
-    syncSharedToProfile(profile.configDir, {
+    const syncResult = syncSharedToProfile(profile.configDir, {
       memory: profile.useSharedMemory,
       projects: profile.useSharedProjects,
-    });
+    }, profile.tool ?? "claude");
     success(`Synced shared layer to "${profileName}".`);
+    if (syncResult.warning) {
+      warn(syncResult.warning);
+    }
   }
 }
 

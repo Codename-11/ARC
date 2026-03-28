@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import { loadConfig } from "./config.js";
 import { info, getBanner, getVersion } from "./display.js";
+import { checkForUpdate } from "./update.js";
 
 export function createProgram(): Command {
   const program = new Command();
@@ -16,22 +17,30 @@ export function createProgram(): Command {
       const config = loadConfig();
       const hasProfiles = Object.keys(config.profiles).length > 0;
 
+      // Launch TUI for interactive terminals (even with no profiles — TUI handles onboarding)
+      if (process.stdout.isTTY && opts.tui !== false) {
+        const { renderDashboard } = await import("./tui/render.js");
+        await renderDashboard();
+        return;
+      }
+
+      // Non-interactive: fall back to CLI onboarding or status
       if (!hasProfiles) {
         const { runOnboarding } = await import("./commands/onboarding.js");
         await runOnboarding();
         return;
       }
 
-      // Launch TUI dashboard when running in an interactive terminal (unless suppressed)
-      if (process.stdout.isTTY && opts.tui !== false) {
-        const { renderDashboard } = await import("./tui/render.js");
-        renderDashboard();
-        return;
-      }
-
-      // Non-TUI fallback: print status
       const { handleStatus } = await import("./commands/status.js");
       await handleStatus();
+
+      // Non-blocking update check for CLI users
+      checkForUpdate().then((update) => {
+        if (update?.updateAvailable) {
+          console.log(`\n  Update available: v${update.current} → v${update.latest}`);
+          console.log(`  Run \x1b[36marc update\x1b[0m to upgrade.\n`);
+        }
+      }).catch(() => {});
     });
 
   // === Quick Commands (most common operations at top level) ===
@@ -120,7 +129,7 @@ export function createProgram(): Command {
     .description("Open the interactive TUI dashboard")
     .action(async () => {
       const { renderDashboard } = await import("./tui/render.js");
-      renderDashboard();
+      await renderDashboard();
     });
 
   // === Lifecycle Commands ===
@@ -266,9 +275,10 @@ Examples:
     .command("delete <name>")
     .alias("rm")
     .description("Delete a profile")
-    .action(async (name: string) => {
+    .option("--force", "Skip confirmation prompt")
+    .action(async (name: string, opts: { force?: boolean }) => {
       const mod = await import("./commands/profile.js");
-      await mod.handleDelete(name);
+      await mod.handleDelete(name, opts);
     });
 
   profile
@@ -281,6 +291,39 @@ Examples:
     .action(async (opts: { name: string; from?: string; tool?: string; force?: boolean }) => {
       const mod = await import("./commands/profile.js");
       await mod.handleImport(opts);
+    });
+
+  profile
+    .command("set-flags <name> <flags...>")
+    .description("Set persistent launch flags for a profile (prepended on every launch)")
+    .addHelpText("after", `
+Examples:
+  $ arc profile set-flags work --dangerously-skip-permissions
+  $ arc profile set-flags work --model sonnet --verbose
+  $ arc profile set-flags work --clear    (remove all flags)
+`)
+    .action(async (name: string, flags: string[]) => {
+      const { loadConfig, saveConfig } = await import("./config.js");
+      const { success, error: showError, info: showInfo } = await import("./display.js");
+
+      const config = loadConfig();
+      const profile = config.profiles[name];
+      if (!profile) {
+        showError(`Profile "${name}" not found.`);
+        process.exit(1);
+      }
+
+      if (flags.length === 1 && flags[0] === "--clear") {
+        profile.launchArgs = undefined;
+        saveConfig(config);
+        success(`Cleared launch flags for "${name}".`);
+        return;
+      }
+
+      profile.launchArgs = flags;
+      saveConfig(config);
+      success(`Launch flags for "${name}": ${flags.join(" ")}`);
+      showInfo("These flags will be prepended on every `arc launch`.");
     });
 
   // === Shared Layer ===
@@ -345,11 +388,211 @@ Examples:
     });
 
   shared
+    .command("source [name]")
+    .description("Set (or clear) a profile as the sync source for the shared layer")
+    .option("--clear", "Remove the sync source")
+    .action(async (name?: string, opts?: { clear?: boolean }) => {
+      const { loadConfig, saveConfig } = await import("./config.js");
+      const { success, error: showError, info: showInfo } = await import("./display.js");
+
+      const config = loadConfig();
+      if (opts?.clear) {
+        config.sharedSource = undefined;
+        saveConfig(config);
+        success("Shared layer sync source cleared.");
+        return;
+      }
+
+      const profileName = name ?? config.activeProfile;
+      if (!config.profiles[profileName]) {
+        showError(`Profile "${profileName}" not found.`);
+        process.exit(1);
+      }
+
+      config.sharedSource = profileName;
+      saveConfig(config);
+      success(`Shared layer sync source set to "${profileName}".`);
+      showInfo("Running `arc shared sync` will auto-pull from this profile first.");
+    });
+
+  shared
+    .command("pull [name]")
+    .description("Pull a profile's MCPs, commands, and CLAUDE.md into the shared layer")
+    .action(async (name?: string) => {
+      const { loadConfig } = await import("./config.js");
+      const { pullProfileToShared } = await import("./shared.js");
+      const { success, error: showError, info: showInfo } = await import("./display.js");
+
+      const config = loadConfig();
+      const profileName = name ?? config.activeProfile;
+      const profile = config.profiles[profileName];
+
+      if (!profile) {
+        showError(`Profile "${profileName}" not found.`);
+        process.exit(1);
+      }
+
+      showInfo(`Pulling config from "${profileName}" into shared layer...`);
+      const result = pullProfileToShared(profile.configDir, profile.tool ?? "claude");
+
+      const parts: string[] = [];
+      if (result.mcpServers.length) parts.push(`${result.mcpServers.length} MCP servers`);
+      if (result.commands.length) parts.push(`${result.commands.length} commands`);
+      if (result.claudeMd) parts.push("CLAUDE.md");
+
+      if (parts.length > 0) {
+        success(`Shared layer updated: ${parts.join(", ")}.`);
+        showInfo("Run `arc shared enable <profile>` on other profiles to sync, or press h in TUI.");
+      } else {
+        showInfo("No MCP servers, commands, or CLAUDE.md found in this profile.");
+      }
+    });
+
+  shared
     .command("show")
     .description("Print the current shared settings.json")
     .action(async () => {
       const mod = await import("./commands/shared.js");
       await mod.handleSharedShow();
+    });
+
+  // === Config / Settings ===
+
+  const configCmd = program
+    .command("config")
+    .description("View or change ARC settings");
+
+  configCmd
+    .command("get [key]")
+    .description("Show a setting value (or all settings if no key)")
+    .action(async (key?: string) => {
+      const { loadConfig } = await import("./config.js");
+      const { info: showInfo } = await import("./display.js");
+      const config = loadConfig();
+      const settings = config.settings ?? {};
+      if (key) {
+        const val = (settings as Record<string, unknown>)[key];
+        showInfo(`${key} = ${val === undefined ? "(not set)" : JSON.stringify(val)}`);
+      } else {
+        showInfo("Settings:");
+        for (const [k, v] of Object.entries(settings)) {
+          console.log(`  ${k} = ${JSON.stringify(v)}`);
+        }
+        if (Object.keys(settings).length === 0) {
+          console.log("  (no settings configured — using defaults)");
+        }
+      }
+    });
+
+  configCmd
+    .command("set <key> <value>")
+    .description("Set a config value (true/false for booleans)")
+    .action(async (key: string, value: string) => {
+      const { loadConfig, saveConfig } = await import("./config.js");
+      const { success } = await import("./display.js");
+      const config = loadConfig();
+      if (!config.settings) config.settings = {};
+
+      // Parse value
+      let parsed: unknown = value;
+      if (value === "true") parsed = true;
+      else if (value === "false") parsed = false;
+      else if (/^\d+$/.test(value)) parsed = Number(value);
+
+      (config.settings as Record<string, unknown>)[key] = parsed;
+      saveConfig(config);
+      success(`${key} = ${JSON.stringify(parsed)}`);
+    });
+
+  // === Credential Hot-Swap (experimental) ===
+
+  const swap = program
+    .command("swap")
+    .description("[experimental] Hot-swap credentials without changing MCPs or settings");
+
+  swap
+    .command("capture <account>")
+    .description("Capture current credentials as a named account snapshot")
+    .option("--tool <tool>", "Agent tool (claude, gemini, codex)", "claude")
+    .action(async (account: string, opts: { tool: string }) => {
+      const { captureAccount } = await import("./swap.js");
+      const { success, error: showError, warn: showWarn } = await import("./display.js");
+      showWarn("[experimental] Credential hot-swap is an experimental feature.");
+      const result = captureAccount(account, opts.tool);
+      if (result.ok) {
+        success(`Captured credentials as "${account}" for ${opts.tool}.`);
+      } else {
+        showError(result.error);
+        process.exit(1);
+      }
+    });
+
+  swap
+    .command("to <account>")
+    .description("Swap to a captured account's credentials")
+    .option("--force", "Skip confirmation prompt")
+    .action(async (account: string, opts: { force?: boolean }) => {
+      const { swapTo } = await import("./swap.js");
+      const { success, error: showError, info: showInfo, warn: showWarn } = await import("./display.js");
+      showWarn("[experimental] Credential hot-swap is an experimental feature.");
+
+      if (!opts.force) {
+        const readline = await import("node:readline");
+        const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+        const answer = await new Promise<string>((resolve) => {
+          rl.question(`  Swap credentials to "${account}"? This modifies your tool's config directory. [y/N] `, resolve);
+        });
+        rl.close();
+        if (answer.toLowerCase() !== "y") {
+          showInfo("Cancelled.");
+          return;
+        }
+      }
+
+      const result = swapTo(account);
+      if (result.ok) {
+        success(`Swapped to "${account}" (${result.tool}). MCPs, settings, and history preserved.`);
+        showInfo("Restart any running agent tool sessions to use the new credentials.");
+      } else {
+        showError(result.error);
+        process.exit(1);
+      }
+    });
+
+  swap
+    .command("list")
+    .alias("ls")
+    .description("List captured account snapshots")
+    .action(async () => {
+      const { listAccounts } = await import("./swap.js");
+      const { info: showInfo } = await import("./display.js");
+      const accounts = listAccounts();
+      if (accounts.length === 0) {
+        showInfo("No account snapshots captured yet. Use `arc swap capture <name>` to start.");
+        return;
+      }
+      console.log();
+      for (const a of accounts) {
+        const marker = a.isActive ? " *" : "  ";
+        console.log(`${marker} ${a.name.padEnd(20)} ${a.tool.padEnd(10)} ${a.isActive ? "(active)" : ""}`);
+      }
+      console.log();
+    });
+
+  swap
+    .command("delete <account>")
+    .alias("rm")
+    .description("Delete a captured account snapshot")
+    .action(async (account: string) => {
+      const { deleteAccount } = await import("./swap.js");
+      const { success, error: showError } = await import("./display.js");
+      const result = deleteAccount(account);
+      if (result.ok) {
+        success(`Deleted account snapshot "${account}".`);
+      } else {
+        showError(result.error);
+        process.exit(1);
+      }
     });
 
   // === Advanced Commands ===

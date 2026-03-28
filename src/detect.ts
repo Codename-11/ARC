@@ -34,7 +34,7 @@ const TOOL_SIGNATURES: Array<{
     tool: "codex",
     dirName: ".codex",
     displayName: "Codex CLI",
-    markerFiles: ["config.json", "settings.json"],
+    markerFiles: ["config.json", "config.toml", "auth.json", "settings.json"],
   },
 ];
 

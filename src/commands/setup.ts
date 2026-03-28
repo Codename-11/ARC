@@ -1,9 +1,12 @@
 import fs from "node:fs";
+import https from "node:https";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { error, info, success, warn, detail, sectionHeader } from "../display.js";
+import { VERSION } from "../version.js";
+import { PACKAGE_NAME } from "../update.js";
 
 type ShellType = "bash" | "zsh" | "fish" | "powershell";
 
@@ -48,8 +51,13 @@ function isBootstrapInstall(): boolean {
   return packageRoot.startsWith(bootstrapRoot);
 }
 
+const isWindows = process.platform === "win32";
+
 function runCommand(cmd: string, args: string[], cwd: string): void {
-  const result = spawnSync(cmd, args, { stdio: "inherit", cwd, shell: true });
+  // On Windows, use cmd /c to resolve .cmd shims without shell:true (avoids DEP0190).
+  const result = isWindows
+    ? spawnSync("cmd", ["/c", cmd, ...args], { stdio: "inherit", cwd })
+    : spawnSync(cmd, args, { stdio: "inherit", cwd });
   if (result.status !== 0) {
     process.exit(result.status ?? 1);
   }
@@ -164,6 +172,61 @@ export async function handleSetup(opts: {
   printNextSteps(shell);
 }
 
+/** Fetch the latest version from the npm registry. Returns null on failure. */
+function fetchLatestVersion(): Promise<string | null> {
+  return new Promise((resolve) => {
+    const req = https.get(
+      `https://registry.npmjs.org/${encodeURIComponent(PACKAGE_NAME)}/latest`,
+      { timeout: 5000 },
+      (res) => {
+        let data = "";
+        res.on("data", (chunk: Buffer) => {
+          data += chunk.toString();
+        });
+        res.on("end", () => {
+          try {
+            const pkg = JSON.parse(data) as { version?: string };
+            resolve(pkg.version ?? null);
+          } catch {
+            resolve(null);
+          }
+        });
+      }
+    );
+    req.on("error", () => resolve(null));
+    req.on("timeout", () => {
+      req.destroy();
+      resolve(null);
+    });
+  });
+}
+
+/** Compare two semver strings. Returns true if remote is newer. */
+function isNewer(local: string, remote: string): boolean {
+  const parseParts = (v: string) => {
+    const [core] = v.split("-");
+    return core.split(".").map(Number);
+  };
+  const l = parseParts(local);
+  const r = parseParts(remote);
+  for (let i = 0; i < 3; i++) {
+    if ((r[i] ?? 0) > (l[i] ?? 0)) return true;
+    if ((r[i] ?? 0) < (l[i] ?? 0)) return false;
+  }
+  // Same core version: stable release is newer than prerelease
+  if (local.includes("-") && !remote.includes("-")) return true;
+  return false;
+}
+
+/** Detect whether ARC was installed via npm global. */
+function isNpmGlobalInstall(): boolean {
+  const packageRoot = getPackageRoot();
+  // npm global installs live under the npm prefix, not in ~/.arc-install or a dev checkout
+  if (isBootstrapInstall()) return false;
+  // Check for node_modules in the path — npm global installs go through node_modules
+  return packageRoot.includes("node_modules");
+}
+
 export async function handleUpdate(opts: {
   shell?: string;
   noShell?: boolean;
@@ -172,15 +235,52 @@ export async function handleUpdate(opts: {
   sectionHeader("Update");
   console.log();
 
+  info(`Current version: ${VERSION}`);
+
   if (isBootstrapInstall()) {
     const packageRoot = getPackageRoot();
     info("Bootstrap install detected — pulling latest code...");
     runCommand("git", ["fetch", "--all", "--prune"], packageRoot);
     runCommand("git", ["reset", "--hard", "origin/master"], packageRoot);
     info("Installing dependencies...");
-    runCommand("npm", ["install"], packageRoot);
+    runCommand("npm", ["install", "--no-fund", "--no-audit"], packageRoot);
+    info("Building...");
+    runCommand("npm", ["run", "build"], packageRoot);
     success("Code updated.");
     console.log();
+  } else {
+    // npm global or dev install — check for newer version on the registry
+    info("Checking for updates...");
+    const latest = await fetchLatestVersion();
+
+    if (latest && isNewer(VERSION, latest)) {
+      info(`Updating ${VERSION} → ${latest}...`);
+      console.log();
+      if (isNpmGlobalInstall()) {
+        try {
+          const npmArgs = ["install", "-g", `${PACKAGE_NAME}@latest`];
+          const result = isWindows
+            ? spawnSync("cmd", ["/c", "npm", ...npmArgs], { stdio: "inherit", timeout: 60_000 })
+            : spawnSync("npm", npmArgs, { stdio: "inherit", timeout: 60_000 });
+          if (result.status === 0) {
+            success(`Updated to v${latest}.`);
+          } else {
+            throw new Error(`npm exited with code ${result.status}`);
+          }
+        } catch {
+          warn("Automatic update failed. Try manually:");
+          detail(`  npm install -g ${PACKAGE_NAME}@latest`);
+        }
+      } else {
+        detail("Update via git:");
+        detail("  git pull && pnpm install && pnpm build");
+      }
+      console.log();
+    } else if (latest) {
+      success(`Already on the latest version (${VERSION}).`);
+    } else {
+      warn("Could not check for updates (network unavailable).");
+    }
   }
 
   info("Refreshing shims and shell integration...");

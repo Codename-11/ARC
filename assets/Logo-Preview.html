@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARC Logo Preview - The Runtime Container</title>
+    <style>
+        :root {
+            --bg-page: #050505;
+            --text-main: #E2E8F0;
+            --text-muted: #94A3B8;
+            --border-color: #1E293B;
+            
+            --photon-bg: #F8FAFC;
+            --photon-surface: #FFFFFF;
+            --photon-text: #0F172A;
+            --photon-border: #E2E8F0;
+            
+            --carbon-bg: #0A0A0B;
+            --carbon-surface: #121214;
+            --carbon-text: #F8FAFC;
+            --carbon-border: #27272A;
+
+            /* Mixed Palette from Dir 1 & Dir 3 */
+            --accent-cyan: #0EA5E9;
+            --accent-amber: #F59E0B;
+            --accent-indigo: #6366F1;
+            --accent-purple: #A855F7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Hero Section */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 6rem 2rem;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle grid background */
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(to right, #1E293B 1px, transparent 1px),
+                linear-gradient(to bottom, #1E293B 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
+        .hero-lockup {
+            width: 100%;
+            max-width: 1100px;
+            z-index: 1;
+        }
+
+        .hero-banner {
+            width: 100%;
+            border-radius: 28px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.32);
+        }
+
+        .hero-concept {
+            margin-top: 2rem;
+            max-width: 760px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 1.125rem;
+            z-index: 1;
+        }
+
+        /* Split View for Themes */
+        .theme-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            flex: 1;
+        }
+
+        .theme-pane {
+            padding: 4rem 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .theme-light {
+            background-color: var(--photon-bg);
+            color: var(--photon-text);
+            border-right: 1px solid var(--border-color);
+        }
+
+        .theme-dark {
+            background-color: var(--carbon-bg);
+            color: var(--carbon-text);
+        }
+
+        .pane-label {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            font-family: 'SF Mono', 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .theme-light .pane-label { color: #64748B; }
+        .theme-dark .pane-label { color: #A1A1AA; }
+
+        /* Context Mockups */
+        .mock-window {
+            width: 100%;
+            max-width: 320px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+            font-family: 'SF Mono', 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            margin-top: 2rem;
+        }
+
+        .theme-light .mock-window { border: 1px solid var(--photon-border); background: var(--photon-surface); }
+        .theme-dark .mock-window { border: 1px solid var(--carbon-border); background: var(--carbon-surface); }
+
+        .mock-titlebar {
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .theme-light .mock-titlebar { border-bottom: 1px solid var(--photon-border); background: #F1F5F9; }
+        .theme-dark .mock-titlebar { border-bottom: 1px solid var(--carbon-border); background: #18181B; }
+
+        .mock-logo {
+            width: 16px;
+            height: 16px;
+        }
+
+        .mock-title { font-weight: 700; letter-spacing: -0.02em; }
+        .mock-content { padding: 2rem 1rem; opacity: 0.6; min-height: 120px; }
+
+        /* Spec & Export Section */
+        .specs-footer {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            background: #000;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .spec-details {
+            padding: 3rem;
+            border-right: 1px solid var(--border-color);
+            font-family: 'SF Mono', 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .spec-details h3 {
+            color: #FFF;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .spec-list {
+            list-style: none;
+            margin-bottom: 2.5rem;
+        }
+
+        .spec-list li { margin-bottom: 0.75rem; display: flex; gap: 1rem; }
+        .spec-list strong { color: var(--text-main); width: 100px; display: inline-block; }
+
+        .color-palette {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .color-swatch-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .color-swatch {
+            width: 48px;
+            height: 48px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .color-name { font-size: 0.7rem; color: #64748B; }
+
+        .code-block {
+            padding: 3rem;
+            position: relative;
+            background: #050505;
+        }
+
+        pre {
+            background: #0A0A0B;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            color: #A1A1AA;
+            font-family: 'SF Mono', 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .btn-copy {
+            position: absolute;
+            top: 4rem;
+            right: 4rem;
+            background: #1E293B;
+            color: #FFF;
+            border: 1px solid #334155;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .btn-copy:hover { background: #334155; border-color: #475569; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-lockup">
+            <img class="hero-banner" src="./arc-hero.svg" alt="ARC hero banner">
+        </div>
+        <p class="hero-concept">
+            <strong>ARC Hero Direction:</strong> Clean terminal-native lockup, bright control accent, and enough structure to feel like a product instead of a placeholder brand drop.
+        </p>
+    </section>
+
+    <!-- Theme Split View -->
+    <section class="theme-split">
+        <!-- Photon Light -->
+        <div class="theme-pane theme-light">
+            <div class="pane-label">Photon Environment</div>
+            
+            <div class="mock-window">
+                <div class="mock-titlebar">
+                    <img class="mock-logo" src="./logo.svg" alt="ARC logo">
+                    <span class="mock-title">ARC SETUP</span>
+                </div>
+                <div class="mock-content">
+                    Connecting profiles...<br>
+                    Authenticating runtime...<br>
+                    <span style="color: var(--accent-cyan); font-weight: bold; opacity: 1;">Ready.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carbon Night -->
+        <div class="theme-pane theme-dark">
+            <div class="pane-label">Carbon Night Environment</div>
+            
+            <div class="mock-window">
+                <div class="mock-titlebar">
+                    <img class="mock-logo" src="./logo.svg" alt="ARC logo">
+                    <span class="mock-title">ARC WORKSPACE</span>
+                </div>
+                <div class="mock-content">
+                    [agent_running]<br>
+                    <span style="opacity: 0.5;">> executing standard routines</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Specs & Export -->
+    <section class="specs-footer">
+        <div class="spec-details">
+            <h3>Technical Specs</h3>
+            <ul class="spec-list">
+                <li><strong>Grid Size</strong> 24x24 px</li>
+                <li><strong>Format</strong> Stroke-Based Vector</li>
+                <li><strong>Stroke</strong> 3px Weight</li>
+                <li><strong>Caps/Joins</strong> Square / Miter</li>
+                <li><strong>Scalability</strong> Excellent (Crisp at 14px)</li>
+            </ul>
+
+            <h3>Mixed Palette Accents</h3>
+            <div class="color-palette">
+                <div class="color-swatch-container">
+                    <div class="color-swatch" style="background: var(--accent-cyan);" title="#0EA5E9"></div>
+                    <span class="color-name">Photon Cyan</span>
+                </div>
+                <div class="color-swatch-container">
+                    <div class="color-swatch" style="background: var(--accent-amber);" title="#F59E0B"></div>
+                    <span class="color-name">Execution Amber</span>
+                </div>
+                <div class="color-swatch-container">
+                    <div class="color-swatch" style="background: var(--accent-indigo);" title="#6366F1"></div>
+                    <span class="color-name">System Indigo</span>
+                </div>
+                <div class="color-swatch-container">
+                    <div class="color-swatch" style="background: var(--accent-purple);" title="#A855F7"></div>
+                    <span class="color-name">Deep Runtime</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="code-block">
+            <button class="btn-copy" onclick="copyCode(this, 'svg-source')">Copy SVG Source</button>
+<pre id="svg-source">
+&lt;svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"&gt;
+  &lt;polyline points="6 4 3 4 3 20 6 20" stroke="#6B7280" /&gt;
+  &lt;polyline points="10 8 15 12 10 16" stroke="#2563EB" /&gt;
+  &lt;polyline points="18 4 21 4 21 20 18 20" stroke="#6B7280" /&gt;
+&lt;/svg&gt;
+</pre>
+        </div>
+    </section>
+
+    <script>
+        function copyCode(btn, elementId) {
+            const el = document.getElementById(elementId);
+            const text = el.innerText.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btn.innerText;
+                btn.innerText = "Copied to Clipboard!";
+                btn.style.background = "#10B981";
+                btn.style.borderColor = "#10B981";
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.background = "#1E293B";
+                    btn.style.borderColor = "#334155";
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

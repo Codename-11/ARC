@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Box, Text } from "ink";
+import { useTheme } from "../theme.js";
 import { detectToolConfigs, type DetectedTool } from "../../detect.js";
 import type { ProfileEntry } from "../useProfiles.js";
 
@@ -8,6 +9,8 @@ interface Props {
 }
 
 export function ImportHint({ profiles }: Props) {
+  const { theme } = useTheme();
+  const { colors } = theme;
   const [unimported, setUnimported] = useState<DetectedTool[]>([]);
 
   useEffect(() => {
@@ -27,14 +30,12 @@ export function ImportHint({ profiles }: Props) {
   return (
     <Box paddingLeft={2} paddingTop={1}>
       <Text>
-        <Text color="yellow">{"💡"} </Text>
-        <Text>
-          Found {names} config{plural ? "s" : ""}. Run{" "}
+        <Text>{"💡"} </Text>
+        <Text color={colors.text}>
+          Found {names} config{plural ? "s" : ""}. Press{" "}
         </Text>
-        <Text bold color="cyan">
-          arc import --all
-        </Text>
-        <Text> to import.</Text>
+        <Text bold color={colors.primary}>c</Text>
+        <Text color={colors.text}> to import.</Text>
       </Text>
     </Box>
   );

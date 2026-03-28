@@ -19,12 +19,15 @@ interface LayoutProps {
   workspaceTyping: boolean;
 }
 
-const SIDEBAR_WIDTH = 24;
+// Sidebar inner width (content + padding). The right border adds 1 more column.
+const SIDEBAR_INNER = 20;
 
 // Map view name to a display label
 const VIEW_LABELS: Record<string, string> = {
+  dash: "Dashboard",
   workspace: "Workspace",
   profiles: "Profiles",
+  about: "Guide",
   settings: "Settings",
   doctor: "Doctor",
 };
@@ -47,85 +50,80 @@ export function Layout({
 
   const viewLabel = VIEW_LABELS[activeView] ?? activeView;
 
+  // Overlay sizing — centered on the full terminal screen
+  const isSmallOverlay = overlayName === "create" || overlayName === "updating";
+  const overlayFraction = isSmallOverlay ? 0.45 : 0.7;
+  const minOverlayWidth = isSmallOverlay ? 44 : 56;
+  const overlayWidth = Math.min(Math.max(minOverlayWidth, Math.floor(width * overlayFraction)), width - 4);
+  const overlayLeft = Math.max(0, Math.floor((width - overlayWidth) / 2));
+
+  // Estimate overlay height per type for vertical centering
+  const estimatedOverlayHeight =
+    overlayName === "help" ? 24
+    : overlayName === "palette" ? 14
+    : overlayName === "create" ? 12
+    : overlayName === "shared-detail" ? 18
+    : overlayName === "profile-info" ? 16
+    : 8;
+  const overlayTop = Math.max(1, Math.floor((height - estimatedOverlayHeight) / 2));
+
   return (
-    // Root fill — backgroundColor paints the terminal canvas dark
     <Box
       flexDirection="column"
       width={width}
       height={height}
       backgroundColor={colors.bg}
-      >
-      <Box backgroundColor={colors.bgPanel}>
+    >
+      {/* Top bar */}
+      <Box>
         <TopBar activeView={viewLabel.toLowerCase()} profiles={profiles} />
       </Box>
-
       <Box>
-        <Text color={colors.border}>{"─".repeat(Math.max(0, width))}</Text>
+        <Text color={colors.border}>{"─".repeat(width)}</Text>
       </Box>
 
-      <Box flexGrow={1} height={Math.max(1, height - 4)}>
+      {/* Main body */}
+      <Box flexGrow={1}>
+        {/* Sidebar */}
         <Box
           flexDirection="column"
-          width={SIDEBAR_WIDTH}
+          width={SIDEBAR_INNER}
+          borderRight
           borderStyle="single"
-          borderColor={focusedPane === "sidebar" ? colors.borderFocused : colors.border}
-          backgroundColor={colors.bgPanel}
+          borderColor={colors.border}
+          borderTop={false}
+          borderBottom={false}
+          borderLeft={false}
         >
           {sidebar}
         </Box>
 
+        {/* Content */}
         <Box
           flexDirection="column"
           flexGrow={1}
-          borderStyle="single"
-          borderColor={focusedPane === "content" ? colors.borderFocused : colors.border}
-          backgroundColor={colors.bgPanel}
-          paddingX={2}
-          paddingY={1}
+          paddingX={1}
         >
-          <Box justifyContent="space-between" marginBottom={1}>
-            <Box gap={2}>
-              <Text bold color={colors.primary}>
-                {viewLabel}
-              </Text>
-              <Text color={colors.border}>
-                {"─".repeat(Math.max(0, width - SIDEBAR_WIDTH - 24))}
-              </Text>
-            </Box>
+          {/* View header */}
+          <Box justifyContent="space-between">
+            <Text bold color={colors.primary}>{viewLabel}</Text>
             <Text color={colors.dimmed}>
-              {focusedPane === "sidebar" ? "nav focus" : "content focus"}
+              {focusedPane === "sidebar" ? "nav" : "content"}
             </Text>
           </Box>
 
-          <Box marginBottom={1}>
-            <Text color={colors.dimmed}>
-              {activeView === "workspace"
-                ? "Workspace shell centered on launch flow and profile state."
-                : activeView === "profiles"
-                  ? "Manage the profile queue and launch targets."
-                  : activeView === "doctor"
-                    ? "Run health checks across configured tools."
-                    : "Inspect config and shell behavior."}
-            </Text>
-          </Box>
-
-          <Box flexDirection="column" flexGrow={1}>
+          {/* View content */}
+          <Box flexDirection="column" flexGrow={1} marginTop={1}>
             {content}
           </Box>
         </Box>
       </Box>
 
+      {/* Footer separator + footer */}
       <Box>
-        <Text color={colors.border}>{"─".repeat(Math.max(0, width))}</Text>
+        <Text color={colors.border}>{"─".repeat(width)}</Text>
       </Box>
-
-      {overlay ? (
-        <Box paddingY={1} justifyContent="center">
-          {overlay}
-        </Box>
-      ) : null}
-
-      <Box backgroundColor={colors.bgPanel}>
+      <Box>
         <Footer
           hasProfiles={hasProfiles}
           activeView={activeView}
@@ -135,6 +133,18 @@ export function Layout({
           workspaceTyping={workspaceTyping}
         />
       </Box>
+
+      {/* Floating overlay — absolute position over content */}
+      {overlay ? (
+        <Box
+          position="absolute"
+          marginLeft={overlayLeft}
+          marginTop={overlayTop}
+          width={overlayWidth}
+        >
+          {overlay}
+        </Box>
+      ) : null}
     </Box>
   );
 }

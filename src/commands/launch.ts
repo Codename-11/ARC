@@ -1,12 +1,16 @@
-import { spawn, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { loadConfig } from "../config.js";
 import { buildProfileEnv } from "../auth.js";
 import { error, info, warn, cmd } from "../display.js";
+import { logAction } from "../log.js";
+
+const isWindows = process.platform === "win32";
 
 /** Check whether a command binary is available on PATH. */
 export function findBinary(name: string): boolean {
-  const command = process.platform === "win32" ? "where" : "which";
-  const result = spawnSync(command, [name], { shell: true, stdio: "ignore" });
+  const result = isWindows
+    ? spawnSync("cmd", ["/c", "where", name], { stdio: "ignore" })
+    : spawnSync("which", [name], { stdio: "ignore" });
   return result.status === 0;
 }
 
@@ -26,7 +30,8 @@ function getInstallHint(tool: string): string {
 
 export async function handleLaunch(
   name: string | undefined,
-  rawArgs: string[]
+  rawArgs: string[],
+  opts?: { beforeSpawn?: () => void | Promise<void> }
 ): Promise<void> {
   const config = loadConfig();
   let profileName: string;
@@ -70,20 +75,54 @@ export async function handleLaunch(
     process.exit(1);
   }
 
-  info(`Launching ${tool} with profile: ${profileName}`);
+  // Prepend persistent launch flags from profile config
+  const allArgs = [...(profile.launchArgs ?? []), ...passthrough];
 
-  const child = spawn(tool, passthrough, {
-    stdio: "inherit",
-    env: { ...process.env, ...profileEnv } as NodeJS.ProcessEnv,
-    shell: true,
-  });
+  // Optional launch confirmation (from settings)
+  const arcConfig = loadConfig();
+  if (arcConfig.settings?.confirmLaunch && !opts?.beforeSpawn) {
+    // CLI-only confirmation (TUI handles its own flow)
+    info(`Profile: ${profileName} (${tool})`);
+    if (allArgs.length > 0) info(`Flags: ${allArgs.join(" ")}`);
+    const readline = await import("node:readline");
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    const answer = await new Promise<string>((resolve) => {
+      rl.question("  Launch? [Y/n] ", resolve);
+    });
+    rl.close();
+    if (answer.toLowerCase() === "n") {
+      info("Cancelled.");
+      return;
+    }
+  }
 
-  child.on("error", (err) => {
-    error(`Failed to launch ${tool}: ${err.message}`);
+  // Allow callers (e.g. TUI) to tear down before we take over stdio
+  if (opts?.beforeSpawn) {
+    await opts.beforeSpawn();
+  }
+
+  logAction("launch", `${profileName} (${tool})`);
+  const flagStr = allArgs.length > 0 ? ` [${allArgs.join(" ")}]` : "";
+  info(`Launching ${tool} with profile: ${profileName}${flagStr}`);
+
+  // Use spawnSync with stdio:"inherit" — the parent blocks completely and
+  // the child process owns the terminal.  No stdin competition, no async
+  // race conditions, no DEP0190 warning.
+  // On Windows, tools are often .cmd shims that need `cmd /c` to resolve.
+  const result = isWindows
+    ? spawnSync("cmd", ["/c", tool, ...allArgs], {
+        stdio: "inherit",
+        env: { ...process.env, ...profileEnv } as NodeJS.ProcessEnv,
+      })
+    : spawnSync(tool, allArgs, {
+        stdio: "inherit",
+        env: { ...process.env, ...profileEnv } as NodeJS.ProcessEnv,
+      });
+
+  if (result.error) {
+    error(`Failed to launch ${tool}: ${result.error.message}`);
     process.exit(1);
-  });
+  }
 
-  child.on("close", (code) => {
-    process.exit(code ?? 0);
-  });
+  process.exit(result.status ?? 0);
 }

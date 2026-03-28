@@ -15,10 +15,9 @@ export function Overlay({ title, subtitle, children }: Props) {
   return (
     <Box
       flexDirection="column"
-      alignSelf="center"
-      width={72}
+      width="100%"
       borderStyle="round"
-      borderColor={colors.borderFocused}
+      borderColor={colors.primary}
       backgroundColor={colors.bgPanel}
       paddingX={2}
       paddingY={1}

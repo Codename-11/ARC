@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { loadConfig } from "../config.js";
 import { getCredentialStatus, type CredentialStatus } from "../auth.js";
+import { getSharedManifest } from "../shared.js";
 import type { ArcConfig, Profile } from "../types.js";
 
 export interface ProfileEntry {
@@ -11,6 +12,8 @@ export interface ProfileEntry {
   description?: string;
   credential?: CredentialStatus;
   credError?: boolean;
+  sharedEnabled?: boolean;
+  launchArgs?: string[];
 }
 
 export interface ProfilesState {
@@ -51,6 +54,7 @@ export function useProfiles(): ProfilesState {
           credError = true;
         }
 
+        const manifest = getSharedManifest(profile.configDir);
         entries.push({
           name,
           active: name === freshConfig.activeProfile,
@@ -59,6 +63,8 @@ export function useProfiles(): ProfilesState {
           description: profile.description,
           credential,
           credError,
+          sharedEnabled: manifest !== null,
+          launchArgs: profile.launchArgs,
         });
       }
 

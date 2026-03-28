@@ -5,55 +5,40 @@ import type { ProfileEntry } from "../useProfiles.js";
 interface Props {
   profiles: ProfileEntry[];
   selectedIndex: number;
+  sharedSource?: string;
 }
+
+const STATUS_WIDTH = 10;
 
 function StatusBadge({ entry }: { entry: ProfileEntry }) {
   const { theme } = useTheme();
   const { colors } = theme;
 
   if (entry.credError) {
-    return (
-      <Box>
-        <Text color={colors.error}>✖ </Text>
-        <Text color={colors.error}>error</Text>
-      </Box>
-    );
+    return <Box width={STATUS_WIDTH}><Text color={colors.error}>{"\u2716"} error</Text></Box>;
   }
   if (!entry.credential) {
-    return <Text color={colors.dimmed}>· · ·</Text>;
+    return <Box width={STATUS_WIDTH}><Text color={colors.dimmed}>{"\u00B7 \u00B7 \u00B7"}</Text></Box>;
   }
   if (entry.credential.expired) {
-    return (
-      <Box>
-        <Text color={colors.warning}>⚠ </Text>
-        <Text color={colors.warning}>expired</Text>
-      </Box>
-    );
+    return <Box width={STATUS_WIDTH}><Text color={colors.warning}>{"\u26A0"} expired</Text></Box>;
   }
   if (entry.credential.authenticated) {
-    return (
-      <Box>
-        <Text color={colors.success}>✔ </Text>
-        <Text color={colors.success}>ready</Text>
-      </Box>
-    );
+    return <Box width={STATUS_WIDTH}><Text color={colors.success}>{"\u2714"} ready</Text></Box>;
   }
-  return (
-    <Box>
-      <Text color={colors.error}>✖ </Text>
-      <Text color={colors.error}>not set</Text>
-    </Box>
-  );
+  return <Box width={STATUS_WIDTH}><Text color={colors.error}>{"\u2716"} not set</Text></Box>;
 }
 
 function ProfileRow({
   entry,
   selected,
   colWidths,
+  isSyncSource,
 }: {
   entry: ProfileEntry;
   selected: boolean;
   colWidths: number[];
+  isSyncSource: boolean;
 }) {
   const { theme } = useTheme();
   const { colors } = theme;
@@ -61,21 +46,23 @@ function ProfileRow({
   const isActive = entry.active;
   const bg = selected ? colors.bgSelected : undefined;
 
-  return (
-    <Box gap={0} backgroundColor={bg} paddingX={1}>
-      {/* Selection cursor */}
-      <Text color={selected ? colors.primary : colors.border}>
-        {selected ? "❯ " : "  "}
-      </Text>
+  // Prefix: cursor(2) + dot(1) + space(1) = 4 chars
+  const PREFIX_WIDTH = 4;
 
-      {/* Active/inactive dot */}
-      <Text color={isActive ? colors.accent : colors.dimmed}>
-        {isActive ? "●" : "○"}
-      </Text>
-      <Text>{" "}</Text>
+  return (
+    <Box backgroundColor={bg} paddingX={1}>
+      {/* Cursor + dot prefix */}
+      <Box width={PREFIX_WIDTH} flexShrink={0}>
+        <Text color={selected ? colors.primary : colors.border}>
+          {selected ? "\u276F " : "  "}
+        </Text>
+        <Text color={isActive ? colors.accent : colors.dimmed}>
+          {isActive ? "\u25CF" : "\u25CB"}
+        </Text>
+      </Box>
 
       {/* Name */}
-      <Box width={colWidths[0] + 2}>
+      <Box width={colWidths[0] + 2} flexShrink={0}>
         <Text
           color={selected ? colors.text : isActive ? colors.text : colors.dimmed}
           bold={isActive || selected}
@@ -84,27 +71,46 @@ function ProfileRow({
         </Text>
       </Box>
 
-      {/* Tool */}
-      <Box width={colWidths[1] + 2}>
-        <Text color={selected ? colors.secondary : colors.dimmed}>
+      {/* Tool (always colored by tool type) */}
+      <Box width={colWidths[1] + 2} flexShrink={0}>
+        <Text color={
+          entry.tool === "claude" ? "#4A90D9"
+          : entry.tool === "gemini" ? "#34A853"
+          : entry.tool === "codex" ? "#F59E0B"
+          : colors.secondary
+        }>
           {entry.tool}
         </Text>
       </Box>
 
       {/* Auth type */}
-      <Box width={colWidths[2] + 2}>
-        <Text color={colors.dimmed}>
-          {entry.authType}
-        </Text>
+      <Box width={colWidths[2] + 2} flexShrink={0}>
+        <Text color={colors.dimmed}>{entry.authType}</Text>
       </Box>
 
       {/* Status */}
       <StatusBadge entry={entry} />
+
+      {/* Shared + source indicator */}
+      <Box width={4} flexShrink={0}>
+        {isSyncSource ? (
+          <Text color={colors.primary}>{"\u2605"} </Text>
+        ) : entry.sharedEnabled ? (
+          <Text color={colors.dimmed}>{"\u29C9"} </Text>
+        ) : (
+          <Text>  </Text>
+        )}
+      </Box>
+
+      {/* Launch flags */}
+      <Text color={entry.launchArgs?.length ? colors.dimmed : colors.border} wrap="truncate">
+        {entry.launchArgs?.length ? entry.launchArgs.join(" ") : "\u2013"}
+      </Text>
     </Box>
   );
 }
 
-export function ProfileList({ profiles, selectedIndex }: Props) {
+export function ProfileList({ profiles, selectedIndex, sharedSource }: Props) {
   const { theme } = useTheme();
   const { colors } = theme;
 
@@ -128,29 +134,25 @@ export function ProfileList({ profiles, selectedIndex }: Props) {
     Math.max(4, ...profiles.map((p) => p.authType.length)),
   ];
 
+  const PREFIX_WIDTH = 4;
+  const totalWidth = PREFIX_WIDTH + (colWidths[0] + 2) + (colWidths[1] + 2) + (colWidths[2] + 2) + STATUS_WIDTH + 4;
+
   return (
     <Box flexDirection="column">
-      {/* Column headers */}
-      <Box gap={0} paddingX={1} marginBottom={1}>
-        <Text color={colors.border}>{"  "}</Text>
-        <Text color={colors.border}>{"  "}</Text>
-        <Box width={colWidths[0] + 2}>
-          <Text color={colors.dimmed} bold>NAME</Text>
-        </Box>
-        <Box width={colWidths[1] + 2}>
-          <Text color={colors.dimmed} bold>TOOL</Text>
-        </Box>
-        <Box width={colWidths[2] + 2}>
-          <Text color={colors.dimmed} bold>AUTH</Text>
-        </Box>
-        <Text color={colors.dimmed} bold>STATUS</Text>
+      {/* Column headers — matches row layout exactly */}
+      <Box paddingX={1}>
+        <Box width={PREFIX_WIDTH} flexShrink={0}><Text> </Text></Box>
+        <Box width={colWidths[0] + 2} flexShrink={0}><Text color={colors.dimmed} bold>NAME</Text></Box>
+        <Box width={colWidths[1] + 2} flexShrink={0}><Text color={colors.dimmed} bold>TOOL</Text></Box>
+        <Box width={colWidths[2] + 2} flexShrink={0}><Text color={colors.dimmed} bold>AUTH</Text></Box>
+        <Box width={STATUS_WIDTH} flexShrink={0}><Text color={colors.dimmed} bold>STATUS</Text></Box>
+        <Box width={4} flexShrink={0}><Text color={colors.dimmed} bold>SYNC</Text></Box>
+        <Text color={colors.dimmed} bold>FLAGS</Text>
       </Box>
 
-      {/* Header underline */}
-      <Box paddingX={1} marginBottom={1}>
-        <Text color={colors.border}>
-          {"─".repeat(6 + colWidths[0] + colWidths[1] + colWidths[2] + 18)}
-        </Text>
+      {/* Separator */}
+      <Box paddingX={1}>
+        <Text color={colors.border}>{"\u2500".repeat(totalWidth)}</Text>
       </Box>
 
       {profiles.map((entry, i) => (
@@ -159,6 +161,7 @@ export function ProfileList({ profiles, selectedIndex }: Props) {
           entry={entry}
           selected={i === selectedIndex}
           colWidths={colWidths}
+          isSyncSource={entry.name === sharedSource}
         />
       ))}
     </Box>

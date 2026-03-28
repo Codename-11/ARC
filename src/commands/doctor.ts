@@ -57,15 +57,18 @@ function checkConfigFile(): boolean {
 }
 
 function checkPath(): void {
-  const localBin = path.join(os.homedir(), ".local", "bin");
+  const localBin =
+    process.env["ARC_LOCAL_BIN_DIR"] ||
+    path.join(os.homedir(), ".local", "bin");
   const envPath = process.env["PATH"] ?? "";
   const separator = process.platform === "win32" ? ";" : ":";
   const dirs = envPath.split(separator);
+  const shortBin = localBin.replace(os.homedir(), "~");
 
   if (dirs.some((d) => path.normalize(d) === path.normalize(localBin))) {
-    check("PATH includes ~/.local/bin");
+    check(`PATH includes ${shortBin}`);
   } else {
-    warning("~/.local/bin is not on PATH");
+    warning(`${shortBin} is not on PATH`);
   }
 }
 
@@ -223,11 +226,27 @@ async function checkProfiles(): Promise<void> {
 
 // ── Main Handler ────────────────────────────────────
 
+function checkNodeVersion(): void {
+  const version = process.version.replace(/^v/, "");
+  const major = parseInt(version.split(".")[0], 10);
+
+  if (major >= 24) {
+    warning(
+      `Node.js ${process.version} — some third-party tools may show DEP0190 warnings`
+    );
+  } else if (major >= 18) {
+    check(`Node.js ${process.version}`);
+  } else {
+    cross(`Node.js ${process.version} — ARC requires Node.js >= 18`);
+  }
+}
+
 export async function handleDoctor(): Promise<void> {
   console.log();
   sectionHeader("ARC Doctor");
   console.log();
 
+  checkNodeVersion();
   checkConfigFile();
   checkPath();
   checkShellIntegration();

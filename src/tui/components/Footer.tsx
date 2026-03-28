@@ -1,6 +1,7 @@
 import { Box, Text } from "ink";
 import { useScreenSize } from "fullscreen-ink";
 import { useTheme } from "../theme.js";
+import { VERSION } from "../../version.js";
 
 interface Props {
   hasProfiles: boolean;
@@ -66,14 +67,16 @@ export function Footer({
             <KeyHint label="↑↓" desc={mode} />
             <KeyHint label="tab" desc="focus" />
             <KeyHint label="⏎" desc={activeView === "profiles" ? "launch" : "run"} />
-            {activeView === "profiles" && (
+            {activeView === "profiles" && focusedPane === "content" && (
               <>
                 <KeyHint label="s" desc="switch" />
                 <KeyHint label="d" desc="delete" />
+                <KeyHint label="c" desc="create" />
               </>
             )}
-            {activeView === "workspace" && <KeyHint label="/" desc="command" />}
-            <KeyHint label="c" desc="create" />
+            {activeView === "workspace" && focusedPane === "content" && (
+              <KeyHint label="/" desc="command" />
+            )}
           </>
         ) : (
           <>
@@ -91,14 +94,21 @@ export function Footer({
             <KeyHint label="enter" desc="submit" />
             <KeyHint label="esc" desc="clear" />
           </>
-        ) : (
+        ) : focusedPane === "sidebar" ? (
           <>
             <KeyHint label="ctrl+p" desc="palette" />
             <KeyHint label="?" desc="help" />
-            <KeyHint label="t" desc="theme" />
+            <KeyHint label="c" desc="create" />
             <KeyHint label="q" desc="quit" />
           </>
+        ) : (
+          <>
+            <KeyHint label="ctrl+p" desc="palette" />
+            <KeyHint label="ctrl+t" desc="theme" />
+            <KeyHint label="ctrl+q" desc="quit" />
+          </>
         )}
+        <Text color={theme.colors.dimmed}>v{VERSION}</Text>
       </Box>
     </Box>
   );

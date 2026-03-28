@@ -26,19 +26,19 @@ jobs:
         run: |
           TAG_VERSION="${{ steps.version.outputs.version }}"
           PKG_VERSION=$(node -p "require('./package.json').version")
-          DISPLAY_VERSION=$(grep -oP 'const VERSION = "\K[^"]+' src/display.ts)
+          SRC_VERSION=$(grep -oP 'export const VERSION = "\K[^"]+' src/version.ts)
 
           echo "Tag version: $TAG_VERSION"
           echo "package.json version: $PKG_VERSION"
-          echo "display.ts version: $DISPLAY_VERSION"
+          echo "src/version.ts version: $SRC_VERSION"
 
           if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
             echo "::error::Tag version ($TAG_VERSION) does not match package.json ($PKG_VERSION)"
             exit 1
           fi
 
-          if [ "$TAG_VERSION" != "$DISPLAY_VERSION" ]; then
-            echo "::error::Tag version ($TAG_VERSION) does not match display.ts ($DISPLAY_VERSION)"
+          if [ "$TAG_VERSION" != "$SRC_VERSION" ]; then
+            echo "::error::Tag version ($TAG_VERSION) does not match src/version.ts ($SRC_VERSION)"
             exit 1
           fi
 
@@ -87,6 +87,8 @@ jobs:
 
       - name: Publish to npm
         run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   github-release:
     name: Create GitHub Release
@@ -99,14 +101,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: v${{ needs.validate.outputs.version }}
-          body: |
-            ## Install
-
-            ```bash
-            npm install -g arccli
-            ```
-
-            ---
-
-            **Full Changelog**: https://github.com/Codename-11/ARC/compare/v${{ needs.validate.outputs.version }}...master
+          body_path: RELEASE_NOTES.md
           prerelease: ${{ contains(needs.validate.outputs.version, '-') }}
