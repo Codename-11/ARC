@@ -4,7 +4,7 @@ Thanks for your interest in contributing to ARC! This document covers the basics
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) >= 18
+- [Node.js](https://nodejs.org/) >= 20
 - [pnpm](https://pnpm.io/) (any recent version; the repo pins via `packageManager`)
 
 ## Setup

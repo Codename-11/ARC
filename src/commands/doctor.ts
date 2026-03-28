@@ -234,10 +234,10 @@ function checkNodeVersion(): void {
     warning(
       `Node.js ${process.version} — some third-party tools may show DEP0190 warnings`
     );
-  } else if (major >= 18) {
+  } else if (major >= 20) {
     check(`Node.js ${process.version}`);
   } else {
-    cross(`Node.js ${process.version} — ARC requires Node.js >= 18`);
+    cross(`Node.js ${process.version} — ARC requires Node.js >= 20`);
   }
 }
 

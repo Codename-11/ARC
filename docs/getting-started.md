@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- **Node.js 18+**
+- **Node.js 20+**
 - **An agent tool** — e.g. `npm install -g @anthropic-ai/claude-code`
 - **Build tools** for the native keyring module (optional — falls back to plaintext if absent):
   - **Windows** — Visual C++ Build Tools

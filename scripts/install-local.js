@@ -66,8 +66,8 @@ console.log();
 step("Checking Node.js...");
 const nodeVersion = process.version.replace(/^v/, "");
 const nodeMajor = parseInt(nodeVersion.split(".")[0], 10);
-if (nodeMajor < 18) {
-  fail(`Node.js >= 18 required (found v${nodeVersion})`);
+if (nodeMajor < 20) {
+  fail(`Node.js >= 20 required (found v${nodeVersion})`);
   process.exit(1);
 }
 ok(`v${nodeVersion}`);
