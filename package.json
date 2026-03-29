@@ -19,6 +19,8 @@
     "dev:watch": "tsup --watch",
     "cli": "node ./dist/index.js",
     "cli:dev": "tsx src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "postinstall": "node scripts/postinstall.js",
     "prepublishOnly": "pnpm typecheck && pnpm build",
@@ -79,9 +81,11 @@
   "devDependencies": {
     "@types/node": "^22",
     "@types/react": "^19.2.14",
+    "ink-testing-library": "^4.0.0",
     "tsup": "^8",
     "tsx": "^4",
-    "typescript": "^5.7"
+    "typescript": "^5.7",
+    "vitest": "^4.1.2"
   },
   "optionalDependencies": {
     "@inquirer/prompts": "^7",
