@@ -63,5 +63,6 @@ Tracking file for planned features, enhancements, and ideas. Checked items are s
 
 ## Infra / Chores
 
+- [x] E2E + integration testing (vitest, ink-testing-library) — CLI spawn tests, TUI smoke + interactive flow tests, profile CRUD, shared layer sync
+- [x] CI: run `pnpm typecheck`, `pnpm build`, and `pnpm test` on PRs (ubuntu + windows matrix)
 - [ ] Add `.github/dependabot.yml` for automated dependency updates
-- [ ] CI: run `pnpm typecheck` and `pnpm build` on PRs
