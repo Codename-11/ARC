@@ -1,6 +1,6 @@
 # DEVLOG.md — ARC Development Log
 
-**Last updated:** 2026-04-03
+**Last updated:** 2026-04-03 (all 25 spec phases complete)
 
 ---
 
@@ -166,12 +166,26 @@ Mapping commits since 2026-03-28 to spec phases:
 
 ---
 
-## What's NOT Built Yet (Spec Phases Remaining)
+### Phase 12: Web Dashboard (DONE)
+- `packages/dashboard/` — raw `node:http` server, no Express dependency
+- 10 REST API endpoints (overview, sessions, traces, risk, tasks, skills, memory, agents, factory, health)
+- WebSocket server (RFC 6455) for real-time event push
+- Nothing-designed frontend: Doto/Space Grotesk/Space Mono, OLED dark + warm light
+- 9 modular view components (overview, sessions, traces, risk, tasks, skills, memory, agents, factory)
+- Segmented progress bars, stat rows, tag system, phase indicators
+- SPA router, API client, WS auto-reconnect, dark/light toggle
 
-| Phase | What | Priority | Status |
-|---|---|---|---|
-| **12** | Web dashboard (Express + WebSocket) | P2 | Not started |
-| **13** | OpenTelemetry integration | P2 | Not started |
+### Phase 13: OpenTelemetry Integration (DONE)
+- `TelemetryProvider` — span lifecycle, trace IDs, sample rate, exporter dispatch
+- Span helpers: session, preflight, hook, agent execution, tool use, postflight, circuit breaker
+- `ConsoleExporter`, `JsonFileExporter` (JSONL at `~/.arc/traces/`), `OtlpExporter` (stub)
+- All spans use `arc.*` attribute namespace per spec
+
+---
+
+## All Spec Phases Complete
+
+Every phase (1–25) from SPEC.md v2.0 is now implemented. Remaining work is integration wiring and polish.
 
 **Deferred to v2:** A2A protocol, prompt routing, agent personas/buddy system, S3 sync provider.
 
