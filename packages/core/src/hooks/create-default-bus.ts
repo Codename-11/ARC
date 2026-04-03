@@ -6,6 +6,8 @@ import { riskDetectionHook } from "./risk-detection.js";
 import { interagentRoutingHook } from "./interagent-routing.js";
 import { createAttemptTracker } from "./attempt-tracker.js";
 import { createAuditScoreHook } from "./audit-score.js";
+import { createSupervisionGateHook } from "./supervision-gate.js";
+import { createPostVerifyHook } from "./post-verify.js";
 
 export interface DefaultPipeline {
   bus: HookBus;
@@ -24,6 +26,8 @@ export interface DefaultPipeline {
  *  10. risk-detection       (priority 10)  — classifies 5-tier risk
  *  20. attempt-tracker      (priority 20)  — counts retries per session+turn
  *  90. audit-score          (priority 90)  — deterministic completion audit
+ *  92. supervision-gate     (priority 92)  — ALLOW/BLOCK review of substantive output
+ *  95. post-verify          (priority 95)  — health polling after service operations
  */
 export function createDefaultPipeline(
   hookConfigs?: Record<string, HookConfig>,
@@ -36,6 +40,8 @@ export function createDefaultPipeline(
   bus.register(riskDetectionHook, hookConfigs?.["risk-detection"]);
   bus.register(createAttemptTracker(stateStore), hookConfigs?.["attempt-tracker"]);
   bus.register(createAuditScoreHook(stateStore), hookConfigs?.["audit-score"]);
+  bus.register(createSupervisionGateHook({ stateStore }), hookConfigs?.["supervision-gate"]);
+  bus.register(createPostVerifyHook(), hookConfigs?.["post-verify"]);
 
   return { bus, stateStore };
 }

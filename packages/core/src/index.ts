@@ -62,6 +62,8 @@ export {
   createSupervisionGateHook,
   isSubstantive,
   parseGateResponse,
+  createPostVerifyHook,
+  detectServiceOperation,
 } from "./hooks/index.js";
 export type {
   HookEvent,
@@ -80,6 +82,8 @@ export type {
   RunWithRetryResult,
   GateReviewContext,
   SupervisionGateOptions,
+  PostVerifyOptions,
+  HealthCheckResult,
 } from "./hooks/index.js";
 
 // shared.ts wrappers (convenience layer over shared-layer + shared-fs)

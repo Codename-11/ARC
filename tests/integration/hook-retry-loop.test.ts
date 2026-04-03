@@ -384,7 +384,9 @@ describe("createDefaultPipeline()", () => {
     expect(names).toContain("risk-detection");
     expect(names).toContain("attempt-tracker");
     expect(names).toContain("audit-score");
-    expect(hooks.length).toBe(5);
+    expect(names).toContain("supervision-gate");
+    expect(names).toContain("post-verify");
+    expect(hooks.length).toBe(7);
 
     // Priority ordering
     const priorities = hooks.map((h) => h.priority);
@@ -397,7 +399,7 @@ describe("createDefaultPipeline()", () => {
       "audit-score": { enabled: false, timeout: 1000 },
     });
     const hooks = pipeline.bus.list();
-    expect(hooks.length).toBe(5); // still registered, just config'd
+    expect(hooks.length).toBe(7); // still registered, just config'd
   });
 
   it("stateStore is shared between attempt-tracker and audit-score hooks", async () => {

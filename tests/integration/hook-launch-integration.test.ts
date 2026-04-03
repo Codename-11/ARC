@@ -48,7 +48,7 @@ describe("Hook Launch Integration", () => {
       const bus = createDefaultHookBus();
       const hooks = bus.list();
 
-      expect(hooks).toHaveLength(5);
+      expect(hooks).toHaveLength(7);
       expect(hooks[0].name).toBe("source-classify");
       expect(hooks[0].priority).toBe(1);
       expect(hooks[1].name).toBe("interagent-routing");
@@ -59,6 +59,10 @@ describe("Hook Launch Integration", () => {
       expect(hooks[3].priority).toBe(20);
       expect(hooks[4].name).toBe("audit-score");
       expect(hooks[4].priority).toBe(90);
+      expect(hooks[5].name).toBe("supervision-gate");
+      expect(hooks[5].priority).toBe(92);
+      expect(hooks[6].name).toBe("post-verify");
+      expect(hooks[6].priority).toBe(95);
     });
 
     it("applies per-hook config when provided", () => {
@@ -70,7 +74,7 @@ describe("Hook Launch Integration", () => {
       const hooks = bus.list();
 
       // Both hooks are registered — the bus stores config separately
-      expect(hooks).toHaveLength(5);
+      expect(hooks).toHaveLength(7);
     });
 
     it("returns a new bus instance each call", () => {

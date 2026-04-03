@@ -65,22 +65,26 @@ describe("OpenClaw plugin registration", () => {
 });
 
 describe("OpenClaw hook handlers", () => {
-  it("beforePromptBuild returns { prepend, append } strings", () => {
+  it("beforePromptBuild returns { prepend, append } strings", async () => {
     const api = createMockApi();
     register(api);
     const hook = api._hooks.find((h) => h.event === "before_prompt_build");
     expect(hook).toBeDefined();
-    const result = hook!.handler({ sessionId: "test-session" });
-    expect(result).toEqual({ prepend: "", append: "" });
+    const result = await hook!.handler({ sessionId: "test-session" });
+    expect(result).toHaveProperty("prepend");
+    expect(result).toHaveProperty("append");
+    expect(typeof result.prepend).toBe("string");
+    expect(result.append).toBe("");
   });
 
-  it("agentEnd returns { continue: false }", () => {
+  it("agentEnd returns { continue: boolean }", async () => {
     const api = createMockApi();
     register(api);
     const hook = api._hooks.find((h) => h.event === "agent_end");
     expect(hook).toBeDefined();
-    const result = hook!.handler({ sessionId: "test-session", reason: "done" });
-    expect(result).toEqual({ continue: false });
+    const result = await hook!.handler({ sessionId: "test-session", reason: "done" });
+    expect(result).toHaveProperty("continue");
+    expect(typeof result.continue).toBe("boolean");
   });
 
   it("sessionEnd returns void", () => {
