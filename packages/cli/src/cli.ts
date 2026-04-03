@@ -297,6 +297,46 @@ Examples:
       await mod.handleStatus();
     });
 
+  // === Auth Management ===
+
+  const auth = program
+    .command("auth")
+    .description("Manage authentication across profiles");
+
+  auth
+    .command("status [profile]")
+    .description("Show auth status for one or all profiles")
+    .option("--json", "Output machine-readable JSON")
+    .action(async (profile?: string, opts?: { json?: boolean }) => {
+      const mod = await import("./commands/auth.js");
+      await mod.handleAuthStatus(profile, opts ?? {});
+    });
+
+  auth
+    .command("login <profile>")
+    .description("Trigger OAuth login for a specific profile")
+    .action(async (profile: string) => {
+      const mod = await import("./commands/auth.js");
+      await mod.handleAuthLogin(profile);
+    });
+
+  auth
+    .command("refresh <profile>")
+    .description("Check or force token refresh for an OAuth profile")
+    .action(async (profile: string) => {
+      const mod = await import("./commands/auth.js");
+      await mod.handleAuthRefresh(profile);
+    });
+
+  auth
+    .command("whoami [profile]")
+    .description("Show which account is active for a profile")
+    .option("--json", "Output machine-readable JSON")
+    .action(async (profile?: string, opts?: { json?: boolean }) => {
+      const mod = await import("./commands/auth.js");
+      await mod.handleAuthWhoami(profile, opts ?? {});
+    });
+
   program
     .command("which")
     .description("Show resolved profile for current directory")
