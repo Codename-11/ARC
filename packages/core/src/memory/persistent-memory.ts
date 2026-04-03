@@ -50,11 +50,9 @@ function readStore(scope: MemoryScope): MemoryStore {
 function writeStore(scope: MemoryScope, store: MemoryStore): void {
   const dir = memoryDir();
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(
-    storePathFor(scope),
-    JSON.stringify(store, null, 2) + "\n",
-    "utf-8",
-  );
+  const tempPath = path.join(dir, `${scope}.tmp.${crypto.randomBytes(4).toString("hex")}`);
+  fs.writeFileSync(tempPath, JSON.stringify(store, null, 2) + "\n", "utf-8");
+  fs.renameSync(tempPath, storePathFor(scope));
 }
 
 // ---------------------------------------------------------------------------
@@ -123,10 +121,10 @@ export class PersistentMemory {
     const entry = store.entries.find((e) => e.id === id);
     if (!entry) return undefined;
 
-    // Touch: update access metadata and persist.
+    // Touch: update access metadata in-memory only.
+    // Persisted on the next mutation (add/update/delete/prune/restore).
     entry.lastAccessed = new Date().toISOString();
     entry.accessCount += 1;
-    writeStore(this.scope, store);
 
     return entry;
   }

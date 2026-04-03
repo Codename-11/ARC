@@ -43,7 +43,9 @@ function writeTasks(tasks: Task[]): void {
   const dir = getTasksDir();
   fs.mkdirSync(dir, { recursive: true });
   const data: TasksFile = { tasks };
-  fs.writeFileSync(getTasksPath(), JSON.stringify(data, null, 2), "utf-8");
+  const tempPath = path.join(dir, `tasks.tmp.${crypto.randomBytes(4).toString("hex")}`);
+  fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), "utf-8");
+  fs.renameSync(tempPath, getTasksPath());
 }
 
 // ---------------------------------------------------------------------------

@@ -104,13 +104,16 @@ export class WebSocketClient {
 
     if (buf.length < offset + payloadLength) return;
 
-    const payload = buf.subarray(offset, offset + payloadLength);
+    const rawPayload = buf.subarray(offset, offset + payloadLength);
+    const payload = Buffer.alloc(rawPayload.length);
 
     // Unmask if needed (client-to-server frames are always masked per RFC 6455).
     if (maskKey) {
-      for (let i = 0; i < payload.length; i++) {
-        payload[i] ^= maskKey[i % 4];
+      for (let i = 0; i < rawPayload.length; i++) {
+        payload[i] = rawPayload[i] ^ maskKey[i % 4];
       }
+    } else {
+      rawPayload.copy(payload);
     }
 
     switch (opcode) {

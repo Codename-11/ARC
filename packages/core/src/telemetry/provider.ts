@@ -149,7 +149,7 @@ export class TelemetryProvider {
     const completed = [...this.spans.values()].filter((s) => s.endTime);
     if (completed.length === 0) return;
 
-    await Promise.all(this.exporters.map((e) => e.export(completed)));
+    await Promise.allSettled(this.exporters.map((e) => e.export(completed)));
 
     for (const span of completed) {
       this.spans.delete(span.id);
@@ -166,7 +166,11 @@ export class TelemetryProvider {
       }
     }
 
-    await this.flush();
-    await Promise.all(this.exporters.map((e) => e.shutdown()));
+    const flushWithTimeout = Promise.race([
+      this.flush(),
+      new Promise<void>(resolve => setTimeout(resolve, 5000)),
+    ]);
+    await flushWithTimeout;
+    await Promise.allSettled(this.exporters.map((e) => e.shutdown()));
   }
 }
