@@ -285,6 +285,9 @@ export async function buildProfileEnv(
 ): Promise<Record<string, string | undefined>> {
   const env: Record<string, string | undefined> = {
     CLAUDE_CONFIG_DIR: profile.configDir,
+    // Strip CLAUDECODE guard var to prevent nested-session blocking
+    // when launching Claude from within an ARC-managed session.
+    CLAUDECODE: undefined,
   };
 
   // Explicitly unset all auth-related env vars so parent-process values

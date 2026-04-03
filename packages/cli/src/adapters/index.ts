@@ -175,6 +175,8 @@ function createBasicAdapter(config: {
     async buildProfileEnv(profile: Profile): Promise<Record<string, string | undefined>> {
       const env: Record<string, string | undefined> = {
         CLAUDE_CONFIG_DIR: profile.configDir,
+        // Strip CLAUDECODE guard var to prevent nested-session blocking
+        CLAUDECODE: undefined,
       };
       if (config.configEnvVar) {
         env[config.configEnvVar] = profile.configDir;
@@ -439,7 +441,7 @@ const geminiAdapter = createBasicAdapter({
   markerFiles: ["config.json", "settings.json", "oauth_creds.json"],
   installHint: "See Google's documentation for Gemini CLI installation instructions.",
   credentialReader: readGeminiOAuthCredentials,
-  configEnvVar: "GEMINI_CONFIG_DIR",
+  configEnvVar: "GEMINI_CLI_HOME",
   capabilities: {
     hooks: false,
     sdkControl: false,
