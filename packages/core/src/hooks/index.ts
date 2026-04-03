@@ -25,3 +25,6 @@ export { classifyRisk } from "./risk-classifier.js";
 export { createAttemptTracker } from "./attempt-tracker.js";
 export type { AttemptTrackerOptions } from "./attempt-tracker.js";
 export { interagentRoutingHook } from "./interagent-routing.js";
+export { auditCompletion } from "./completion-auditor.js";
+export type { LLMCompleteFn, AuditCompletionOptions } from "./completion-auditor.js";
+export { createAuditScoreHook } from "./audit-score.js";

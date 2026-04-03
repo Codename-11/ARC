@@ -55,6 +55,8 @@ export {
   HookStateStore,
   createAttemptTracker,
   interagentRoutingHook,
+  auditCompletion,
+  createAuditScoreHook,
 } from "./hooks/index.js";
 export type {
   HookEvent,
@@ -66,6 +68,8 @@ export type {
   PreHookPipelineResult,
   CompletionAudit,
   AttemptTrackerOptions,
+  LLMCompleteFn,
+  AuditCompletionOptions,
 } from "./hooks/index.js";
 
 // shared.ts wrappers (convenience layer over shared-layer + shared-fs)
