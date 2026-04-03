@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARC — Dashboard</title>
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/base.css">
+  <link rel="stylesheet" href="/styles/layout.css">
+  <link rel="stylesheet" href="/styles/components.css">
+</head>
+<body>
+  <div class="app">
+
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar__brand">ARC</div>
+      <div class="topbar__status">
+        <div class="topbar__indicator">
+          <div class="topbar__dot" id="health-dot"></div>
+          <span class="label" id="health-text">CONNECTING</span>
+        </div>
+        <button class="btn--ghost label" id="theme-toggle">LIGHT</button>
+      </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="sidebar__section">
+        <div class="sidebar__label">Monitor</div>
+        <ul class="sidebar__nav">
+          <li class="sidebar__item sidebar__item--active" data-view="overview">Overview</li>
+          <li class="sidebar__item" data-view="sessions">Sessions</li>
+          <li class="sidebar__item" data-view="traces">Traces</li>
+          <li class="sidebar__item" data-view="risk">Risk</li>
+        </ul>
+      </div>
+      <div class="sidebar__section">
+        <div class="sidebar__label">Manage</div>
+        <ul class="sidebar__nav">
+          <li class="sidebar__item" data-view="tasks">Tasks</li>
+          <li class="sidebar__item" data-view="skills">Skills</li>
+          <li class="sidebar__item" data-view="memory">Memory</li>
+          <li class="sidebar__item" data-view="agents">Agents</li>
+        </ul>
+      </div>
+      <div class="sidebar__section">
+        <div class="sidebar__label">System</div>
+        <ul class="sidebar__nav">
+          <li class="sidebar__item" data-view="factory">Factory</li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main" id="main-content">
+      <div class="loading">[LOADING...]</div>
+    </main>
+
+  </div>
+
+  <script type="module" src="/scripts/api.js"></script>
+  <script type="module" src="/scripts/ws.js"></script>
+  <script type="module" src="/scripts/router.js"></script>
+  <script type="module" src="/components/overview.js"></script>
+  <script type="module" src="/components/sessions.js"></script>
+  <script type="module" src="/components/traces.js"></script>
+  <script type="module" src="/components/risk.js"></script>
+  <script type="module" src="/components/tasks.js"></script>
+  <script type="module" src="/components/skills.js"></script>
+  <script type="module" src="/components/memory.js"></script>
+  <script type="module" src="/components/agents.js"></script>
+  <script type="module" src="/components/factory.js"></script>
+  <script type="module" src="/scripts/app.js"></script>
+</body>
+</html>
