@@ -16,6 +16,8 @@
     "dev": "tsx src/index.ts",
     "dev:tui": "tsx src/index.ts dashboard",
     "dev:tui:watch": "node scripts/dev-tui.mjs",
+    "dev:dashboard": "tsx --watch packages/dashboard/src/dev.ts",
+    "dev:dashboard:no-watch": "tsx packages/dashboard/src/dev.ts",
     "dev:watch": "tsup --watch",
     "cli": "node ./dist/index.js",
     "cli:dev": "tsx src/index.ts",
