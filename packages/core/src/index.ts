@@ -59,6 +59,9 @@ export {
   auditCompletion,
   createAuditScoreHook,
   runWithRetry,
+  createSupervisionGateHook,
+  isSubstantive,
+  parseGateResponse,
 } from "./hooks/index.js";
 export type {
   HookEvent,
@@ -75,6 +78,8 @@ export type {
   DefaultPipeline,
   RunWithRetryOptions,
   RunWithRetryResult,
+  GateReviewContext,
+  SupervisionGateOptions,
 } from "./hooks/index.js";
 
 // shared.ts wrappers (convenience layer over shared-layer + shared-fs)

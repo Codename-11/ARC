@@ -31,3 +31,5 @@ export type { LLMCompleteFn, AuditCompletionOptions } from "./completion-auditor
 export { createAuditScoreHook } from "./audit-score.js";
 export { runWithRetry } from "./retry-loop.js";
 export type { RunWithRetryOptions, RunWithRetryResult } from "./retry-loop.js";
+export { createSupervisionGateHook, isSubstantive, parseGateResponse } from "./supervision-gate.js";
+export type { GateReviewContext, SupervisionGateOptions } from "./supervision-gate.js";
