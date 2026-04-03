@@ -1,6 +1,8 @@
 // @axiom-labs/arc-mcp — barrel exports
 
 export { createArcMcpServer, startStdioServer } from "./server.js";
+export { startHttpServer } from "./http-server.js";
+export type { HttpServerOptions } from "./http-server.js";
 export { registerClassifyRisk } from "./tools/classify-risk.js";
 export { registerAuditCompletion } from "./tools/audit-completion.js";
 export { registerExpandIntent } from "./tools/expand-intent.js";
