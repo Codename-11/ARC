@@ -241,3 +241,24 @@ export {
   type FactoryState,
   type FactoryWaveResult,
 } from "./factory.js";
+
+// Phase 13 — OpenTelemetry Integration
+export {
+  TelemetryProvider,
+  ConsoleExporter,
+  JsonFileExporter,
+  OtlpExporter,
+  startSessionSpan,
+  startPreflightSpan,
+  startHookSpan,
+  startAgentExecutionSpan,
+  startToolUseSpan,
+  startPostflightSpan,
+  startCircuitBreakerSpan,
+  type SpanAttributes,
+  type SpanEvent,
+  type SpanStatus,
+  type Span,
+  type TraceExporter,
+  type TelemetryConfig,
+} from "./telemetry/index.js";

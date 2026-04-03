@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "paths": {
+      "@axiom-labs/arc-core": ["../core/src/index.ts"],
+      "@axiom-labs/arc-core/*": ["../core/src/*"]
+    }
+  },
+  "include": ["src"]
+}
