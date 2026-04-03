@@ -30,14 +30,8 @@
     "tests/**/*.tsx"
   ],
   "exclude": [
-    "src/auth.ts",
-    "src/detect.ts",
-    "src/commands/**",
-    "src/tui/**",
-    "packages/cli/src/adapters/**",
-    "packages/cli/src/runtime/**",
-    "packages/cli/src/services/adapters.ts",
-    "packages/cli/src/services/health-service.ts",
-    "packages/cli/src/services/profile-service.ts"
+    "node_modules",
+    "dist",
+    "packages/*/dist"
   ]
 }

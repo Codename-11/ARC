@@ -2,7 +2,11 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "paths": {
+      "@axiom-labs/arc-core": ["../core/src/index.ts"],
+      "@axiom-labs/arc-adapter-claude": ["../adapter-claude/src/index.ts"]
+    }
   },
   "include": ["src"]
 }
