@@ -16,6 +16,7 @@ export type {
 } from "./types.js";
 
 export { HookBus } from "./hook-bus.js";
+export { createDefaultHookBus } from "./create-default-bus.js";
 export { sourceClassifyHook } from "./source-classify.js";
 export { riskDetectionHook } from "./risk-detection.js";
 export { classifyRisk } from "./risk-classifier.js";

@@ -5,6 +5,9 @@ import { error, info, warn, cmd } from "../display.js";
 import { logAction } from "../log.js";
 import { getAdapter } from "../../packages/cli/src/adapters/index.js";
 import { waitForProcessExit } from "../../packages/core/src/process.js";
+import { createDefaultHookBus } from "../../packages/core/src/hooks/create-default-bus.js";
+import { writeLogEvent } from "../../packages/core/src/logging.js";
+import type { HookContext } from "../../packages/core/src/hooks/types.js";
 import type { AgentProcess } from "../../packages/core/src/adapters/types.js";
 
 const isWindows = process.platform === "win32";
@@ -110,6 +113,57 @@ export async function handleLaunch(
   // Try the adapter's real lifecycle first. If the adapter still has stubs
   // (throws "not implemented"), fall back to the legacy spawnSync path.
   const adapter = getAdapter(tool);
+
+  // ─── Pre-launch hook pipeline ──────────────────────────────────────
+  const enforcement = profile.enforcement ?? "log";
+  if (enforcement !== "off") {
+    const hookBus = createDefaultHookBus(profile.hooks);
+    const hookCtx: HookContext = {
+      message: "",
+      sessionId: `launch-${profileName}-${Date.now()}`,
+      profile,
+      adapter: tool,
+    };
+
+    const hookResult = await hookBus.runPre(hookCtx, enforcement, "pre-launch");
+
+    if (hookResult.blocked && enforcement === "enforce") {
+      const blockReasons = hookResult.results
+        .filter((r) => r.block)
+        .map((r) => r.reason ?? "blocked by hook")
+        .join("; ");
+      writeLogEvent({
+        level: "error",
+        component: "launch",
+        action: "hook:block",
+        message: `Launch blocked by hook pipeline: ${blockReasons}`,
+        data: {
+          profile: profileName,
+          tool,
+          enforcement,
+          metadata: hookResult.metadata,
+        },
+      });
+      error(`Launch blocked: ${blockReasons}`);
+      process.exit(1);
+    }
+
+    // Pass hook metadata to adapter if supported
+    if (Object.keys(hookResult.metadata).length > 0) {
+      writeLogEvent({
+        level: "info",
+        component: "launch",
+        action: "hook:metadata",
+        message: `Pre-launch hooks produced metadata`,
+        data: {
+          profile: profileName,
+          tool,
+          enforcement,
+          metadataKeys: Object.keys(hookResult.metadata),
+        },
+      });
+    }
+  }
 
   let agentProcess: AgentProcess | null = null;
   try {

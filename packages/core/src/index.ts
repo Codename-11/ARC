@@ -48,6 +48,7 @@ export * from "./adapters/types.js";
 //         hooks/types owns the richer versions, importable via @axiom-labs/arc-core/hooks)
 export {
   HookBus,
+  createDefaultHookBus,
   sourceClassifyHook,
   riskDetectionHook,
   classifyRisk,
