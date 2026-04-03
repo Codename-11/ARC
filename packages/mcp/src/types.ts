@@ -1,5 +1,5 @@
 import type { Client } from "@modelcontextprotocol/sdk/client";
-import type { Transport } from "@modelcontextprotocol/sdk/shared/transport";
+import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 
 // ─── External MCP server configuration ───────────────────────────────
 

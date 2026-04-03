@@ -1,7 +1,7 @@
 import { Client } from "@modelcontextprotocol/sdk/client";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp";
-import type { Transport } from "@modelcontextprotocol/sdk/shared/transport";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { writeLogEvent } from "@axiom-labs/arc-core";
 
 import { classifyRisk } from "@axiom-labs/arc-core";

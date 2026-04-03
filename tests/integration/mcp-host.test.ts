@@ -367,4 +367,112 @@ describe("McpHostManager", () => {
       expect(result.content.length).toBeGreaterThan(0);
     });
   });
+
+  // ── End-to-end lifecycle tests ─────────────────────────────────
+
+  describe("end-to-end lifecycle", () => {
+    it("connect → list → callTool → disconnect full lifecycle", async () => {
+      const { clientTransport } = await createTestServer();
+      host = hostWithTransport(clientTransport);
+
+      // Connect
+      await host.connect("lifecycle-srv", DUMMY_CONFIG);
+      const servers = host.listConnected();
+      expect(servers).toHaveLength(1);
+      expect(servers[0].status).toBe("connected");
+
+      // List tools
+      const tools = host.getTools();
+      expect(tools.length).toBeGreaterThan(0);
+      expect(tools[0].serverName).toBe("lifecycle-srv");
+
+      // Call a tool (benign)
+      const result = await host.callTool("lifecycle-srv", "arc_classify_risk", {
+        action: "read a config file",
+      });
+      expect(result.isError).toBeFalsy();
+      expect(result.content.length).toBeGreaterThan(0);
+
+      // Disconnect
+      await host.disconnect("lifecycle-srv");
+      expect(host.listConnected()).toHaveLength(0);
+      expect(host.getTools()).toHaveLength(0);
+    });
+
+    it("connect multiple servers, list shows all, disconnect one, list shows remaining", async () => {
+      const srv1 = await createTestServer();
+      const srv2 = await createTestServer();
+
+      const transports = new Map<string, Transport>([
+        ["alpha-cmd", srv1.clientTransport],
+        ["beta-cmd", srv2.clientTransport],
+      ]);
+      host = hostWithTransportMap(transports);
+
+      // Connect two servers
+      await host.connect("alpha", { command: "alpha-cmd" });
+      await host.connect("beta", { command: "beta-cmd" });
+
+      // Both show in list
+      const all = host.listConnected();
+      expect(all).toHaveLength(2);
+      const names = all.map((s) => s.name).sort();
+      expect(names).toEqual(["alpha", "beta"]);
+
+      // Both contribute tools
+      const allTools = host.getTools();
+      const serverNames = new Set(allTools.map((t) => t.serverName));
+      expect(serverNames.has("alpha")).toBe(true);
+      expect(serverNames.has("beta")).toBe(true);
+
+      // Disconnect one
+      await host.disconnect("alpha");
+      const remaining = host.listConnected();
+      expect(remaining).toHaveLength(1);
+      expect(remaining[0].name).toBe("beta");
+
+      // Only beta's tools remain
+      const remainingTools = host.getTools();
+      for (const t of remainingTools) {
+        expect(t.serverName).toBe("beta");
+      }
+
+      // Clean up
+      await host.disconnect("beta");
+      expect(host.listConnected()).toHaveLength(0);
+    });
+
+    it("full lifecycle with risk gate — benign passes, destructive blocked", async () => {
+      const { clientTransport } = await createTestServer();
+      host = hostWithTransport(clientTransport);
+
+      // Connect
+      await host.connect("gated-srv", DUMMY_CONFIG);
+      expect(host.listConnected()[0].status).toBe("connected");
+
+      // Benign tool call — should be forwarded
+      const benignResult = await host.callTool("gated-srv", "arc_classify_risk", {
+        action: "list all files in current directory",
+      });
+      expect(benignResult.isError).toBeFalsy();
+      const benignParsed = JSON.parse(benignResult.content[0].text);
+      expect(benignParsed.tier).toBeDefined();
+
+      // Destructive tool call — should be blocked
+      const destructiveResult = await host.callTool("gated-srv", "arc_classify_risk", {
+        action: "rm -rf / --no-preserve-root",
+      });
+      expect(destructiveResult.isError).toBe(true);
+      const blockedParsed = JSON.parse(destructiveResult.content[0].text);
+      expect(blockedParsed.blocked).toBe(true);
+      expect(blockedParsed.tier).toBe("destructive");
+
+      // Server still connected after blocked call
+      expect(host.listConnected()[0].status).toBe("connected");
+
+      // Disconnect
+      await host.disconnect("gated-srv");
+      expect(host.listConnected()).toHaveLength(0);
+    });
+  });
 });

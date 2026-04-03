@@ -1,15 +1,64 @@
+import path from "node:path";
 import type { Command } from "commander";
+import { loadConfig, getProfileDir, readJsonObject } from "../config.js";
+import type { McpServerConfig } from "@axiom-labs/arc-mcp";
+import { McpHostManager } from "@axiom-labs/arc-mcp";
+
+// ─── Module-level host manager (shared across connect/list/disconnect) ──
+
+let hostManager: McpHostManager | null = null;
+
+function getOrCreateHost(): McpHostManager {
+  if (!hostManager) {
+    hostManager = new McpHostManager();
+  }
+  return hostManager;
+}
+
+// ─── Read mcpServers from the active profile's settings.json ─────────
+
+function loadProfileMcpServers(): Record<string, McpServerConfig> {
+  const config = loadConfig();
+  const profileName = config.activeProfile;
+  const profile = config.profiles[profileName];
+  if (!profile) {
+    console.error(
+      `[arc-mcp] Active profile "${profileName}" not found. Run "arc list" to see available profiles.`,
+    );
+    process.exit(1);
+  }
+
+  const settingsPath = path.join(profile.configDir, "settings.json");
+  const settings = readJsonObject(settingsPath);
+  if (!settings || !settings.mcpServers) {
+    return {};
+  }
+
+  const raw = settings.mcpServers;
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+    return {};
+  }
+
+  return raw as Record<string, McpServerConfig>;
+}
+
+// ─── Command registration ────────────────────────────────────────────
 
 /**
- * Register the `arc mcp` command group with the `serve` subcommand.
+ * Register the `arc mcp` command group with serve, connect, list, and
+ * disconnect subcommands.
  *
- * `arc mcp serve` starts the MCP supervision server.
- * Supports `stdio` (default) and `http` transports.
+ * `arc mcp serve`      — Start the MCP supervision server.
+ * `arc mcp connect`    — Connect to external MCP servers from profile config.
+ * `arc mcp list`       — List connected MCP servers and their tools.
+ * `arc mcp disconnect` — Disconnect from external MCP servers.
  */
 export function registerMcpCommand(program: Command): void {
   const mcp = program
     .command("mcp")
-    .description("MCP supervision server for agent tool integration");
+    .description("MCP supervision server and external server management");
+
+  // ── serve ────────────────────────────────────────────────────────
 
   mcp
     .command("serve")
@@ -32,8 +81,6 @@ export function registerMcpCommand(program: Command): void {
       }
 
       if (transport === "stdio") {
-        // Validate no HTTP-only options used with stdio
-        // Commander sets port default to "3100" always, so only check explicit auth options
         if (opts.authToken !== undefined) {
           console.error("[arc-mcp] --auth-token is only valid with --transport http");
           process.exit(1);
@@ -61,5 +108,130 @@ export function registerMcpCommand(program: Command): void {
         authToken: opts.authToken,
         requireAuth: opts.requireAuth,
       });
+    });
+
+  // ── connect ──────────────────────────────────────────────────────
+
+  mcp
+    .command("connect [name]")
+    .description("Connect to external MCP server(s) from profile config")
+    .action(async (name?: string) => {
+      const mcpServers = loadProfileMcpServers();
+      const serverNames = Object.keys(mcpServers);
+
+      if (serverNames.length === 0) {
+        console.error(
+          "[arc-mcp] No mcpServers configured in the active profile's settings.json.",
+        );
+        process.exit(1);
+      }
+
+      const host = getOrCreateHost();
+
+      if (name) {
+        // Connect to a specific server
+        const config = mcpServers[name];
+        if (!config) {
+          console.error(
+            `[arc-mcp] Server "${name}" not found in profile config. Available: ${serverNames.join(", ")}`,
+          );
+          process.exit(1);
+        }
+
+        await host.connect(name, config);
+        const entry = host.listConnected().find((s) => s.name === name);
+        if (entry?.status === "error") {
+          console.error(`[arc-mcp] Failed to connect to "${name}": ${entry.error}`);
+          process.exit(1);
+        }
+        console.log(`Connected to "${name}" — ${entry?.tools.length ?? 0} tool(s) discovered.`);
+        return;
+      }
+
+      // Connect to all configured servers
+      let failures = 0;
+      for (const [serverName, config] of Object.entries(mcpServers)) {
+        await host.connect(serverName, config);
+        const entry = host.listConnected().find((s) => s.name === serverName);
+        if (entry?.status === "error") {
+          console.error(`[arc-mcp] Failed to connect to "${serverName}": ${entry.error}`);
+          failures++;
+        } else {
+          console.log(
+            `Connected to "${serverName}" — ${entry?.tools.length ?? 0} tool(s) discovered.`,
+          );
+        }
+      }
+
+      if (failures > 0 && failures === serverNames.length) {
+        process.exit(1);
+      }
+    });
+
+  // ── list ─────────────────────────────────────────────────────────
+
+  mcp
+    .command("list")
+    .description("List connected external MCP servers and their tools")
+    .action(() => {
+      const host = hostManager;
+      if (!host) {
+        console.log("No connected MCP servers.");
+        return;
+      }
+
+      const servers = host.listConnected();
+      if (servers.length === 0) {
+        console.log("No connected MCP servers.");
+        return;
+      }
+
+      for (const srv of servers) {
+        const toolNames = srv.tools.map((t) => t.name).join(", ");
+        const toolLabel = srv.tools.length === 1 ? "tool" : "tools";
+
+        if (srv.status === "error") {
+          console.log(`  ${srv.name}  [${srv.status}]  ${srv.error ?? "unknown error"}`);
+        } else {
+          console.log(
+            `  ${srv.name}  [${srv.status}]  ${srv.tools.length} ${toolLabel}${toolNames ? `: ${toolNames}` : ""}`,
+          );
+        }
+      }
+    });
+
+  // ── disconnect ───────────────────────────────────────────────────
+
+  mcp
+    .command("disconnect [name]")
+    .description("Disconnect from external MCP server(s)")
+    .action(async (name?: string) => {
+      const host = hostManager;
+      if (!host) {
+        console.log("No connected MCP servers to disconnect.");
+        return;
+      }
+
+      if (name) {
+        const entry = host.listConnected().find((s) => s.name === name);
+        if (!entry) {
+          console.error(
+            `[arc-mcp] Server "${name}" is not connected. Connected: ${host.listConnected().map((s) => s.name).join(", ") || "none"}`,
+          );
+          process.exit(1);
+        }
+        await host.disconnect(name);
+        console.log(`Disconnected from "${name}".`);
+        return;
+      }
+
+      // Disconnect all
+      const names = host.listConnected().map((s) => s.name);
+      if (names.length === 0) {
+        console.log("No connected MCP servers to disconnect.");
+        return;
+      }
+      await host.disconnectAll();
+      console.log(`Disconnected from ${names.length} server(s): ${names.join(", ")}.`);
     });
 }
