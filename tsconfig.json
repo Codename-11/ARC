@@ -12,7 +12,8 @@
     "paths": {
       "@axiom-labs/arc-core": ["./packages/core/src/index.ts"],
       "@axiom-labs/arc-adapter-claude": ["./packages/adapter-claude/src/index.ts"],
-      "@axiom-labs/arc-adapter-openclaw": ["./packages/adapter-openclaw/src/index.ts"]
+      "@axiom-labs/arc-adapter-openclaw": ["./packages/adapter-openclaw/src/index.ts"],
+      "@axiom-labs/arc-mcp": ["./packages/mcp/src/index.ts"]
     }
   },
   "include": [
@@ -26,6 +27,7 @@
     "packages/core/src/**/*.ts",
     "packages/adapter-claude/src/**/*.ts",
     "packages/adapter-openclaw/src/**/*.ts",
+    "packages/mcp/src/**/*.ts",
     "packages/cli/src/**/*.ts",
     "packages/cli/src/**/*.tsx",
     "tests/**/*.ts",

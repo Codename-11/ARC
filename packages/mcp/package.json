@@ -1,0 +1,17 @@
+{
+  "name": "@axiom-labs/arc-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --target node20 --clean",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@axiom-labs/arc-core": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.25.0"
+  }
+}
