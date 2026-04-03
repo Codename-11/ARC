@@ -29,6 +29,7 @@ export {
 
 // types: exclude HealthStatus, HealthCheck, HealthReport (authoritative in health.ts)
 //        exclude LogLevel, LogEvent (authoritative in logging.ts)
+//        EnforcementMode, HookConfig now live here (used by Profile)
 export type {
   AuthType,
   AgentTool,
@@ -36,9 +37,27 @@ export type {
   ArcSettings,
   ArcConfig,
   SharedManifest,
+  EnforcementMode,
+  HookConfig,
 } from "./types.js";
 
 export * from "./adapters/types.js";
+
+// hooks: named exports to avoid collisions with adapters/types.ts placeholders
+//        (HookContext, HookMetadata, AgentResponse exist in both — adapters/types owns the barrel export,
+//         hooks/types owns the richer versions, importable via @axiom-labs/arc-core/hooks)
+export {
+  HookBus,
+} from "./hooks/index.js";
+export type {
+  HookEvent,
+  MessageSource,
+  RiskTier,
+  RiskClassification,
+  HookResult,
+  Hook,
+  PreHookPipelineResult,
+} from "./hooks/index.js";
 
 // shared.ts wrappers (convenience layer over shared-layer + shared-fs)
 export {
