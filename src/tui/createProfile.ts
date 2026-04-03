@@ -101,7 +101,7 @@ export function createProfile(input: CreateProfileInput): CreateResult {
 
     saveConfig(config);
 
-    logAction("profile:create", input.name);
+    logAction("profile.create", input.name);
     return { ok: true, name: input.name, wasFirstProfile: wasFirst };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
@@ -241,7 +241,7 @@ export async function importProfile(input: ImportProfileInput): Promise<ImportRe
 
     saveConfig(config);
 
-    logAction("profile:import", `${input.name} from ${input.configDir}`);
+    logAction("profile.import", `${input.name} from ${input.configDir}`);
     return { ok: true, name: input.name };
   } catch (err) {
     // Rollback: remove partially-created profile directory
@@ -255,3 +255,4 @@ export async function importProfile(input: ImportProfileInput): Promise<ImportRe
     return { ok: false, error: message };
   }
 }
+

@@ -4,12 +4,36 @@
     "target": "ES2022",
     "module": "Node16",
     "moduleResolution": "Node16",
-    "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "types": ["node"],
     "jsx": "react-jsx"
   },
-  "include": ["src"]
+  "include": [
+    "src/index.ts",
+    "src/cli.ts",
+    "src/config.ts",
+    "src/paths.ts",
+    "src/shared.ts",
+    "src/types.ts",
+    "src/log.ts",
+    "packages/core/src/**/*.ts",
+    "packages/adapter-claude/src/**/*.ts",
+    "packages/cli/src/**/*.ts",
+    "packages/cli/src/**/*.tsx",
+    "tests/**/*.ts",
+    "tests/**/*.tsx"
+  ],
+  "exclude": [
+    "src/auth.ts",
+    "src/detect.ts",
+    "src/commands/**",
+    "src/tui/**",
+    "packages/cli/src/adapters/**",
+    "packages/cli/src/runtime/**",
+    "packages/cli/src/services/adapters.ts",
+    "packages/cli/src/services/health-service.ts",
+    "packages/cli/src/services/profile-service.ts"
+  ]
 }

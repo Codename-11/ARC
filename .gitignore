@@ -39,3 +39,18 @@ MULTICC_RESEARCH.md
 EXECUTION_PLAN.md
 EXECUTION_PROMPT.txt
 CLAUDE.md
+
+# ── GSD baseline (auto-generated) ──
+.gsd
+*.code-workspace
+.next/
+build/
+__pycache__/
+*.pyc
+.venv/
+venv/
+target/
+vendor/
+coverage/
+.cache/
+tmp/

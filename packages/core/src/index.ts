@@ -1,0 +1,40 @@
+export * from "./config.js";
+export * from "./health.js";
+export * from "./import-utils.js";
+export * from "./keyring.js";
+export * from "./lifecycle.js";
+export * from "./logging.js";
+export * from "./paths.js";
+
+// shared-fs: exclude deepMerge (conflicts with shared-layer's deepMerge)
+export {
+  readJsonObject,
+  writeJsonObject,
+  isDirectoryLink,
+  createDirectoryLink,
+  removeDirectoryLink,
+} from "./shared-fs.js";
+export { deepMerge } from "./shared-fs.js";
+
+// shared-layer: exclude deepMerge (re-exported from shared-fs above)
+export {
+  getSharedManifest,
+  syncSharedLayer,
+  unsyncSharedLayer,
+  pullProfileIntoShared,
+  type SharedLayerSyncOptions,
+  type SharedLayerPullResult,
+} from "./shared-layer.js";
+
+// types: exclude HealthStatus, HealthCheck, HealthReport (authoritative in health.ts)
+//        exclude LogLevel, LogEvent (authoritative in logging.ts)
+export type {
+  AuthType,
+  AgentTool,
+  Profile,
+  ArcSettings,
+  ArcConfig,
+  SharedManifest,
+} from "./types.js";
+
+export * from "./adapters/types.js";

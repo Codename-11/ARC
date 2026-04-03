@@ -45,6 +45,14 @@ export function getSharedProjectsDir(): string {
   return path.join(getSharedDir(), "projects");
 }
 
+export function getLogsDir(): string {
+  return path.join(getArcDir(), "logs");
+}
+
+export function getStructuredLogPath(): string {
+  return path.join(getLogsDir(), "events.ndjson");
+}
+
 export function getClaudeDefaultDir(): string {
   return path.join(os.homedir(), ".claude");
 }
