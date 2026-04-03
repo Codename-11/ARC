@@ -122,6 +122,105 @@ arc update                         # Refresh shims and integration
 arc uninstall                      # Remove shims, PATH, integration
 ```
 
+### Multi-Account Management
+
+```bash
+arc auth list                      # List authenticated accounts
+arc auth add <provider>            # Add a new auth account
+arc auth remove <name>             # Remove an auth account
+arc auth switch <name>             # Switch active auth account
+```
+
+See [Advanced Usage](./advanced.md) for details.
+
+### Task Management
+
+```bash
+arc tasks list                     # List tasks
+arc tasks add <description>        # Add a task
+arc tasks done <id>                # Mark a task complete
+arc tasks clear                    # Clear completed tasks
+```
+
+### Memory System
+
+```bash
+arc memory list                    # List memories
+arc memory search <query>          # Relevance search across memories
+arc memory add <content>           # Manually add a memory
+arc memory prune                   # Archive low-relevance memories
+arc memory sync                    # Force sync to external targets
+arc memory export                  # Export memories as JSON
+```
+
+### Skill Registry
+
+```bash
+arc skills list                    # List registered skills
+arc skills add <name>              # Register a skill
+arc skills remove <name>           # Remove a skill
+arc skills info <name>             # Show skill details
+```
+
+### Session Continuity
+
+```bash
+arc sessions list                  # List saved sessions
+arc sessions resume <id>           # Resume a session
+arc sessions save [name]           # Save current session
+arc sessions delete <id>           # Delete a session
+```
+
+### Web Dashboard
+
+```bash
+arc web                            # Open web dashboard
+arc web --port <port>              # Specify port
+```
+
+### Telemetry
+
+```bash
+arc telemetry status               # Show telemetry status
+arc telemetry enable               # Enable telemetry
+arc telemetry disable              # Disable telemetry
+```
+
+### Remote Agents
+
+```bash
+arc remote list                    # List remote agents
+arc remote connect <url>           # Connect to a remote agent
+arc remote disconnect <name>       # Disconnect a remote agent
+```
+
+### Plugin System
+
+```bash
+arc plugins list                   # List installed plugins
+arc plugins install <name>         # Install a plugin
+arc plugins remove <name>          # Remove a plugin
+arc plugins info <name>            # Show plugin details
+```
+
+### Cloud Sync
+
+```bash
+arc sync pull                      # Pull all data from cloud
+arc sync push                      # Push local changes to cloud
+arc sync status                    # Show sync state, last sync, conflicts
+arc sync devices                   # List registered devices
+```
+
+### Dark Factory
+
+```bash
+arc factory run --spec <file>      # Start factory run
+arc factory status [runId]         # Check run status
+arc factory abort [runId]          # Abort run
+arc factory list                   # List past runs
+```
+
 ### Advanced
 
 ```bash

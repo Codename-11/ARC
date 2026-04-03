@@ -181,7 +181,7 @@ Profile data in `~/.arc/` is **not** deleted by `uninstall:local` — use the fu
 
 > **Status:** Experimental. Default mode remains full profile isolation.
 
-Hot-swap lets you switch between authenticated accounts on the **same tool** without changing MCPs, settings, or session history. Instead of isolated profile directories, it swaps only the credential files in the tool's canonical config directory (e.g. `~/.claude/`).
+Hot-swap lets you switch between authenticated accounts on the **same tool** without changing MCPs, settings, or session history. Instead of isolated profile directories, it swaps only the credential files in the tool's canonical config directory (e.g. `~/.claude/`, `~/.gemini/`, `~/.codex/`). Supports Claude, Gemini, and Codex credential layouts.
 
 ### Hot-swap vs profile switch — what's the difference?
 
@@ -212,9 +212,13 @@ First, authenticate with the tool normally (e.g. `claude` login). Then capture t
 ```bash
 arc swap capture personal --tool claude
 arc swap capture work --tool claude
+
+# Multi-tool support — capture Gemini and Codex accounts the same way
+arc swap capture gemini-work --tool gemini
+arc swap capture codex-main --tool codex
 ```
 
-This copies the credential files from `~/.claude/` into `~/.arc/credentials/<name>/`.
+This copies the credential files from the tool's canonical directory into `~/.arc/credentials/<name>/`.
 
 ### Swap between accounts
 
@@ -225,12 +229,25 @@ arc swap to personal   # Swap back to "personal"
 
 The current account's credentials are automatically saved before restoring the target. MCPs, settings, and local session history are preserved — only the auth credentials change.
 
-### List and delete
+### Bridge from profile to desktop
+
+If you have a profile with working credentials and want to push them into the tool's canonical directory (e.g. for Claude Desktop), use `from-profile`:
 
 ```bash
-arc swap list          # Show all captured account snapshots
+arc swap from-profile work
+```
+
+This captures the profile's credentials as a swap snapshot and activates them in the canonical directory — bridging profile isolation with desktop app access.
+
+### Status, list, and delete
+
+```bash
+arc swap status        # Show active account per tool and last swap time
+arc swap list          # Show all captured account snapshots with metadata
 arc swap delete work   # Remove a snapshot (can't delete the active one)
 ```
+
+> `arc swap list` displays account metadata including subscription tier and tool type for each snapshot, making it easy to distinguish between free and pro accounts.
 
 ### TUI access
 
@@ -250,6 +267,8 @@ Captured accounts are also visible in the **Settings** view (read-only).
     .credentials.json
   work/
     .credentials.json
+  gemini-work/
+    credentials.json
 ```
 
 ### Safety
@@ -257,3 +276,224 @@ Captured accounts are also visible in the **Settings** view (read-only).
 - `arc swap to` requires confirmation (`[y/N]`) unless `--force` is passed
 - If the restore step fails, credentials are rolled back to their previous state
 - The swap manifest is updated only after a successful swap
+
+---
+
+## Multi-Account Management
+
+ARC provides two complementary systems for working with multiple accounts. Use **profile isolation** for CLI tools where you want fully separate configs, and **credential hot-swap** for desktop apps where you want to share settings but switch auth.
+
+### Profile isolation (CLI tools)
+
+Each profile gets its own config directory, credentials, and settings. This is the primary approach for CLI agent tools:
+
+```bash
+# Create two Claude profiles with separate OAuth accounts
+arc create work --tool claude --auth-type oauth
+arc create personal --tool claude --auth-type oauth
+
+# Login to each (opens browser OAuth flow)
+arc auth login work
+arc auth login personal
+
+# Check which account is in each profile
+arc auth status
+arc auth whoami work
+
+# Launch with a specific account
+arc use work
+arc launch
+```
+
+See [Profiles](./profiles.md) and [Authentication](./authentication.md) for full details on creation and auth setup.
+
+### Credential hot-swap (desktop apps)
+
+For desktop apps like Claude Desktop that read from a single canonical directory, hot-swap switches only the credential file while preserving everything else:
+
+```bash
+# Capture current desktop credentials
+arc swap capture work-acct --tool claude
+
+# Log in with another account in Claude Desktop, then capture it
+arc swap capture personal-acct --tool claude
+
+# Switch desktop apps between accounts
+arc swap to work-acct
+arc swap to personal-acct
+arc swap status
+
+# Or bridge from a profile to desktop
+arc swap from-profile work
+```
+
+> See [Credential Hot-Swap](#credential-hot-swap-experimental) above for the full command reference.
+
+---
+
+## Task Management
+
+Track work items across profiles. Tasks can be assigned to specific profiles and filtered by status, giving you a lightweight project board without leaving the terminal.
+
+```bash
+arc tasks create "Implement login page" --priority high --assignee work
+arc tasks list
+arc tasks list --status working
+arc tasks update <id> --status completed
+arc tasks stop <id>
+```
+
+Tasks are stored in `~/.arc/tasks.json`. Status values: `pending`, `working`, `completed`, `blocked`. Priority values: `low`, `medium`, `high`, `critical`.
+
+> Tasks assigned to a profile are displayed in that profile's detail view in the TUI.
+
+---
+
+## Memory System
+
+ARC's memory system stores observations, corrections, and learned preferences that persist across sessions. Memories are scoped and scored by relevance, allowing automatic pruning of low-value entries.
+
+```bash
+arc memory list
+arc memory list --scope persistent --type correction
+arc memory search "deployment process"
+arc memory stats
+arc memory prune --threshold 0.1
+```
+
+Scope values: `session` (cleared on exit), `persistent` (survives restarts), `shared` (synced across profiles via the shared layer). Type values: `observation`, `correction`, `preference`, `fact`.
+
+> Memories with a relevance score below the prune threshold are removed. Use `arc memory stats` to see the score distribution before pruning.
+
+---
+
+## Skill Registry
+
+Load and manage reusable skill definitions that extend agent capabilities. Skills are declarative descriptions of workflows, patterns, or domain knowledge that can be loaded from local files or shared directories.
+
+```bash
+arc skills list
+arc skills load ~/.arc/skills/
+arc skills info code-review
+```
+
+Skill files are plain JSON or YAML with a `name`, `description`, and `instructions` field. Loaded skills are registered globally and available to all profiles.
+
+---
+
+## Session Continuity
+
+Suspend and resume agent sessions without losing context. When a session is suspended, ARC snapshots the session state so you can pick it up later — even after a reboot.
+
+```bash
+arc sessions list
+arc sessions list --status suspended
+arc sessions resume          # Resume last suspended session
+arc sessions resume <id>
+arc sessions complete <id>
+```
+
+Session status values: `active`, `suspended`, `completed`. Suspended sessions are stored in `~/.arc/sessions/` and include the working directory, profile, and conversation checkpoint.
+
+> `arc sessions resume` with no arguments picks up the most recently suspended session.
+
+---
+
+## Web Dashboard
+
+A browser-based dashboard for monitoring and managing ARC from any device on your network.
+
+```bash
+# Start the web dashboard
+arc web
+arc web --port 4000
+
+# Development mode with hot-reload
+pnpm dev:dashboard
+```
+
+The dashboard exposes a REST API at `/api/*` for programmatic access and a WebSocket endpoint for real-time updates (profile switches, task changes, session events). The UI uses ARC's Nothing-inspired design system with dark and light mode support.
+
+> The dashboard binds to `localhost` by default. Pass `--host 0.0.0.0` to expose it on your network.
+
+---
+
+## Telemetry & Traces
+
+Inspect execution traces and telemetry data for debugging agent interactions. Traces capture command invocations, tool calls, and timing information per session.
+
+```bash
+arc telemetry status
+arc telemetry traces
+arc telemetry traces --limit 100 --session <id>
+```
+
+Telemetry is local-only — nothing is sent externally. Trace data is stored in `~/.arc/traces/` and can be filtered by session, time range, or command type.
+
+> Use `arc telemetry status` to check whether trace collection is enabled and see the current storage size.
+
+---
+
+## Remote Agents
+
+Register and health-check remote agent endpoints. Remote agents are external services that speak the same protocol, accessible over HTTP or other transports.
+
+```bash
+arc remote add staging https://staging.example.com --transport http
+arc remote list
+arc remote check            # Health-check all registered remotes
+arc remote check staging    # Health-check a single remote
+arc remote remove staging
+```
+
+Remote entries are stored in `~/.arc/config.json` under the `remotes` key. Health checks verify connectivity and report the agent's version and capabilities.
+
+---
+
+## Plugin System
+
+Extend ARC with third-party plugins. Plugins can add commands, views, and integrations that hook into the CLI and TUI lifecycle.
+
+```bash
+arc plugins list
+arc plugins install ./my-plugin
+arc plugins enable my-plugin
+arc plugins disable my-plugin
+arc plugins uninstall my-plugin
+```
+
+Plugins are loaded from `~/.arc/plugins/`. Each plugin must export a manifest with `name`, `version`, and an `activate` function. Disabled plugins remain installed but are not loaded at startup.
+
+> Plugins run in the same process as ARC. Only install plugins you trust.
+
+---
+
+## Cloud Sync
+
+Synchronize ARC configuration across machines using a configurable storage backend. Cloud sync pushes and pulls `config.json`, shared layer content, and task data.
+
+```bash
+arc sync status
+arc sync configure --provider filesystem --path /mnt/nas/arc-sync
+arc sync push
+arc sync pull
+```
+
+The `filesystem` provider works with any mounted path (NAS, Dropbox folder, USB drive). Sync uses last-write-wins conflict resolution with a conflict log in `~/.arc/sync-conflicts.json`.
+
+> Run `arc sync status` to see the last sync time and detect drift between local and remote state.
+
+---
+
+## Dark Factory
+
+Autonomous execution mode for running multi-step task plans without manual intervention. Dark Factory decomposes a plan into waves of parallel tasks, each verified by independent verifier agents before proceeding.
+
+```bash
+arc factory status
+arc factory abort
+```
+
+Execution follows a wave-based model: tasks within a wave run in parallel, and a consensus gate ensures all verifiers agree before advancing to the next wave. If any verifier rejects, the wave is retried or escalated.
+
+> Dark Factory is designed for batch operations like codebase migrations, multi-file refactors, and test generation. Use `arc factory abort` to halt execution at the next consensus gate.
