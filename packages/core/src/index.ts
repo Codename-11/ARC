@@ -53,6 +53,8 @@ export {
   riskDetectionHook,
   classifyRisk,
   HookStateStore,
+  createAttemptTracker,
+  interagentRoutingHook,
 } from "./hooks/index.js";
 export type {
   HookEvent,
@@ -63,6 +65,7 @@ export type {
   Hook,
   PreHookPipelineResult,
   CompletionAudit,
+  AttemptTrackerOptions,
 } from "./hooks/index.js";
 
 // shared.ts wrappers (convenience layer over shared-layer + shared-fs)

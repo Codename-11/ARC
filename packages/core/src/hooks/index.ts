@@ -22,3 +22,6 @@ export { createDefaultHookBus } from "./create-default-bus.js";
 export { sourceClassifyHook } from "./source-classify.js";
 export { riskDetectionHook } from "./risk-detection.js";
 export { classifyRisk } from "./risk-classifier.js";
+export { createAttemptTracker } from "./attempt-tracker.js";
+export type { AttemptTrackerOptions } from "./attempt-tracker.js";
+export { interagentRoutingHook } from "./interagent-routing.js";
