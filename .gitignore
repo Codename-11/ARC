@@ -40,13 +40,8 @@ EXECUTION_PLAN.md
 EXECUTION_PROMPT.txt
 CLAUDE.md
 
-# Tooling state (OMX, Subframe, GSD, bg-shell, tmp)
-.omx/
+# Tooling state
 .subframe/
-.gsd/
-.gsd
-.bg-shell/
-.tmp-arc-clean/
 
 # Build / misc
 *.code-workspace
