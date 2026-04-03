@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { getArcDir, getConfigPath } from "./paths.js";
+import { deepMerge } from "./shared-fs.js";
 import type { ArcConfig, Profile } from "./types.js";
 
 const AUTH_TYPES = new Set(["oauth", "api-key", "bedrock", "vertex", "foundry"]);
@@ -30,6 +31,16 @@ export function validateConfig(config: unknown): config is ArcConfig {
     }
 
     const value = profile as Record<string, unknown>;
+
+    // Child profiles with an `inherits` field skip required-field checks;
+    // the resolved profile is validated at resolution time.
+    if (value["inherits"] !== undefined) {
+      if (typeof value["inherits"] !== "string") {
+        return false;
+      }
+      continue;
+    }
+
     if (typeof value["authType"] !== "string" || !AUTH_TYPES.has(value["authType"])) {
       return false;
     }
@@ -92,4 +103,71 @@ export function getActiveProfile(config: ArcConfig): Profile | undefined {
 
 export function resolveProfileName(config: ArcConfig, name?: string): string {
   return name ?? config.activeProfile;
+}
+
+const MAX_INHERITANCE_DEPTH = 10;
+
+/**
+ * Resolve a profile by walking its inheritance chain and deep-merging
+ * from the root ancestor up to the requested profile.
+ *
+ * Detects circular inheritance and caps depth at 10 levels.
+ */
+export function resolveProfile(config: ArcConfig, profileName: string): Profile {
+  const chain: string[] = [];
+  const visited = new Set<string>();
+  let current: string | undefined = profileName;
+
+  // Walk the chain from child → root, collecting profile names in order
+  while (current) {
+    if (visited.has(current)) {
+      chain.push(current);
+      throw new Error(
+        `Circular profile inheritance detected: ${chain.join(" → ")}`
+      );
+    }
+    visited.add(current);
+    chain.push(current);
+
+    if (chain.length > MAX_INHERITANCE_DEPTH) {
+      throw new Error(
+        `Profile inheritance chain exceeds maximum depth (${MAX_INHERITANCE_DEPTH}): ${chain.join(" → ")}`
+      );
+    }
+
+    const prof: Profile | undefined = config.profiles[current];
+    if (!prof) {
+      if (current === profileName) {
+        throw new Error(`Profile '${current}' not found`);
+      }
+      throw new Error(
+        `Profile '${current}' (inherited by '${chain[chain.indexOf(current) - 1]}') not found`
+      );
+    }
+
+    current = prof.inherits;
+  }
+
+  // Merge from root ancestor → child (last in chain is the root)
+  const reversed = [...chain].reverse();
+  let merged: Record<string, unknown> = {};
+  for (const name of reversed) {
+    const prof = config.profiles[name] as unknown as Record<string, unknown>;
+    merged = deepMerge(merged, prof);
+  }
+
+  // Strip the inherits metadata from the resolved result
+  delete merged["inherits"];
+
+  // Validate required fields on the resolved profile
+  const requiredFields = ["authType", "configDir", "createdAt"] as const;
+  for (const field of requiredFields) {
+    if (merged[field] === undefined || merged[field] === null) {
+      throw new Error(
+        `Resolved profile '${profileName}' is missing required field '${field}' after inheritance from '${chain.join(" → ")}'`
+      );
+    }
+  }
+
+  return merged as unknown as Profile;
 }

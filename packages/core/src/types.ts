@@ -26,6 +26,8 @@ export interface Profile {
   configDir: string;
   description?: string;
   createdAt: string;
+  /** Name of the parent profile this profile inherits from. */
+  inherits?: string;
   apiKeyStorage?: "keyring" | "file";
   envOverrides?: Record<string, string>;
   useShared?: boolean;

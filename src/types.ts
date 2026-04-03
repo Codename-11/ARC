@@ -28,6 +28,8 @@ export interface Profile {
   configDir: string;
   description?: string;
   createdAt: string;
+  /** Name of the parent profile this profile inherits from. */
+  inherits?: string;
   apiKeyStorage?: "keyring" | "file";
   envOverrides?: Record<string, string>;
   /** Whether this profile inherits from the shared layer (~/.arc/shared/). */

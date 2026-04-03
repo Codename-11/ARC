@@ -412,7 +412,7 @@
     },
     {
       "sessionId": "723e22ca-ab9d-442b-bb25-9883801e996b",
-      "status": "active",
+      "status": "idle",
       "steps": [
         {
           "id": "step-1774815942770-34",
@@ -802,8 +802,9 @@
           "id": "step-1774840509789-50",
           "label": "Commit docs updates and push",
           "toolName": "Bash",
-          "status": "running",
-          "startedAt": "2026-03-30T03:15:09.789Z"
+          "status": "completed",
+          "startedAt": "2026-03-30T03:15:09.789Z",
+          "completedAt": "2026-04-03T13:15:16.112Z"
         },
         {
           "id": "step-1774840521323-50",
@@ -815,9 +816,48 @@
         }
       ],
       "startedAt": "2026-03-29T20:17:10.451Z",
-      "lastActivityAt": "2026-03-30T03:15:31.511Z",
-      "currentTool": "Bash"
+      "lastActivityAt": "2026-03-30T03:15:31.511Z"
+    },
+    {
+      "sessionId": "b6c9af1c-b09d-488a-8bf3-e4075954c4e5",
+      "status": "active",
+      "steps": [
+        {
+          "id": "step-1775222116112-0",
+          "label": "Searching content: login",
+          "toolName": "Grep",
+          "status": "completed",
+          "startedAt": "2026-04-03T13:15:16.112Z",
+          "completedAt": "2026-04-03T13:15:16.601Z"
+        },
+        {
+          "id": "step-1775222117669-1",
+          "label": "Searching content: login",
+          "toolName": "Grep",
+          "status": "completed",
+          "startedAt": "2026-04-03T13:15:17.669Z",
+          "completedAt": "2026-04-03T13:15:17.885Z"
+        },
+        {
+          "id": "step-1775222120989-2",
+          "label": "ToolSearch: select:AskUserQuestion",
+          "toolName": "ToolSearch",
+          "status": "completed",
+          "startedAt": "2026-04-03T13:15:20.989Z",
+          "completedAt": "2026-04-03T13:15:21.119Z"
+        },
+        {
+          "id": "step-1775222126341-3",
+          "label": "AskUserQuestion",
+          "toolName": "AskUserQuestion",
+          "status": "running",
+          "startedAt": "2026-04-03T13:15:26.341Z"
+        }
+      ],
+      "startedAt": "2026-04-03T13:15:16.112Z",
+      "lastActivityAt": "2026-04-03T13:15:26.341Z",
+      "currentTool": "AskUserQuestion"
     }
   ],
-  "lastUpdated": "2026-03-30T03:15:31.511Z"
+  "lastUpdated": "2026-04-03T13:15:26.341Z"
 }
