@@ -84,7 +84,7 @@ function writeJson(filePath: string, data: unknown): void {
 export interface PullResult {
   mcpServers: string[];
   commands: string[];
-  claudeMd: boolean;
+  adapterArtifacts: string[];
 }
 
 // ── Public API ─────────────────────────────────────────────────────────────
@@ -167,7 +167,7 @@ export function pullProfileToShared(
   const result: PullResult = {
     mcpServers: baseResult.mcpServers,
     commands: baseResult.commands,
-    claudeMd: false,
+    adapterArtifacts: [],
   };
 
   // Tag _sourceTool in shared settings if provided and MCP servers were pulled
@@ -186,7 +186,7 @@ export function pullProfileToShared(
       .trim();
     if (cleaned) {
       fs.writeFileSync(getSharedClaudeMdPath(), cleaned + "\n", "utf-8");
-      result.claudeMd = true;
+      result.adapterArtifacts.push(getSharedClaudeMdPath());
     }
   }
 

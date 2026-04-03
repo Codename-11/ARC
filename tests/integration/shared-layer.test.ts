@@ -290,7 +290,9 @@ describe("Shared layer pull", () => {
     const { pullProfileToShared } = await import("@axiom-labs/arc-core");
     const result = pullProfileToShared(profileDir);
 
-    expect(result.claudeMd).toBe(true);
+    expect(result.adapterArtifacts).toContain(
+      path.join(arcDir, "shared", "CLAUDE.md")
+    );
 
     const sharedClaudeMdPath = path.join(arcDir, "shared", "CLAUDE.md");
     expect(fs.existsSync(sharedClaudeMdPath)).toBe(true);
