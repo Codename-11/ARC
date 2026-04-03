@@ -48,11 +48,17 @@ describe("Hook Launch Integration", () => {
       const bus = createDefaultHookBus();
       const hooks = bus.list();
 
-      expect(hooks).toHaveLength(2);
+      expect(hooks).toHaveLength(5);
       expect(hooks[0].name).toBe("source-classify");
       expect(hooks[0].priority).toBe(1);
-      expect(hooks[1].name).toBe("risk-detection");
-      expect(hooks[1].priority).toBe(10);
+      expect(hooks[1].name).toBe("interagent-routing");
+      expect(hooks[1].priority).toBe(2);
+      expect(hooks[2].name).toBe("risk-detection");
+      expect(hooks[2].priority).toBe(10);
+      expect(hooks[3].name).toBe("attempt-tracker");
+      expect(hooks[3].priority).toBe(20);
+      expect(hooks[4].name).toBe("audit-score");
+      expect(hooks[4].priority).toBe(90);
     });
 
     it("applies per-hook config when provided", () => {
@@ -64,7 +70,7 @@ describe("Hook Launch Integration", () => {
       const hooks = bus.list();
 
       // Both hooks are registered — the bus stores config separately
-      expect(hooks).toHaveLength(2);
+      expect(hooks).toHaveLength(5);
     });
 
     it("returns a new bus instance each call", () => {
@@ -278,7 +284,7 @@ describe("Hook Launch Integration", () => {
       const ctx = makeCtx();
       await bus.runPre(ctx, "log", "pre-message");
 
-      expect(executionOrder).toEqual(["source-classify", "risk-detection"]);
+      expect(executionOrder).toEqual(["source-classify", "interagent-routing", "risk-detection"]);
     });
   });
 

@@ -1,25 +1,55 @@
 import type { HookConfig } from "./types.js";
 import { HookBus } from "./hook-bus.js";
+import { HookStateStore } from "./hook-state.js";
 import { sourceClassifyHook } from "./source-classify.js";
 import { riskDetectionHook } from "./risk-detection.js";
+import { interagentRoutingHook } from "./interagent-routing.js";
+import { createAttemptTracker } from "./attempt-tracker.js";
+import { createAuditScoreHook } from "./audit-score.js";
+
+export interface DefaultPipeline {
+  bus: HookBus;
+  stateStore: HookStateStore;
+}
+
+/**
+ * Create a HookBus with all default hooks and a shared HookStateStore.
+ *
+ * Returns both the bus and the stateStore so callers (e.g. runWithRetry)
+ * can read hook-deposited state like audit results and attempt counts.
+ *
+ * Default hooks (in priority order):
+ *   1. source-classify      (priority 1)   — assigns MessageSource
+ *   2. interagent-routing   (priority 2)   — suppresses bot→bot loops
+ *  10. risk-detection       (priority 10)  — classifies 5-tier risk
+ *  20. attempt-tracker      (priority 20)  — counts retries per session+turn
+ *  90. audit-score          (priority 90)  — deterministic completion audit
+ */
+export function createDefaultPipeline(
+  hookConfigs?: Record<string, HookConfig>,
+): DefaultPipeline {
+  const bus = new HookBus();
+  const stateStore = new HookStateStore();
+
+  bus.register(sourceClassifyHook, hookConfigs?.["source-classify"]);
+  bus.register(interagentRoutingHook, hookConfigs?.["interagent-routing"]);
+  bus.register(riskDetectionHook, hookConfigs?.["risk-detection"]);
+  bus.register(createAttemptTracker(stateStore), hookConfigs?.["attempt-tracker"]);
+  bus.register(createAuditScoreHook(stateStore), hookConfigs?.["audit-score"]);
+
+  return { bus, stateStore };
+}
 
 /**
  * Create a HookBus with the default built-in hooks registered.
  *
- * This is the composition point — future slices add hooks here.
- * Per-hook configs from the profile are applied when provided.
+ * Backward-compatible wrapper — returns only the HookBus.
+ * Use createDefaultPipeline() when you need access to the HookStateStore.
  *
- * Default hooks (in priority order):
- *   1. source-classify  (priority 1)  — assigns MessageSource
- *  10. risk-detection    (priority 10) — classifies 5-tier risk
+ * Per-hook configs from the profile are applied when provided.
  */
 export function createDefaultHookBus(
-  hookConfigs?: Record<string, HookConfig>
+  hookConfigs?: Record<string, HookConfig>,
 ): HookBus {
-  const bus = new HookBus();
-
-  bus.register(sourceClassifyHook, hookConfigs?.["source-classify"]);
-  bus.register(riskDetectionHook, hookConfigs?.["risk-detection"]);
-
-  return bus;
+  return createDefaultPipeline(hookConfigs).bus;
 }

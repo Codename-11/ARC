@@ -18,7 +18,8 @@ export type {
 
 export { HookBus } from "./hook-bus.js";
 export { HookStateStore } from "./hook-state.js";
-export { createDefaultHookBus } from "./create-default-bus.js";
+export { createDefaultHookBus, createDefaultPipeline } from "./create-default-bus.js";
+export type { DefaultPipeline } from "./create-default-bus.js";
 export { sourceClassifyHook } from "./source-classify.js";
 export { riskDetectionHook } from "./risk-detection.js";
 export { classifyRisk } from "./risk-classifier.js";
@@ -28,3 +29,5 @@ export { interagentRoutingHook } from "./interagent-routing.js";
 export { auditCompletion } from "./completion-auditor.js";
 export type { LLMCompleteFn, AuditCompletionOptions } from "./completion-auditor.js";
 export { createAuditScoreHook } from "./audit-score.js";
+export { runWithRetry } from "./retry-loop.js";
+export type { RunWithRetryOptions, RunWithRetryResult } from "./retry-loop.js";

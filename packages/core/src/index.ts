@@ -49,6 +49,7 @@ export * from "./adapters/types.js";
 export {
   HookBus,
   createDefaultHookBus,
+  createDefaultPipeline,
   sourceClassifyHook,
   riskDetectionHook,
   classifyRisk,
@@ -57,6 +58,7 @@ export {
   interagentRoutingHook,
   auditCompletion,
   createAuditScoreHook,
+  runWithRetry,
 } from "./hooks/index.js";
 export type {
   HookEvent,
@@ -70,6 +72,9 @@ export type {
   AttemptTrackerOptions,
   LLMCompleteFn,
   AuditCompletionOptions,
+  DefaultPipeline,
+  RunWithRetryOptions,
+  RunWithRetryResult,
 } from "./hooks/index.js";
 
 // shared.ts wrappers (convenience layer over shared-layer + shared-fs)
