@@ -720,6 +720,57 @@ Examples:
       }
     });
 
+  swap
+    .command("status")
+    .description("Show per-tool active account status")
+    .action(async () => {
+      const { swapStatus } = await import("./swap.js");
+      const status = swapStatus();
+      console.log();
+      for (const { tool, account, meta } of status) {
+        const label = tool.padEnd(10);
+        if (account) {
+          const metaParts: string[] = [];
+          if (meta?.subscription) metaParts.push(meta.subscription);
+          if (meta?.tier) metaParts.push(meta.tier);
+          const metaStr = metaParts.length > 0 ? ` (${metaParts.join("/")})` : "";
+          console.log(`  ${label} \u2192 ${account}${metaStr}`);
+        } else {
+          console.log(`  ${label} \u2192 (none captured)`);
+        }
+      }
+      console.log();
+    });
+
+  swap
+    .command("from-profile <profile>")
+    .description("Swap canonical credentials from an ARC profile")
+    .action(async (profileName: string) => {
+      const { swapFromProfile } = await import("./swap.js");
+      const { loadConfig, resolveProfile } = await import("./config.js");
+      const { success, error: showError, warn: showWarn, info: showInfo } = await import("./display.js");
+      showWarn("[experimental] Credential hot-swap is an experimental feature.");
+
+      const config = loadConfig();
+      let profile;
+      try {
+        profile = resolveProfile(config, profileName);
+      } catch {
+        showError(`Profile "${profileName}" not found.`);
+        process.exit(1);
+      }
+
+      const tool = profile.tool ?? "claude";
+      const result = swapFromProfile(profileName, profile.configDir, tool);
+      if (result.ok) {
+        success(`Swapped ${tool} credentials from profile "${profileName}".`);
+        showInfo("Restart any running desktop apps to use the new credentials.");
+      } else {
+        showError(result.error);
+        process.exit(1);
+      }
+    });
+
   // === Advanced Commands ===
 
   program

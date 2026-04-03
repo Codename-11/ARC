@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Box, Text, useInput } from "ink";
 import { Overlay } from "../components/Overlay.js";
 import { useTheme } from "../theme.js";
-import { captureAccount, swapTo, listAccounts, deleteAccount, type SwapAccount } from "../../swap.js";
+import { captureAccount, swapTo, listAccounts, deleteAccount, SWAP_TOOLS, type SwapAccount } from "../../swap.js";
+
+const TOOLS = SWAP_TOOLS;
 
 interface Props {
   onClose: () => void;
@@ -17,6 +19,7 @@ export function SwapOverlay({ onClose, onSwapped }: Props) {
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
   const [captureMode, setCaptureMode] = useState(false);
   const [captureName, setCaptureName] = useState("");
+  const [captureTool, setCaptureTool] = useState(0); // index into TOOLS
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const reload = () => setAccounts(listAccounts());
@@ -29,11 +32,20 @@ export function SwapOverlay({ onClose, onSwapped }: Props) {
         setCaptureName("");
         return;
       }
+      // [t] or left/right arrows cycle through tools
+      if (input === "t" || key.leftArrow || key.rightArrow) {
+        setCaptureTool((prev) => {
+          if (key.leftArrow) return (prev - 1 + TOOLS.length) % TOOLS.length;
+          return (prev + 1) % TOOLS.length;
+        });
+        return;
+      }
       if (key.return) {
         if (!captureName.trim()) return;
-        const result = captureAccount(captureName.trim(), "claude");
+        const selectedTool = TOOLS[captureTool]!;
+        const result = captureAccount(captureName.trim(), selectedTool);
         if (result.ok) {
-          setMessage({ text: `Captured "${captureName.trim()}"`, ok: true });
+          setMessage({ text: `Captured "${captureName.trim()}" (${selectedTool})`, ok: true });
           reload();
         } else {
           setMessage({ text: result.error, ok: false });
@@ -142,11 +154,19 @@ export function SwapOverlay({ onClose, onSwapped }: Props) {
 
         {/* Capture mode */}
         {captureMode && (
-          <Box marginBottom={1}>
-            <Text color={colors.primary} bold>{"\u203A"} </Text>
-            <Text color={colors.dimmed}>Account name: </Text>
-            <Text color={colors.text}>{captureName}</Text>
-            <Text color={colors.primary}>{"\u258C"}</Text>
+          <Box flexDirection="column" marginBottom={1}>
+            <Box>
+              <Text color={colors.primary} bold>{"\u203A"} </Text>
+              <Text color={colors.dimmed}>Tool: </Text>
+              <Text color={colors.text} bold>{TOOLS[captureTool]}</Text>
+              <Text color={colors.dimmed}> (t/arrows to switch)</Text>
+            </Box>
+            <Box>
+              <Text color={colors.primary} bold>{"\u203A"} </Text>
+              <Text color={colors.dimmed}>Account name: </Text>
+              <Text color={colors.text}>{captureName}</Text>
+              <Text color={colors.primary}>{"\u258C"}</Text>
+            </Box>
           </Box>
         )}
 
@@ -176,6 +196,9 @@ export function SwapOverlay({ onClose, onSwapped }: Props) {
                     </Text>
                   </Box>
                   <Text color={colors.dimmed}>{a.tool}</Text>
+                  {a.meta && (a.meta.subscription || a.meta.tier) && (
+                    <Text color={colors.dimmed}>{" "}({[a.meta.subscription, a.meta.tier].filter(Boolean).join("/")})</Text>
+                  )}
                   {a.isActive && <Text color={colors.success}> active</Text>}
                 </Box>
               );
@@ -203,6 +226,12 @@ export function SwapOverlay({ onClose, onSwapped }: Props) {
             <Text color={colors.primary} bold>[c]</Text>
             <Text color={colors.dimmed}> capture</Text>
           </Box>
+          {captureMode && (
+            <Box gap={0}>
+              <Text color={colors.primary} bold>[t]</Text>
+              <Text color={colors.dimmed}> tool</Text>
+            </Box>
+          )}
           {accounts.length > 0 && (
             <>
               <Box gap={0}>

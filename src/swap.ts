@@ -9,6 +9,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
+import crypto from "node:crypto";
 import { getArcDir } from "./paths.js";
 import { logAction } from "./log.js";
 
@@ -38,15 +39,21 @@ const TOOL_CREDENTIAL_FILES: Record<string, string[]> = {
 
 // ── Types ─────────────────────────────────────────────────────────────
 
+export interface SwapAccountMeta {
+  tier?: string;
+  subscription?: string;
+}
+
 export interface SwapAccount {
   name: string;
   tool: string;
   isActive: boolean;
   createdAt: string;
+  meta?: SwapAccountMeta;
 }
 
 interface SwapManifest {
-  accounts: Record<string, { tool: string; createdAt: string }>;
+  accounts: Record<string, { tool: string; createdAt: string; meta?: SwapAccountMeta }>;
   active: Record<string, string>; // tool → active account name
 }
 
@@ -68,7 +75,33 @@ function loadManifest(): SwapManifest {
 function saveManifest(manifest: SwapManifest): void {
   const dir = getCredentialsDir();
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(manifestPath(), JSON.stringify(manifest, null, 2), "utf-8");
+  const tmp = manifestPath() + `.tmp.${crypto.randomBytes(4).toString("hex")}`;
+  fs.writeFileSync(tmp, JSON.stringify(manifest, null, 2), "utf-8");
+  fs.renameSync(tmp, manifestPath());
+}
+
+// ── Metadata extraction ──────────────────────────────────────────────
+
+/**
+ * Read the credential file for a tool and extract identifying metadata.
+ */
+function extractCredentialMeta(tool: string, configDir: string): SwapAccountMeta | undefined {
+  try {
+    if (tool === "claude") {
+      const credPath = path.join(configDir, ".credentials.json");
+      if (!fs.existsSync(credPath)) return undefined;
+      const raw = JSON.parse(fs.readFileSync(credPath, "utf-8")) as Record<string, unknown>;
+      const oauth = raw["claudeAiOauth"] as Record<string, unknown> | undefined;
+      if (!oauth) return undefined;
+      const meta: SwapAccountMeta = {};
+      if (typeof oauth["rateLimitTier"] === "string") meta.tier = oauth["rateLimitTier"];
+      if (typeof oauth["subscriptionType"] === "string") meta.subscription = oauth["subscriptionType"];
+      return (meta.tier || meta.subscription) ? meta : undefined;
+    }
+  } catch {
+    // Best-effort metadata extraction — non-critical
+  }
+  return undefined;
 }
 
 // ── Core operations ───────────────────────────────────────────────────
@@ -99,11 +132,15 @@ export function captureAccount(
   // Copy credential files to snapshot
   for (const f of existing) {
     fs.copyFileSync(path.join(configDir, f), path.join(accountDir, f));
+    fs.chmodSync(path.join(accountDir, f), 0o600);
   }
+
+  // Extract metadata from credential files
+  const meta = extractCredentialMeta(tool, configDir);
 
   // Update manifest
   const manifest = loadManifest();
-  manifest.accounts[accountName] = { tool, createdAt: new Date().toISOString() };
+  manifest.accounts[accountName] = { tool, createdAt: new Date().toISOString(), meta };
   manifest.active[tool] = accountName;
   saveManifest(manifest);
 
@@ -158,6 +195,7 @@ export function swapTo(
   try {
     for (const f of targetFiles) {
       fs.copyFileSync(path.join(accountDir, f), path.join(configDir, f));
+      fs.chmodSync(path.join(configDir, f), 0o600);
     }
   } catch (err) {
     // Rollback: restore saved current credentials
@@ -190,7 +228,21 @@ export function listAccounts(): SwapAccount[] {
     tool: info.tool,
     isActive: manifest.active[info.tool] === name,
     createdAt: info.createdAt,
+    meta: info.meta,
   }));
+}
+
+/**
+ * Return per-tool active account status.
+ */
+export function swapStatus(): Array<{ tool: string; account: string | null; meta?: SwapAccountMeta }> {
+  const manifest = loadManifest();
+  const tools = Object.keys(TOOL_CONFIG_DIRS);
+  return tools.map((tool) => {
+    const active = manifest.active[tool] ?? null;
+    const meta = active ? manifest.accounts[active]?.meta : undefined;
+    return { tool, account: active, meta };
+  });
 }
 
 /**
@@ -219,5 +271,53 @@ export function deleteAccount(
   delete manifest.accounts[accountName];
   saveManifest(manifest);
 
+  return { ok: true };
+}
+
+// ── Profile bridge ───────────────────────────────────────────────────
+
+/** Supported tools for swap operations. */
+export const SWAP_TOOLS = Object.keys(TOOL_CONFIG_DIRS);
+
+/**
+ * Swap to the credentials from an ARC profile's configDir.
+ * This bridges the profile system (env var isolation) with the swap system
+ * (canonical dir replacement) for desktop apps.
+ */
+export function swapFromProfile(
+  profileName: string,
+  profileConfigDir: string,
+  tool: string
+): { ok: true } | { ok: false; error: string } {
+  const canonicalDir = TOOL_CONFIG_DIRS[tool];
+  if (!canonicalDir) return { ok: false, error: `Unknown tool: ${tool}` };
+
+  const credFiles = TOOL_CREDENTIAL_FILES[tool] ?? [];
+  if (credFiles.length === 0) return { ok: false, error: `No credential files defined for ${tool}` };
+
+  // Find credential files in the profile's configDir
+  const existing = credFiles.filter((f) => fs.existsSync(path.join(profileConfigDir, f)));
+  if (existing.length === 0) {
+    return {
+      ok: false,
+      error: `No ${tool} credentials found in profile "${profileName}" (${profileConfigDir}). Authenticate first.`,
+    };
+  }
+
+  // Ensure canonical dir exists
+  fs.mkdirSync(canonicalDir, { recursive: true });
+
+  // Copy credential files from profile configDir to canonical dir
+  for (const f of existing) {
+    fs.copyFileSync(path.join(profileConfigDir, f), path.join(canonicalDir, f));
+    fs.chmodSync(path.join(canonicalDir, f), 0o600);
+  }
+
+  // Update manifest to show this profile as active (no snapshot created)
+  const manifest = loadManifest();
+  manifest.active[tool] = `profile:${profileName}`;
+  saveManifest(manifest);
+
+  logAction("swap:from-profile", `${profileName} → ${tool}`);
   return { ok: true };
 }
