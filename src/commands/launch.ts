@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { loadConfig } from "../config.js";
+import { loadConfig, resolveProfile } from "../config.js";
 import { buildProfileEnv } from "../auth.js";
 import { error, info, warn, cmd } from "../display.js";
 import { logAction } from "../log.js";
@@ -63,12 +63,22 @@ export async function handleLaunch(
     passthrough = passthrough.slice(1);
   }
 
-  const profile = config.profiles[profileName];
+  const rawProfile = config.profiles[profileName];
 
-  if (!profile) {
+  if (!rawProfile) {
     error(
       `Profile "${profileName}" not found. Run "arc list" to see available profiles.`
     );
+    process.exit(1);
+  }
+
+  // Resolve inheritance chain (deep-merges parent → child)
+  let profile: typeof rawProfile;
+  try {
+    profile = resolveProfile(config, profileName);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    error(msg);
     process.exit(1);
   }
 

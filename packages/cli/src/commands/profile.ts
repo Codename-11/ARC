@@ -2,7 +2,7 @@ import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
 import type { AuthType } from "../types.js";
-import { loadConfig, saveConfig, resolveProfileName } from "../config.js";
+import { loadConfig, saveConfig, resolveProfileName, resolveProfile } from "../config.js";
 import { success, error, info, detail, profileTable } from "../display.js";
 import { createProfile, importProfile, validateName } from "../tui/createProfile.js";
 
@@ -102,18 +102,32 @@ export async function handleList(): Promise<void> {
 export async function handleShow(name?: string): Promise<void> {
   const config = loadConfig();
   const resolved = resolveProfileName(config, name);
-  const profile = config.profiles[resolved];
-  if (!profile) {
+  const rawProfile = config.profiles[resolved];
+  if (!rawProfile) {
     error(`Profile "${resolved}" not found.`);
+    process.exit(1);
+  }
+
+  // Resolve inheritance to show the effective (merged) values
+  let profile = rawProfile;
+  try {
+    profile = resolveProfile(config, resolved);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    error(msg);
     process.exit(1);
   }
 
   const isActive = resolved === config.activeProfile;
   process.stdout.write(`Name:        ${resolved}${isActive ? " (active)" : ""}\n`);
+  if (rawProfile.inherits) {
+    process.stdout.write(`Inherits:    ${rawProfile.inherits}\n`);
+  }
   process.stdout.write(`Tool:        ${profile.tool ?? "claude"}\n`);
   process.stdout.write(`Auth Type:   ${profile.authType}\n`);
   process.stdout.write(`Config Dir:  ${profile.configDir}\n`);
   if (profile.description) process.stdout.write(`Description: ${profile.description}\n`);
+  if (profile.enforcement) process.stdout.write(`Enforcement: ${profile.enforcement}\n`);
   process.stdout.write(`Created:     ${profile.createdAt}\n`);
 }
 
