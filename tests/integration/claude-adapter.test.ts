@@ -54,7 +54,7 @@ describe("Claude adapter parity", () => {
       "utf-8"
     );
 
-    const { getClaudeCredentialStatus } = await import("../../packages/adapter-claude/src/auth.js");
+    const { getClaudeCredentialStatus } = await import("@axiom-labs/arc-adapter-claude");
     const status = await getClaudeCredentialStatus({
       authType: "oauth",
       tool: "claude",
@@ -68,7 +68,7 @@ describe("Claude adapter parity", () => {
   });
 
   it("builds Claude launch env with auth sanitization and mode flags", async () => {
-    const { buildClaudeProfileEnv } = await import("../../packages/adapter-claude/src/auth.js");
+    const { buildClaudeProfileEnv } = await import("@axiom-labs/arc-adapter-claude");
     const env = await buildClaudeProfileEnv(
       {
         authType: "bedrock",
@@ -104,7 +104,7 @@ describe("Claude adapter parity", () => {
     fs.mkdirSync(sourceDir, { recursive: true });
     fs.mkdirSync(targetDir, { recursive: true });
 
-    const { importClaudeArtifacts } = await import("../../packages/adapter-claude/src/import.js");
+    const { importClaudeArtifacts } = await import("@axiom-labs/arc-adapter-claude");
     const copied = importClaudeArtifacts(sourceDir, targetDir);
 
     expect(copied).toContain(".claude.json");

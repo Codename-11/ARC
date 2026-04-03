@@ -31,7 +31,7 @@ afterEach(() => {
 describe("Profile CRUD", () => {
   it("loadConfig returns default config when no config.json exists", async () => {
     // Dynamic import to pick up ARC_DIR env
-    const { loadConfig } = await import("../../src/config.js");
+    const { loadConfig } = await import("@axiom-labs/arc-core");
     const config = loadConfig();
     expect(config.version).toBe(1);
     expect(config.activeProfile).toBe("default");
@@ -43,7 +43,7 @@ describe("Profile CRUD", () => {
       work: { authType: "oauth", tool: "claude" },
     });
 
-    const { loadConfig } = await import("../../src/config.js");
+    const { loadConfig } = await import("@axiom-labs/arc-core");
     const config = loadConfig();
     expect(config.version).toBe(1);
     expect(config.activeProfile).toBe("work");
@@ -52,7 +52,7 @@ describe("Profile CRUD", () => {
   });
 
   it("saveConfig writes config.json atomically", async () => {
-    const { loadConfig, saveConfig } = await import("../../src/config.js");
+    const { loadConfig, saveConfig } = await import("@axiom-labs/arc-core");
 
     // Start with empty config
     const config = loadConfig();
@@ -79,7 +79,7 @@ describe("Profile CRUD", () => {
   });
 
   it("can create multiple profiles", async () => {
-    const { loadConfig, saveConfig } = await import("../../src/config.js");
+    const { loadConfig, saveConfig } = await import("@axiom-labs/arc-core");
     const config = loadConfig();
 
     const profileNames = ["work", "personal", "testing"];
@@ -109,7 +109,7 @@ describe("Profile CRUD", () => {
       personal: { authType: "api-key" },
     });
 
-    const { loadConfig, saveConfig } = await import("../../src/config.js");
+    const { loadConfig, saveConfig } = await import("@axiom-labs/arc-core");
     const config = loadConfig();
     expect(Object.keys(config.profiles)).toHaveLength(2);
 
@@ -129,7 +129,7 @@ describe("Profile CRUD", () => {
       personal: { authType: "oauth" },
     });
 
-    const { loadConfig, saveConfig } = await import("../../src/config.js");
+    const { loadConfig, saveConfig } = await import("@axiom-labs/arc-core");
     const config = loadConfig();
     expect(config.activeProfile).toBe("work");
 
@@ -141,7 +141,7 @@ describe("Profile CRUD", () => {
   });
 
   it("validateConfig rejects invalid configs", async () => {
-    const { validateConfig } = await import("../../src/config.js");
+    const { validateConfig } = await import("@axiom-labs/arc-core");
 
     expect(validateConfig(null)).toBe(false);
     expect(validateConfig({})).toBe(false);
@@ -151,7 +151,7 @@ describe("Profile CRUD", () => {
   });
 
   it("validateConfig accepts valid configs", async () => {
-    const { validateConfig } = await import("../../src/config.js");
+    const { validateConfig } = await import("@axiom-labs/arc-core");
 
     expect(
       validateConfig({
@@ -189,7 +189,7 @@ describe("Profile CRUD", () => {
   it("loadConfig throws on malformed JSON", async () => {
     fs.writeFileSync(path.join(arcDir, "config.json"), "not valid json{{{", "utf-8");
 
-    const { loadConfig } = await import("../../src/config.js");
+    const { loadConfig } = await import("@axiom-labs/arc-core");
     expect(() => loadConfig()).toThrow(/malformed JSON/);
   });
 });

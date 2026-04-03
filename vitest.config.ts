@@ -1,6 +1,13 @@
+import path from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@axiom-labs/arc-core": path.resolve(__dirname, "packages/core/src/index.ts"),
+      "@axiom-labs/arc-adapter-claude": path.resolve(__dirname, "packages/adapter-claude/src/index.ts"),
+    },
+  },
   test: {
     include: ["tests/**/*.test.ts"],
     testTimeout: 30_000,

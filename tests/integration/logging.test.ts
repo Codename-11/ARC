@@ -21,7 +21,7 @@ afterEach(() => {
 
 describe("structured logging", () => {
   it("writes and filters structured log entries", async () => {
-    const { logAction, logEvent, getLogEntries } = await import("../../src/log.js");
+    const { logAction, logEvent, getLogEntries } = await import("@axiom-labs/arc-core");
 
     logAction("profile:create", "work", {
       component: "profile",

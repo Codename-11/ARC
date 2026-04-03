@@ -45,7 +45,7 @@ describe("Shared layer sync", () => {
 
     const profileDir = path.join(arcDir, "profiles", "work");
 
-    const { syncSharedToProfile } = await import("../../src/shared.js");
+    const { syncSharedToProfile } = await import("@axiom-labs/arc-core");
     syncSharedToProfile(profileDir);
 
     // Verify the profile's settings.json now contains the shared MCP server
@@ -81,7 +81,7 @@ describe("Shared layer sync", () => {
       },
     });
 
-    const { syncSharedToProfile } = await import("../../src/shared.js");
+    const { syncSharedToProfile } = await import("@axiom-labs/arc-core");
     syncSharedToProfile(profileDir);
 
     const settings = JSON.parse(
@@ -101,7 +101,7 @@ describe("Shared layer sync", () => {
 
     const profileDir = path.join(arcDir, "profiles", "work");
 
-    const { syncSharedToProfile } = await import("../../src/shared.js");
+    const { syncSharedToProfile } = await import("@axiom-labs/arc-core");
     syncSharedToProfile(profileDir);
 
     const commandPath = path.join(profileDir, "commands", "my-command.md");
@@ -118,7 +118,7 @@ describe("Shared layer sync", () => {
 
     const profileDir = path.join(arcDir, "profiles", "work");
 
-    const { syncSharedToProfile } = await import("../../src/shared.js");
+    const { syncSharedToProfile } = await import("@axiom-labs/arc-core");
     syncSharedToProfile(profileDir, { claudeMd: true });
 
     const claudeMdPath = path.join(profileDir, "CLAUDE.md");
@@ -142,7 +142,7 @@ describe("Shared layer sync", () => {
 
     const profileDir = path.join(arcDir, "profiles", "work");
 
-    const { syncSharedToProfile } = await import("../../src/shared.js");
+    const { syncSharedToProfile } = await import("@axiom-labs/arc-core");
     syncSharedToProfile(profileDir);
 
     const manifestPath = path.join(profileDir, ".arc-shared.json");
@@ -167,7 +167,7 @@ describe("Shared layer sync", () => {
 
     // First sync
     const { syncSharedToProfile, unsyncSharedFromProfile } = await import(
-      "../../src/shared.js"
+      "@axiom-labs/arc-core"
     );
     syncSharedToProfile(profileDir);
 
@@ -199,7 +199,7 @@ describe("Shared layer sync", () => {
     const profileDir = path.join(arcDir, "profiles", "work");
 
     const { syncSharedToProfile, unsyncSharedFromProfile } = await import(
-      "../../src/shared.js"
+      "@axiom-labs/arc-core"
     );
     syncSharedToProfile(profileDir);
     expect(
@@ -232,7 +232,7 @@ describe("Shared layer pull", () => {
       "utf-8"
     );
 
-    const { pullProfileToShared } = await import("../../src/shared.js");
+    const { pullProfileToShared } = await import("@axiom-labs/arc-core");
     const result = pullProfileToShared(profileDir, "claude");
 
     expect(result.mcpServers).toContain("profile-mcp");
@@ -261,7 +261,7 @@ describe("Shared layer pull", () => {
       "utf-8"
     );
 
-    const { pullProfileToShared } = await import("../../src/shared.js");
+    const { pullProfileToShared } = await import("@axiom-labs/arc-core");
     const result = pullProfileToShared(profileDir);
 
     expect(result.commands).toContain("review.md");
@@ -287,7 +287,7 @@ describe("Shared layer pull", () => {
       "utf-8"
     );
 
-    const { pullProfileToShared } = await import("../../src/shared.js");
+    const { pullProfileToShared } = await import("@axiom-labs/arc-core");
     const result = pullProfileToShared(profileDir);
 
     expect(result.claudeMd).toBe(true);
@@ -314,7 +314,7 @@ describe("Shared layer pull", () => {
 
     const profileDir = path.join(arcDir, "profiles", "gemini");
 
-    const { syncSharedToProfile } = await import("../../src/shared.js");
+    const { syncSharedToProfile } = await import("@axiom-labs/arc-core");
     const result = syncSharedToProfile(profileDir, {}, "gemini");
 
     expect(result.warning).toBeDefined();
