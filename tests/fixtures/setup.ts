@@ -113,6 +113,21 @@ export function writeSharedClaudeMd(arcDir: string, content: string): void {
 }
 
 /**
+ * Writes an arc.json workspace config file into the given directory.
+ */
+export function writeArcJson(
+  dir: string,
+  config: Record<string, unknown>
+): void {
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(
+    path.join(dir, "arc.json"),
+    JSON.stringify(config, null, 2) + "\n",
+    "utf-8"
+  );
+}
+
+/**
  * Writes a shared command file.
  */
 export function writeSharedCommand(
