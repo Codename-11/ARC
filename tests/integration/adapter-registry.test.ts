@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, afterAll } from "vitest";
 import { listAdapters, getAdapter } from "../../packages/cli/src/adapters/index.js";
+import { isProcessRunning } from "../../packages/core/src/process.js";
+import fs from "node:fs";
+import path from "node:path";
+import os from "node:os";
 
 // ─── Characterization tests ─────────────────────────────────────────
 // These lock down existing adapter behavior as a regression baseline.
@@ -168,5 +172,178 @@ describe("Codex adapter real lifecycle", () => {
 
   it("terminate() resolves without throwing for a non-existent pid", async () => {
     await expect(adapter.terminate(dummyProcess)).resolves.toBeUndefined();
+  });
+
+  it("launch() spawns a real process (does not throw 'not implemented')", async () => {
+    // Use node as the binary since codex may not be installed
+    // We test that the adapter's launch path works by confirming it returns an AgentProcess
+    // Note: codex adapter hardcodes "codex" as binary, so this will fail to spawn
+    // if codex isn't installed. Instead, verify the launch method is a real implementation
+    // by checking it doesn't throw "not implemented" — it may throw a spawn error instead.
+    const dummyProfile = {
+      authType: "api-key" as const,
+      tool: "codex" as const,
+      configDir: "/tmp/fake",
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      const proc = await adapter.launch(dummyProfile, { args: ["--help"], env: {} });
+      // If codex is installed, it spawned successfully
+      expect(proc.pid).toBeTypeOf("number");
+      expect(proc.tool).toBe("codex");
+      // Clean up
+      await adapter.terminate(proc);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      // "not implemented" would mean stubs are still in place — that should NOT happen
+      expect(msg).not.toBe("not implemented");
+      // Any other error (spawn failure, binary not found) is acceptable
+    }
+  });
+});
+
+describe("Generic adapter real lifecycle (via getAdapter)", () => {
+  const pidsToClean: number[] = [];
+
+  afterAll(async () => {
+    // Clean up any spawned processes
+    const { terminateProcess } = await import("../../packages/core/src/process.js");
+    for (const pid of pidsToClean) {
+      try { await terminateProcess(pid, "test-cleanup"); } catch { /* already dead */ }
+    }
+  });
+
+  it("getAdapter('unknown-tool') returns an adapter with real launch (not stubbed)", async () => {
+    const adapter = getAdapter("unknown-tool");
+    const dummyProfile = {
+      authType: "api-key" as const,
+      tool: "unknown-tool",
+      configDir: "/tmp/fake",
+      createdAt: new Date().toISOString(),
+    };
+
+    // The generic adapter's launch will try to spawn "unknown-tool" binary,
+    // which doesn't exist. Verify it doesn't throw "not implemented".
+    try {
+      const proc = await adapter.launch(dummyProfile, { args: [], env: {} });
+      // Shouldn't get here since "unknown-tool" doesn't exist as a binary
+      pidsToClean.push(proc.pid);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      expect(msg).not.toBe("not implemented");
+      // Expected: spawn error because "unknown-tool" binary doesn't exist
+    }
+  });
+
+  it("generic adapter launches a real process with node", async () => {
+    // Create a temp script that prints and exits
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "arc-test-"));
+    const scriptPath = path.join(tmpDir, "test-script.js");
+    fs.writeFileSync(scriptPath, 'console.log("hello from generic"); process.exit(0);');
+
+    const adapter = getAdapter("node");
+    const dummyProfile = {
+      authType: "api-key" as const,
+      tool: "node",
+      configDir: "/tmp/fake",
+      createdAt: new Date().toISOString(),
+    };
+
+    const proc = await adapter.launch(dummyProfile, {
+      args: [scriptPath],
+      env: {},
+    });
+
+    expect(proc.pid).toBeTypeOf("number");
+    expect(proc.pid).toBeGreaterThan(0);
+    expect(proc.tool).toBe("node");
+    pidsToClean.push(proc.pid);
+
+    // Wait briefly for the short script to exit
+    await new Promise((r) => setTimeout(r, 500));
+
+    // Process should have exited
+    expect(isProcessRunning(proc.pid)).toBe(false);
+
+    // Clean up temp files
+    fs.unlinkSync(scriptPath);
+    fs.rmdirSync(tmpDir);
+  });
+
+  it("generic adapter's onOutput captures stdout lines", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "arc-test-"));
+    const scriptPath = path.join(tmpDir, "output-script.js");
+    fs.writeFileSync(scriptPath, [
+      'console.log("line-one");',
+      'console.log("line-two");',
+      'setTimeout(() => process.exit(0), 200);',
+    ].join("\n"));
+
+    const adapter = getAdapter("node");
+    const dummyProfile = {
+      authType: "api-key" as const,
+      tool: "node",
+      configDir: "/tmp/fake",
+      createdAt: new Date().toISOString(),
+    };
+
+    const proc = await adapter.launch(dummyProfile, {
+      args: [scriptPath],
+      env: {},
+    });
+    pidsToClean.push(proc.pid);
+
+    const captured: string[] = [];
+    adapter.onOutput!(proc, (event) => {
+      captured.push(event.content);
+    });
+
+    // Wait for script to run and output to be captured
+    await new Promise((r) => setTimeout(r, 1000));
+
+    expect(captured).toContain("line-one");
+    expect(captured).toContain("line-two");
+
+    // Clean up
+    try { await adapter.terminate(proc); } catch { /* already exited */ }
+    fs.unlinkSync(scriptPath);
+    fs.rmdirSync(tmpDir);
+  });
+
+  it("generic adapter terminate() kills a running process", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "arc-test-"));
+    const scriptPath = path.join(tmpDir, "long-script.js");
+    fs.writeFileSync(scriptPath, 'setInterval(() => {}, 1000);'); // runs forever
+
+    const adapter = getAdapter("node");
+    const dummyProfile = {
+      authType: "api-key" as const,
+      tool: "node",
+      configDir: "/tmp/fake",
+      createdAt: new Date().toISOString(),
+    };
+
+    const proc = await adapter.launch(dummyProfile, {
+      args: [scriptPath],
+      env: {},
+    });
+    pidsToClean.push(proc.pid);
+
+    // Verify it's running
+    expect(isProcessRunning(proc.pid)).toBe(true);
+
+    // Terminate it
+    await adapter.terminate(proc);
+
+    // Give a moment for cleanup
+    await new Promise((r) => setTimeout(r, 500));
+
+    // Verify it's dead
+    expect(isProcessRunning(proc.pid)).toBe(false);
+
+    // Clean up
+    fs.unlinkSync(scriptPath);
+    fs.rmdirSync(tmpDir);
   });
 });

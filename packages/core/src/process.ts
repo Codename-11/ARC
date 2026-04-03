@@ -187,6 +187,22 @@ export function parseJsonlLine(line: string): ParsedJsonlLine {
   }
 }
 
+// ─── Wait for exit ───────────────────────────────────────────────────
+
+/**
+ * Wait for a process to exit by polling `isProcessRunning`.
+ * Resolves when the process is no longer running.
+ * Used by CLI `handleLaunch` to block until the adapter-launched child exits.
+ */
+export async function waitForProcessExit(
+  pid: number,
+  pollIntervalMs = 250
+): Promise<void> {
+  while (isProcessRunning(pid)) {
+    await sleep(pollIntervalMs);
+  }
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────
 
 function sleep(ms: number): Promise<void> {

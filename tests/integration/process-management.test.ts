@@ -4,6 +4,7 @@ import {
   isProcessRunning,
   terminateProcess,
   parseJsonlLine,
+  waitForProcessExit,
 } from "../../packages/core/src/process.js";
 
 // ─── Process management integration tests ────────────────────────────
@@ -121,6 +122,54 @@ describe("terminateProcess", () => {
 
     // Should not throw
     await expect(terminateProcess(handle.pid, "test")).resolves.toBeUndefined();
+  });
+});
+
+// ─── waitForProcessExit ──────────────────────────────────────────────
+
+describe("waitForProcessExit", () => {
+  it("resolves when a short-lived process exits", async () => {
+    const handle = spawnManagedProcess({
+      command: process.platform === "win32" ? "cmd" : "true",
+      args: process.platform === "win32" ? ["/c", "echo", "done"] : [],
+      component: "test",
+    });
+
+    const start = Date.now();
+    await waitForProcessExit(handle.pid, 50);
+    const elapsed = Date.now() - start;
+
+    // Should resolve quickly (within 2 seconds) for a process that exits immediately
+    expect(elapsed).toBeLessThan(2000);
+    expect(isProcessRunning(handle.pid)).toBe(false);
+  });
+
+  it("resolves after a process is terminated externally", async () => {
+    const handle = spawnManagedProcess({
+      command: process.platform === "win32" ? "cmd" : "sleep",
+      args: process.platform === "win32" ? ["/c", "timeout", "/t", "300", "/nobreak"] : ["300"],
+      component: "test",
+    });
+
+    expect(isProcessRunning(handle.pid)).toBe(true);
+
+    // Terminate after a short delay
+    setTimeout(() => {
+      terminateProcess(handle.pid, "test").catch(() => {});
+    }, 200);
+
+    await waitForProcessExit(handle.pid, 100);
+
+    expect(isProcessRunning(handle.pid)).toBe(false);
+  });
+
+  it("resolves immediately for a non-existent pid", async () => {
+    const start = Date.now();
+    await waitForProcessExit(2147483647, 50);
+    const elapsed = Date.now() - start;
+
+    // Should resolve nearly instantly
+    expect(elapsed).toBeLessThan(500);
   });
 });
 

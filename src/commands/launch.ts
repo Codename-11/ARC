@@ -3,6 +3,9 @@ import { loadConfig } from "../config.js";
 import { buildProfileEnv } from "../auth.js";
 import { error, info, warn, cmd } from "../display.js";
 import { logAction } from "../log.js";
+import { getAdapter } from "../../packages/cli/src/adapters/index.js";
+import { waitForProcessExit } from "../../packages/core/src/process.js";
+import type { AgentProcess } from "../../packages/core/src/adapters/types.js";
 
 const isWindows = process.platform === "win32";
 
@@ -96,19 +99,73 @@ export async function handleLaunch(
     }
   }
 
-  // Allow callers (e.g. TUI) to tear down before we take over stdio
-  if (opts?.beforeSpawn) {
-    await opts.beforeSpawn();
-  }
+  // Allow callers (e.g. TUI) to tear down before we take over stdio.
+  // For adapter-managed launches, beforeSpawn is passed via LaunchOptions.
+  // For legacy spawnSync, we call it directly below.
 
   logAction("launch", `${profileName} (${tool})`);
   const flagStr = allArgs.length > 0 ? ` [${allArgs.join(" ")}]` : "";
   info(`Launching ${tool} with profile: ${profileName}${flagStr}`);
 
+  // Try the adapter's real lifecycle first. If the adapter still has stubs
+  // (throws "not implemented"), fall back to the legacy spawnSync path.
+  const adapter = getAdapter(tool);
+
+  let agentProcess: AgentProcess | null = null;
+  try {
+    agentProcess = await adapter.launch(profile, {
+      args: allArgs,
+      env: profileEnv,
+      cwd: process.cwd(),
+      beforeSpawn: opts?.beforeSpawn ? async () => { await opts!.beforeSpawn!(); } : undefined,
+    });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg === "not implemented") {
+      // Adapter still has stub lifecycle — fall back to spawnSync
+      agentProcess = null;
+    } else {
+      // Real error from a real adapter
+      error(`Failed to launch ${tool}: ${msg}`);
+      process.exit(1);
+    }
+  }
+
+  if (agentProcess) {
+    // ─── Adapter-managed process path ──────────────────────────────
+    // Register signal handlers for clean shutdown
+    const cleanup = async () => {
+      try {
+        await adapter.terminate(agentProcess!);
+      } catch {
+        // Best-effort cleanup
+      }
+    };
+
+    process.on("SIGINT", () => { void cleanup().then(() => process.exit(130)); });
+    process.on("SIGTERM", () => { void cleanup().then(() => process.exit(143)); });
+
+    // Forward output to the terminal
+    if (adapter.onOutput) {
+      adapter.onOutput(agentProcess, (event) => {
+        process.stdout.write(event.content + "\n");
+      });
+    }
+
+    // Block until the child process exits
+    await waitForProcessExit(agentProcess.pid);
+    process.exit(0);
+  }
+
+  // ─── Legacy spawnSync path (stubbed adapters: Claude, Gemini) ────
   // Use spawnSync with stdio:"inherit" — the parent blocks completely and
   // the child process owns the terminal.  No stdin competition, no async
   // race conditions, no DEP0190 warning.
   // On Windows, tools are often .cmd shims that need `cmd /c` to resolve.
+  if (opts?.beforeSpawn) {
+    await opts.beforeSpawn();
+  }
+
   const result = isWindows
     ? spawnSync("cmd", ["/c", tool, ...allArgs], {
         stdio: "inherit",
