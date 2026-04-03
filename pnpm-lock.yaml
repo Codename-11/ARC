@@ -56,6 +56,23 @@ importers:
         specifier: ^1
         version: 1.2.0
 
+  packages/adapter-claude:
+    dependencies:
+      '@axiom-labs/arc-core':
+        specifier: workspace:*
+        version: link:../core
+
+  packages/cli:
+    dependencies:
+      '@axiom-labs/arc-adapter-claude':
+        specifier: workspace:*
+        version: link:../adapter-claude
+      '@axiom-labs/arc-core':
+        specifier: workspace:*
+        version: link:../core
+
+  packages/core: {}
+
 packages:
 
   '@alcalzone/ansi-tokenize@0.2.5':

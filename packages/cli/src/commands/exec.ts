@@ -1,7 +1,7 @@
 import { loadConfig } from "../config.js";
 import { buildProfileEnv } from "../auth.js";
 import { error } from "../display.js";
-import { runCommandWithLifecycle } from "../../../core/src/lifecycle.js";
+import { runCommandWithLifecycle } from "@axiom-labs/arc-core";
 import { writeLogEvent } from "../log.js";
 
 const isWindows = process.platform === "win32";

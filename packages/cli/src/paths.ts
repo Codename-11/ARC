@@ -1,7 +1,7 @@
-export * from "../../core/src/paths.js";
+export * from "@axiom-labs/arc-core";
 import os from "node:os";
 import path from "node:path";
-import { getSharedDir } from "../../core/src/paths.js";
+import { getSharedDir } from "@axiom-labs/arc-core";
 
 export function getClaudeDefaultDir(): string {
   return path.join(os.homedir(), ".claude");

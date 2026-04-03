@@ -1,8 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { CredentialStatus } from "../../core/src/adapters/types.js";
-import type { Profile } from "../../core/src/types.js";
-import { retrieveSecret } from "../../core/src/keyring.js";
+import type { CredentialStatus, Profile } from "@axiom-labs/arc-core";
+import { retrieveSecret } from "@axiom-labs/arc-core";
 
 interface OAuthCredentials {
   accessToken: string;

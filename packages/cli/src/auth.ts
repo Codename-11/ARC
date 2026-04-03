@@ -1,8 +1,7 @@
-import type { CredentialStatus } from "../../core/src/adapters/types.js";
-import type { Profile } from "../../core/src/types.js";
+import type { CredentialStatus, Profile } from "@axiom-labs/arc-core";
 import { getAdapter } from "./adapters/index.js";
 
-export type { CredentialStatus } from "../../core/src/adapters/types.js";
+export type { CredentialStatus } from "@axiom-labs/arc-core";
 
 export async function getCredentialStatus(
   profile: Profile,

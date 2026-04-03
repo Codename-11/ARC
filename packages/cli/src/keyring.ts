@@ -1,1 +1,1 @@
-export * from "../../core/src/keyring.js";
+export * from "@axiom-labs/arc-core";

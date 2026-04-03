@@ -38,3 +38,13 @@ export type {
 } from "./types.js";
 
 export * from "./adapters/types.js";
+
+// shared.ts wrappers (convenience layer over shared-layer + shared-fs)
+export {
+  getSharedSettings,
+  getSharedSourceTool,
+  syncSharedToProfile,
+  unsyncSharedFromProfile,
+  pullProfileToShared,
+  type PullResult,
+} from "./shared.js";

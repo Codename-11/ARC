@@ -8,7 +8,11 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "types": ["node"],
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "paths": {
+      "@axiom-labs/arc-core": ["./packages/core/src/index.ts"],
+      "@axiom-labs/arc-adapter-claude": ["./packages/adapter-claude/src/index.ts"]
+    }
   },
   "include": [
     "src/index.ts",

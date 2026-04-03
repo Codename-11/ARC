@@ -1,14 +1,14 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import claudeAdapter from "../../../adapter-claude/src/index.js";
-import { retrieveSecret } from "../../../core/src/keyring.js";
-import type { Profile } from "../../../core/src/types.js";
+import claudeAdapter from "@axiom-labs/arc-adapter-claude";
+import { retrieveSecret } from "@axiom-labs/arc-core";
+import type { Profile } from "@axiom-labs/arc-core";
 import type {
   CredentialStatus,
   DetectedTool,
   RuntimeAdapter,
-} from "../../../core/src/adapters/types.js";
+} from "@axiom-labs/arc-core";
 
 interface OAuthCredentials {
   accessToken: string;

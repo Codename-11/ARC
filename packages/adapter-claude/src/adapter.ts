@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { RuntimeAdapter } from "../../core/src/adapters/types.js";
+import type { RuntimeAdapter } from "@axiom-labs/arc-core";
 import { getClaudeCredentialStatus, buildClaudeProfileEnv } from "./auth.js";
 import { pullSharedClaudeMd, removeSharedClaudeMd, syncSharedClaudeMd } from "./shared.js";
 

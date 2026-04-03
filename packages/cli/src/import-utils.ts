@@ -1,1 +1,1 @@
-export * from "../../core/src/import-utils.js";
+export * from "@axiom-labs/arc-core";

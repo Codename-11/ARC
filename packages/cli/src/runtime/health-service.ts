@@ -10,7 +10,7 @@ import {
   getLogsDir,
   loadConfig,
   validateConfig,
-} from "../../../core/src/index.js";
+} from "@axiom-labs/arc-core";
 import type { AuthType, Profile } from "../types.js";
 import { getCredentialStatus } from "../auth.js";
 import { findBinary, getInstallHint } from "./tooling.js";

@@ -5,5 +5,5 @@ export {
   queryLogEvents,
   readLogEvents,
   writeLogEvent,
-} from "../../core/src/logging.js";
+} from "@axiom-labs/arc-core";
 export { getLogsDir, getStructuredLogPath } from "./paths.js";

@@ -3,7 +3,7 @@ import { FullScreenBox } from "fullscreen-ink";
 import { ThemeProvider, type ThemeName } from "./theme.js";
 import { Dashboard } from "./Dashboard.js";
 import { loadConfig, saveConfig } from "../config.js";
-import { withLifecycleScope } from "../../../core/src/lifecycle.js";
+import { withLifecycleScope } from "@axiom-labs/arc-core";
 import { writeLogEvent } from "../log.js";
 
 export let launchPending = false;

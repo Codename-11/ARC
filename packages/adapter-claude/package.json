@@ -8,5 +8,8 @@
   "scripts": {
     "build": "tsup src/index.ts --format esm --target node20 --clean",
     "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@axiom-labs/arc-core": "workspace:*"
   }
 }

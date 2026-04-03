@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { getSharedDir } from "../../core/src/paths.js";
+import { getSharedDir } from "@axiom-labs/arc-core";
 
 const SHARED_FILE = "CLAUDE.md";
 const START = "<!-- arc:shared:start -->";

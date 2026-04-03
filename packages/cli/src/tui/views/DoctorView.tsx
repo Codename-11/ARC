@@ -3,7 +3,7 @@ import { Box, Text } from "ink";
 import { Spinner } from "@inkjs/ui";
 import { useTheme } from "../theme.js";
 import { collectHealthReport, type HealthReport } from "../../runtime/health-service.js";
-import type { HealthStatus } from "../../../../core/src/health.js";
+import type { HealthStatus } from "@axiom-labs/arc-core";
 import type { ProfileEntry } from "../useProfiles.js";
 
 interface Props {
