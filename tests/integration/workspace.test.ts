@@ -13,6 +13,7 @@ import {
   loadWorkspaceConfig,
 } from "@axiom-labs/arc-core";
 import type { ArcConfig, Profile } from "@axiom-labs/arc-core";
+import { handleWhich } from "../../src/commands/which.js";
 
 let arcDir: string;
 let cleanup: () => void;
@@ -292,6 +293,116 @@ describe("workspace integration: resolveEffectiveProfile", () => {
       // arc.json wins
       expect(result.profileName).toBe("work");
       expect(result.profile.tool).toBe("gemini");
+    } finally {
+      fs.rmSync(projectDir, { recursive: true, force: true });
+    }
+  });
+});
+
+// ─── arc which Integration Tests ────────────────────────────────────
+
+describe("arc which command", () => {
+  let stdoutOutput: string;
+  let originalWrite: typeof process.stdout.write;
+  let originalCwd: typeof process.cwd;
+
+  beforeEach(() => {
+    stdoutOutput = "";
+    originalWrite = process.stdout.write;
+    process.stdout.write = ((chunk: string | Uint8Array) => {
+      stdoutOutput += typeof chunk === "string" ? chunk : Buffer.from(chunk).toString();
+      return true;
+    }) as typeof process.stdout.write;
+    originalCwd = process.cwd;
+  });
+
+  afterEach(() => {
+    process.stdout.write = originalWrite;
+    process.cwd = originalCwd;
+  });
+
+  it("arc which with arc.json: shows profile name with arc.json source path", async () => {
+    writeConfigWithProfiles(arcDir, {
+      default: { authType: "oauth", tool: "claude" },
+      work: { authType: "api-key", tool: "gemini" },
+    }, "default");
+
+    const projectDir = createProjectDir();
+    try {
+      writeArcJson(projectDir, { version: 1, profile: "work" });
+      process.cwd = () => projectDir;
+
+      await handleWhich();
+
+      expect(stdoutOutput).toContain("Profile:");
+      expect(stdoutOutput).toContain("work");
+      expect(stdoutOutput).toContain("from arc.json at");
+      expect(stdoutOutput).toContain(projectDir);
+      expect(stdoutOutput).toContain("Tool:        gemini");
+      expect(stdoutOutput).toContain("Auth Type:   api-key");
+    } finally {
+      fs.rmSync(projectDir, { recursive: true, force: true });
+    }
+  });
+
+  it("arc which without arc.json: shows active profile with no arc.json found", async () => {
+    writeConfigWithProfiles(arcDir, {
+      default: { authType: "oauth", tool: "claude", enforcement: "log" },
+    }, "default");
+
+    const projectDir = createProjectDir();
+    try {
+      // No arc.json written
+      process.cwd = () => projectDir;
+
+      await handleWhich();
+
+      expect(stdoutOutput).toContain("Profile:");
+      expect(stdoutOutput).toContain("default");
+      expect(stdoutOutput).toContain("active profile");
+      expect(stdoutOutput).toContain("no arc.json found");
+      expect(stdoutOutput).toContain("Tool:        claude");
+      expect(stdoutOutput).toContain("Enforcement: log");
+    } finally {
+      fs.rmSync(projectDir, { recursive: true, force: true });
+    }
+  });
+
+  it("arc which with inheritance + arc.json: shows Inherits line", async () => {
+    writeConfigWithProfiles(arcDir, {
+      base: { authType: "oauth", tool: "claude", enforcement: "log" },
+      child: { inherits: "base", tool: "gemini" } as Partial<Profile>,
+    }, "base");
+
+    const projectDir = createProjectDir();
+    try {
+      writeArcJson(projectDir, { version: 1, profile: "child" });
+      process.cwd = () => projectDir;
+
+      await handleWhich();
+
+      expect(stdoutOutput).toContain("Profile:");
+      expect(stdoutOutput).toContain("child");
+      expect(stdoutOutput).toContain("Inherits:    base");
+      expect(stdoutOutput).toContain("Tool:        gemini");
+    } finally {
+      fs.rmSync(projectDir, { recursive: true, force: true });
+    }
+  });
+
+  it("arc which with enforcement override: shows overridden by arc.json annotation", async () => {
+    writeConfigWithProfiles(arcDir, {
+      default: { authType: "oauth", tool: "claude", enforcement: "enforce" },
+    }, "default");
+
+    const projectDir = createProjectDir();
+    try {
+      writeArcJson(projectDir, { version: 1, enforcement: "advise" });
+      process.cwd = () => projectDir;
+
+      await handleWhich();
+
+      expect(stdoutOutput).toContain("Enforcement: advise (overridden by arc.json)");
     } finally {
       fs.rmSync(projectDir, { recursive: true, force: true });
     }

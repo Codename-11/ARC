@@ -251,6 +251,14 @@ Examples:
       await mod.handleStatus();
     });
 
+  program
+    .command("which")
+    .description("Show resolved profile for current directory")
+    .action(async () => {
+      const mod = await import("./commands/which.js");
+      await mod.handleWhich();
+    });
+
   // === Profile Management (organized group with all operations) ===
 
   const profile = program
