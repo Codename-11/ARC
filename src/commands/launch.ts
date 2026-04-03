@@ -8,6 +8,11 @@ import { getAdapter } from "../../packages/cli/src/adapters/index.js";
 import { waitForProcessExit } from "../../packages/core/src/process.js";
 import { createDefaultHookBus } from "../../packages/core/src/hooks/create-default-bus.js";
 import { writeLogEvent } from "../../packages/core/src/logging.js";
+import { SessionStore } from "../../packages/core/src/sessions.js";
+import { TelemetryProvider, JsonFileExporter, startSessionSpan } from "../../packages/core/src/telemetry/index.js";
+import { CircuitBreaker } from "../../packages/core/src/circuit-breaker.js";
+import { createPermissionPolicy, evaluatePermission } from "../../packages/core/src/permissions.js";
+import { ContextManager } from "../../packages/core/src/context-manager.js";
 import type { Profile } from "../types.js";
 import type { HookContext } from "../../packages/core/src/hooks/types.js";
 import type { AgentProcess } from "../../packages/core/src/adapters/types.js";
@@ -78,6 +83,81 @@ export async function handleLaunch(
   }
 
   const tool = profile.tool ?? "claude";
+  const enforcement = profile.enforcement ?? "log";
+
+  // ─── Core module initialization ─────────────────────────────────────
+  // These integrations are non-blocking: failures are logged but never
+  // prevent the agent from launching.
+
+  let sessionStore: SessionStore | undefined;
+  let sessionId: string | undefined;
+  let telemetry: TelemetryProvider | undefined;
+  let sessionSpan: string | undefined;
+  let breaker: CircuitBreaker | undefined;
+  let contextManager: ContextManager | undefined;
+
+  try {
+    // Session continuity — create session on launch
+    sessionStore = new SessionStore();
+    const session = sessionStore.create(`ARC: ${profileName}`, profileName, tool);
+    sessionId = session.id;
+
+    // Telemetry — start session span
+    telemetry = new TelemetryProvider({ enabled: true, exporters: ["json"], sampleRate: 1.0 });
+    telemetry.addExporter(new JsonFileExporter());
+    sessionSpan = startSessionSpan(telemetry, session.id, profileName, tool, enforcement);
+
+    // Circuit breaker — create per-session
+    breaker = new CircuitBreaker({ maxConsecutiveFailures: 3 });
+
+    // Permissions — evaluate tool permissions for this profile
+    const permissionPolicy = createPermissionPolicy("interactive");
+    const toolPermission = evaluatePermission(permissionPolicy, tool);
+    if (toolPermission === "deny") {
+      writeLogEvent({
+        level: "warn",
+        component: "launch",
+        action: "permission:deny",
+        message: `Permission policy denies tool "${tool}" for profile "${profileName}"`,
+        data: { profile: profileName, tool, tier: "interactive" },
+      });
+    } else if (toolPermission === "ask") {
+      writeLogEvent({
+        level: "info",
+        component: "launch",
+        action: "permission:ask",
+        message: `Permission policy requires approval for tool "${tool}" in profile "${profileName}"`,
+        data: { profile: profileName, tool, tier: "interactive" },
+      });
+    }
+
+    // Context manager — initialize for future use (turn tracking)
+    contextManager = new ContextManager();
+
+    writeLogEvent({
+      level: "debug",
+      component: "launch",
+      action: "core:init",
+      message: `Core modules initialized for session ${session.id}`,
+      data: {
+        profile: profileName,
+        tool,
+        enforcement,
+        sessionId: session.id,
+        modules: ["session", "telemetry", "circuit-breaker", "permissions", "context-manager"],
+      },
+    });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    writeLogEvent({
+      level: "warn",
+      component: "launch",
+      action: "core:init:error",
+      message: `Core module initialization failed (non-blocking): ${msg}`,
+      data: { profile: profileName, tool },
+    });
+  }
+
   const profileEnv = await buildProfileEnv(profile, profileName);
 
   if (!findBinary(tool)) {
@@ -120,19 +200,40 @@ export async function handleLaunch(
   const adapter = getAdapter(tool);
 
   // ─── Pre-launch hook pipeline ──────────────────────────────────────
-  const enforcement = profile.enforcement ?? "log";
-  if (enforcement !== "off") {
+  // Circuit breaker degrades enforcement when hooks are failing repeatedly
+  const effectiveEnforcement = breaker
+    ? breaker.getEffectiveEnforcement(enforcement)
+    : enforcement;
+
+  if (effectiveEnforcement !== "off") {
     const hookBus = createDefaultHookBus(profile.hooks);
     const hookCtx: HookContext = {
       message: "",
-      sessionId: `launch-${profileName}-${Date.now()}`,
+      sessionId: sessionId ?? `launch-${profileName}-${Date.now()}`,
       profile,
       adapter: tool,
     };
 
-    const hookResult = await hookBus.runPre(hookCtx, enforcement, "pre-launch");
+    let hookResult;
+    try {
+      hookResult = await hookBus.runPre(hookCtx, effectiveEnforcement, "pre-launch");
+      // Record success with circuit breaker
+      breaker?.recordSuccess();
+    } catch (hookErr: unknown) {
+      // Record failure with circuit breaker
+      breaker?.recordFailure();
+      const hookMsg = hookErr instanceof Error ? hookErr.message : String(hookErr);
+      writeLogEvent({
+        level: "warn",
+        component: "launch",
+        action: "hook:error",
+        message: `Hook pipeline threw (circuit breaker tracking): ${hookMsg}`,
+        data: { profile: profileName, tool, enforcement: effectiveEnforcement },
+      });
+      hookResult = null;
+    }
 
-    if (hookResult.blocked && enforcement === "enforce") {
+    if (hookResult?.blocked && effectiveEnforcement === "enforce") {
       const blockReasons = hookResult.results
         .filter((r) => r.block)
         .map((r) => r.reason ?? "blocked by hook")
@@ -145,7 +246,7 @@ export async function handleLaunch(
         data: {
           profile: profileName,
           tool,
-          enforcement,
+          enforcement: effectiveEnforcement,
           metadata: hookResult.metadata,
         },
       });
@@ -154,7 +255,7 @@ export async function handleLaunch(
     }
 
     // Pass hook metadata to adapter if supported
-    if (Object.keys(hookResult.metadata).length > 0) {
+    if (hookResult && Object.keys(hookResult.metadata).length > 0) {
       writeLogEvent({
         level: "info",
         component: "launch",
@@ -163,7 +264,7 @@ export async function handleLaunch(
         data: {
           profile: profileName,
           tool,
-          enforcement,
+          enforcement: effectiveEnforcement,
           metadataKeys: Object.keys(hookResult.metadata),
         },
       });
@@ -190,6 +291,39 @@ export async function handleLaunch(
     }
   }
 
+  // ─── Finalization helper ──────────────────────────────────────────
+  // Completes session tracking and flushes telemetry. Wrapped in try/catch
+  // so it never prevents the process from exiting.
+  const finalizeCoreModules = async (exitCode: number): Promise<void> => {
+    try {
+      if (sessionStore && sessionId) {
+        sessionStore.complete(sessionId);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      writeLogEvent({
+        level: "warn",
+        component: "launch",
+        action: "session:complete:error",
+        message: `Failed to complete session: ${msg}`,
+      });
+    }
+    try {
+      if (telemetry && sessionSpan) {
+        telemetry.endSpan(sessionSpan, exitCode === 0 ? "ok" : "error");
+        await telemetry.flush();
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      writeLogEvent({
+        level: "warn",
+        component: "launch",
+        action: "telemetry:flush:error",
+        message: `Failed to flush telemetry: ${msg}`,
+      });
+    }
+  };
+
   if (agentProcess) {
     // ─── Adapter-managed process path ──────────────────────────────
     // Register signal handlers for clean shutdown
@@ -201,8 +335,16 @@ export async function handleLaunch(
       }
     };
 
-    process.on("SIGINT", () => { void cleanup().then(() => process.exit(130)); });
-    process.on("SIGTERM", () => { void cleanup().then(() => process.exit(143)); });
+    process.on("SIGINT", () => {
+      void cleanup()
+        .then(() => finalizeCoreModules(130))
+        .then(() => process.exit(130));
+    });
+    process.on("SIGTERM", () => {
+      void cleanup()
+        .then(() => finalizeCoreModules(143))
+        .then(() => process.exit(143));
+    });
 
     // Forward output to the terminal
     if (adapter.onOutput) {
@@ -213,6 +355,7 @@ export async function handleLaunch(
 
     // Block until the child process exits
     await waitForProcessExit(agentProcess.pid);
+    await finalizeCoreModules(0);
     process.exit(0);
   }
 
@@ -236,9 +379,12 @@ export async function handleLaunch(
       });
 
   if (result.error) {
+    await finalizeCoreModules(1);
     error(`Failed to launch ${tool}: ${result.error.message}`);
     process.exit(1);
   }
 
-  process.exit(result.status ?? 0);
+  const exitCode = result.status ?? 0;
+  await finalizeCoreModules(exitCode);
+  process.exit(exitCode);
 }

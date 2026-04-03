@@ -744,6 +744,374 @@ Examples:
       await mod.handleResolveConfigDir();
     });
 
+  // === Task Management ===
+
+  const tasks = program
+    .command("tasks")
+    .alias("task")
+    .description("Manage tasks (list, create, update, stop, output)");
+
+  tasks
+    .command("list")
+    .alias("ls")
+    .description("List tasks")
+    .option("--status <status>", "Filter by status (created, assigned, working, completed, failed, cancelled)")
+    .option("--assignee <name>", "Filter by assignee")
+    .option("--json", "Output machine-readable JSON")
+    .action(async (opts: { status?: string; assignee?: string; json?: boolean }) => {
+      const mod = await import("./commands/tasks.js");
+      await mod.handleTasksList(opts);
+    });
+
+  tasks
+    .command("create <description>")
+    .description("Create a new task")
+    .option("--priority <level>", "Priority (low, medium, high, critical)", "medium")
+    .option("--assignee <name>", "Assign to a profile")
+    .action(async (description: string, opts: { priority?: string; assignee?: string }) => {
+      const mod = await import("./commands/tasks.js");
+      await mod.handleTasksCreate(description, opts);
+    });
+
+  tasks
+    .command("update <id>")
+    .description("Update a task")
+    .option("--status <status>", "New status")
+    .option("--assignee <name>", "New assignee")
+    .option("--priority <level>", "New priority")
+    .action(async (id: string, opts: { status?: string; assignee?: string; priority?: string }) => {
+      const mod = await import("./commands/tasks.js");
+      await mod.handleTasksUpdate(id, opts);
+    });
+
+  tasks
+    .command("stop <id>")
+    .description("Cancel a task")
+    .action(async (id: string) => {
+      const mod = await import("./commands/tasks.js");
+      await mod.handleTasksStop(id);
+    });
+
+  tasks
+    .command("output <id> [text]")
+    .description("View or append output for a task")
+    .action(async (id: string, text?: string) => {
+      const mod = await import("./commands/tasks.js");
+      await mod.handleTasksOutput(id, text);
+    });
+
+  // === Memory ===
+
+  const memory = program
+    .command("memory")
+    .alias("mem")
+    .description("Manage persistent memory (list, search, prune, stats)");
+
+  memory
+    .command("list")
+    .alias("ls")
+    .description("List memory entries")
+    .option("--scope <scope>", "Memory scope (session, persistent, team)", "persistent")
+    .option("--type <type>", "Filter by type (fact, preference, correction, pattern, decision)")
+    .option("--limit <n>", "Maximum entries to return", "20")
+    .option("--json", "Output machine-readable JSON")
+    .action(async (opts: { scope?: string; type?: string; limit?: string; json?: boolean }) => {
+      const mod = await import("./commands/memory.js");
+      await mod.handleMemoryList(opts);
+    });
+
+  memory
+    .command("search <query>")
+    .description("Search memories by keyword relevance")
+    .option("--limit <n>", "Maximum results", "20")
+    .option("--json", "Output machine-readable JSON")
+    .action(async (query: string, opts: { limit?: string; json?: boolean }) => {
+      const mod = await import("./commands/memory.js");
+      await mod.handleMemorySearch(query, opts);
+    });
+
+  memory
+    .command("prune")
+    .description("Archive or delete low-relevance memories")
+    .option("--threshold <score>", "Score threshold (0-1)", "0.1")
+    .option("--hard-delete", "Permanently delete instead of archiving")
+    .action(async (opts: { threshold?: string; hardDelete?: boolean }) => {
+      const mod = await import("./commands/memory.js");
+      await mod.handleMemoryPrune(opts);
+    });
+
+  memory
+    .command("stats")
+    .description("Show memory statistics across all scopes")
+    .action(async () => {
+      const mod = await import("./commands/memory.js");
+      await mod.handleMemoryStats();
+    });
+
+  // === Skills ===
+
+  const skills = program
+    .command("skills")
+    .alias("skill")
+    .description("Manage skill registry (list, load, info)");
+
+  skills
+    .command("list")
+    .alias("ls")
+    .description("List registered skills")
+    .option("--source <source>", "Filter by source (user, generated, mcp, builtin)")
+    .option("--json", "Output machine-readable JSON")
+    .action(async (opts: { source?: string; json?: boolean }) => {
+      const mod = await import("./commands/skills.js");
+      await mod.handleSkillsList(opts);
+    });
+
+  skills
+    .command("load <directory>")
+    .description("Load skill definitions from a directory")
+    .action(async (directory: string) => {
+      const mod = await import("./commands/skills.js");
+      await mod.handleSkillsLoad(directory);
+    });
+
+  skills
+    .command("info <name>")
+    .description("Show detailed info about a skill")
+    .action(async (name: string) => {
+      const mod = await import("./commands/skills.js");
+      await mod.handleSkillsInfo(name);
+    });
+
+  // === Sessions ===
+
+  const sessions = program
+    .command("sessions")
+    .alias("session")
+    .description("Manage sessions (list, resume, complete)");
+
+  sessions
+    .command("list")
+    .alias("ls")
+    .description("List sessions")
+    .option("--status <status>", "Filter by status (active, suspended, completed)")
+    .option("--profile <name>", "Filter by profile")
+    .option("--json", "Output machine-readable JSON")
+    .action(async (opts: { status?: string; profile?: string; json?: boolean }) => {
+      const mod = await import("./commands/sessions.js");
+      await mod.handleSessionsList(opts);
+    });
+
+  sessions
+    .command("resume [id]")
+    .description("Resume a suspended session (default: last suspended)")
+    .action(async (id?: string) => {
+      const mod = await import("./commands/sessions.js");
+      await mod.handleSessionsResume(id);
+    });
+
+  sessions
+    .command("complete <id>")
+    .description("Mark a session as completed")
+    .action(async (id: string) => {
+      const mod = await import("./commands/sessions.js");
+      await mod.handleSessionsComplete(id);
+    });
+
+  // === Factory Mode ===
+
+  const factory = program
+    .command("factory")
+    .description("Dark Factory mode — autonomous wave-based execution");
+
+  factory
+    .command("status")
+    .description("Show current factory state and wave progress")
+    .option("--json", "Output machine-readable JSON")
+    .action(async (opts: { json?: boolean }) => {
+      const mod = await import("./commands/factory.js");
+      await mod.handleFactoryStatus(opts);
+    });
+
+  factory
+    .command("abort")
+    .description("Abort the current factory run")
+    .action(async () => {
+      const mod = await import("./commands/factory.js");
+      await mod.handleFactoryAbort();
+    });
+
+  // === Remote Agents ===
+
+  const remote = program
+    .command("remote")
+    .description("Manage remote agents (list, add, remove, check)");
+
+  remote
+    .command("list")
+    .alias("ls")
+    .description("List registered remote agents")
+    .option("--json", "Output machine-readable JSON")
+    .action(async (opts: { json?: boolean }) => {
+      const mod = await import("./commands/remote.js");
+      await mod.handleRemoteList(opts);
+    });
+
+  remote
+    .command("add <name> <endpoint>")
+    .description("Register a remote agent")
+    .option("--transport <type>", "Transport protocol (http, ssh, mcp)", "http")
+    .option("--profile <name>", "Associated profile")
+    .action(async (name: string, endpoint: string, opts: { transport?: string; profile?: string }) => {
+      const mod = await import("./commands/remote.js");
+      await mod.handleRemoteAdd(name, endpoint, opts);
+    });
+
+  remote
+    .command("remove <id>")
+    .alias("rm")
+    .description("Remove a remote agent by ID")
+    .action(async (id: string) => {
+      const mod = await import("./commands/remote.js");
+      await mod.handleRemoteRemove(id);
+    });
+
+  remote
+    .command("check [id]")
+    .description("Health check one or all remote agents")
+    .action(async (id?: string) => {
+      const mod = await import("./commands/remote.js");
+      await mod.handleRemoteCheck(id);
+    });
+
+  // === Plugins ===
+
+  const plugins = program
+    .command("plugins")
+    .alias("plugin")
+    .description("Manage plugins (list, install, uninstall, enable, disable)");
+
+  plugins
+    .command("list")
+    .alias("ls")
+    .description("List installed plugins")
+    .option("--json", "Output machine-readable JSON")
+    .action(async (opts: { json?: boolean }) => {
+      const mod = await import("./commands/plugins.js");
+      await mod.handlePluginsList(opts);
+    });
+
+  plugins
+    .command("install <path>")
+    .description("Install a plugin from a directory")
+    .action(async (pluginPath: string) => {
+      const mod = await import("./commands/plugins.js");
+      await mod.handlePluginsInstall(pluginPath);
+    });
+
+  plugins
+    .command("uninstall <name>")
+    .alias("rm")
+    .description("Uninstall a plugin by name")
+    .action(async (name: string) => {
+      const mod = await import("./commands/plugins.js");
+      await mod.handlePluginsUninstall(name);
+    });
+
+  plugins
+    .command("enable <name>")
+    .description("Enable a disabled plugin")
+    .action(async (name: string) => {
+      const mod = await import("./commands/plugins.js");
+      await mod.handlePluginsEnable(name);
+    });
+
+  plugins
+    .command("disable <name>")
+    .description("Disable a plugin without uninstalling")
+    .action(async (name: string) => {
+      const mod = await import("./commands/plugins.js");
+      await mod.handlePluginsDisable(name);
+    });
+
+  // === Cloud Sync ===
+
+  const sync = program
+    .command("sync")
+    .description("Cloud/filesystem sync (status, push, pull, configure)");
+
+  sync
+    .command("status")
+    .description("Show sync configuration and connection status")
+    .option("--json", "Output machine-readable JSON")
+    .action(async (opts: { json?: boolean }) => {
+      const mod = await import("./commands/sync.js");
+      await mod.handleSyncStatus(opts);
+    });
+
+  sync
+    .command("push")
+    .description("Push local changes to the sync provider")
+    .action(async () => {
+      const mod = await import("./commands/sync.js");
+      await mod.handleSyncPush();
+    });
+
+  sync
+    .command("pull")
+    .description("Pull remote changes from the sync provider")
+    .action(async () => {
+      const mod = await import("./commands/sync.js");
+      await mod.handleSyncPull();
+    });
+
+  sync
+    .command("configure")
+    .description("Configure the sync provider")
+    .option("--provider <type>", "Sync provider (filesystem)", "filesystem")
+    .option("--path <dir>", "Shared directory path (required for filesystem provider)")
+    .action(async (opts: { provider?: string; path?: string }) => {
+      const mod = await import("./commands/sync.js");
+      await mod.handleSyncConfigure(opts);
+    });
+
+  // === Web Dashboard ===
+
+  program
+    .command("web")
+    .alias("dashboard-web")
+    .description("Start the web dashboard server")
+    .option("--port <port>", "HTTP port", "3700")
+    .action(async (opts: { port?: string }) => {
+      const mod = await import("./commands/dashboard-web.js");
+      await mod.handleDashboardWeb(opts);
+    });
+
+  // === Telemetry ===
+
+  const telemetry = program
+    .command("telemetry")
+    .description("Inspect traces and telemetry data");
+
+  telemetry
+    .command("traces")
+    .description("Query trace spans from the JSONL file")
+    .option("--limit <n>", "Maximum spans to show", "50")
+    .option("--session <id>", "Filter by session ID or trace ID")
+    .option("--json", "Output machine-readable JSON")
+    .action(async (opts: { limit?: string; session?: string; json?: boolean }) => {
+      const mod = await import("./commands/telemetry.js");
+      await mod.handleTelemetryTraces(opts);
+    });
+
+  telemetry
+    .command("status")
+    .description("Show telemetry configuration and file info")
+    .option("--json", "Output machine-readable JSON")
+    .action(async (opts: { json?: boolean }) => {
+      const mod = await import("./commands/telemetry.js");
+      await mod.handleTelemetryStatus(opts);
+    });
+
   // === MCP Server ===
 
   registerMcpCommand(program);

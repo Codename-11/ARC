@@ -3,6 +3,9 @@ import { loadConfig } from "../config.js";
 import { buildProfileEnv } from "../auth.js";
 import { error } from "../display.js";
 import { resolveEffectiveProfile } from "../../packages/core/src/workspace.js";
+import { writeLogEvent } from "../../packages/core/src/logging.js";
+import { SessionStore } from "../../packages/core/src/sessions.js";
+import { TelemetryProvider, JsonFileExporter, startSessionSpan } from "../../packages/core/src/telemetry/index.js";
 
 const isWindows = process.platform === "win32";
 
@@ -59,6 +62,73 @@ export async function handleExec(
     process.exit(1);
   }
 
+  const tool = profile.tool ?? "claude";
+  const enforcement = profile.enforcement ?? "log";
+
+  // ─── Core module initialization ─────────────────────────────────────
+  let sessionStore: SessionStore | undefined;
+  let sessionId: string | undefined;
+  let telemetry: TelemetryProvider | undefined;
+  let sessionSpan: string | undefined;
+
+  try {
+    sessionStore = new SessionStore();
+    const session = sessionStore.create(`ARC exec: ${profileName}`, profileName, tool);
+    sessionId = session.id;
+
+    telemetry = new TelemetryProvider({ enabled: true, exporters: ["json"], sampleRate: 1.0 });
+    telemetry.addExporter(new JsonFileExporter());
+    sessionSpan = startSessionSpan(telemetry, session.id, profileName, tool, enforcement);
+
+    writeLogEvent({
+      level: "debug",
+      component: "exec",
+      action: "core:init",
+      message: `Core modules initialized for exec session ${session.id}`,
+      data: { profile: profileName, tool, sessionId: session.id },
+    });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    writeLogEvent({
+      level: "warn",
+      component: "exec",
+      action: "core:init:error",
+      message: `Core module initialization failed (non-blocking): ${msg}`,
+      data: { profile: profileName },
+    });
+  }
+
+  // ─── Finalization helper ──────────────────────────────────────────
+  const finalizeCoreModules = async (exitCode: number): Promise<void> => {
+    try {
+      if (sessionStore && sessionId) {
+        sessionStore.complete(sessionId);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      writeLogEvent({
+        level: "warn",
+        component: "exec",
+        action: "session:complete:error",
+        message: `Failed to complete session: ${msg}`,
+      });
+    }
+    try {
+      if (telemetry && sessionSpan) {
+        telemetry.endSpan(sessionSpan, exitCode === 0 ? "ok" : "error");
+        await telemetry.flush();
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      writeLogEvent({
+        level: "warn",
+        component: "exec",
+        action: "telemetry:flush:error",
+        message: `Failed to flush telemetry: ${msg}`,
+      });
+    }
+  };
+
   const profileEnv = await buildProfileEnv(profile, profileName);
   const [cmd, ...args] = passthrough;
   const env = { ...process.env, ...profileEnv } as NodeJS.ProcessEnv;
@@ -70,9 +140,12 @@ export async function handleExec(
     : spawnSync(cmd, args, { stdio: "inherit", env });
 
   if (result.error) {
+    await finalizeCoreModules(1);
     error(`Failed to execute command: ${result.error.message}`);
     process.exit(1);
   }
 
-  process.exit(result.status ?? 0);
+  const exitCode = result.status ?? 0;
+  await finalizeCoreModules(exitCode);
+  process.exit(exitCode);
 }
