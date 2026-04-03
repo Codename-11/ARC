@@ -1,7 +1,7 @@
 import { loadConfig } from "../config.js";
 import { buildProfileEnv } from "../auth.js";
 import { error } from "../display.js";
-import { runCommandWithLifecycle } from "@axiom-labs/arc-core";
+import { runCommandWithLifecycle, resolveEffectiveProfile } from "@axiom-labs/arc-core";
 import { writeLogEvent } from "../log.js";
 
 const isWindows = process.platform === "win32";
@@ -29,9 +29,15 @@ export async function handleExec(
     passthrough = passthrough.slice(1);
   }
 
-  const profile = config.profiles[profileName];
-  if (!profile) {
-    error(`Profile "${profileName}" not found. Run "arc list" to see available profiles.`);
+  // Resolve profile through workspace-aware pipeline (arc.json > explicit > activeProfile)
+  let profile;
+  try {
+    const result = resolveEffectiveProfile(config, profileName);
+    profile = result.profile;
+    profileName = result.profileName; // may be overridden by arc.json
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    error(msg);
     process.exit(1);
   }
 

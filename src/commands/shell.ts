@@ -1,15 +1,22 @@
 import { spawn } from "node:child_process";
-import { loadConfig, resolveProfileName } from "../config.js";
+import { loadConfig } from "../config.js";
 import { buildProfileEnv } from "../auth.js";
 import { error, info } from "../display.js";
+import { resolveEffectiveProfile } from "../../packages/core/src/workspace.js";
 
 export async function handleShell(name?: string): Promise<void> {
   const config = loadConfig();
-  const profileName = resolveProfileName(config, name);
-  const profile = config.profiles[profileName];
 
-  if (!profile) {
-    error(`Profile "${profileName}" not found. Run "arc profile list" to see available profiles.`);
+  // Resolve profile through workspace-aware pipeline (arc.json > explicit > activeProfile)
+  let profileName: string;
+  let profile;
+  try {
+    const result = resolveEffectiveProfile(config, name);
+    profile = result.profile;
+    profileName = result.profileName; // may be overridden by arc.json
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    error(msg);
     process.exit(1);
   }
 

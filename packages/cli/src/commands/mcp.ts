@@ -1,6 +1,6 @@
 import path from "node:path";
 import type { Command } from "commander";
-import { loadConfig, getProfileDir, readJsonObject } from "../config.js";
+import { loadConfig, readJsonObject, resolveEffectiveProfile } from "../config.js";
 import type { McpServerConfig } from "@axiom-labs/arc-mcp";
 import { McpHostManager } from "@axiom-labs/arc-mcp";
 
@@ -19,27 +19,41 @@ function getOrCreateHost(): McpHostManager {
 
 function loadProfileMcpServers(): Record<string, McpServerConfig> {
   const config = loadConfig();
-  const profileName = config.activeProfile;
-  const profile = config.profiles[profileName];
-  if (!profile) {
-    console.error(
-      `[arc-mcp] Active profile "${profileName}" not found. Run "arc list" to see available profiles.`,
-    );
+
+  // Resolve profile through workspace-aware pipeline (arc.json overrides)
+  let profile;
+  try {
+    const result = resolveEffectiveProfile(config);
+    profile = result.profile;
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[arc-mcp] ${msg}`);
     process.exit(1);
   }
 
+  // Read mcpServers from the resolved profile's settings.json
   const settingsPath = path.join(profile.configDir, "settings.json");
   const settings = readJsonObject(settingsPath);
-  if (!settings || !settings.mcpServers) {
-    return {};
+
+  let servers: Record<string, McpServerConfig> = {};
+  if (settings && settings.mcpServers) {
+    const raw = settings.mcpServers;
+    if (typeof raw === "object" && raw !== null && !Array.isArray(raw)) {
+      servers = raw as Record<string, McpServerConfig>;
+    }
   }
 
-  const raw = settings.mcpServers;
-  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
-    return {};
+  // Merge workspace-level mcpServers from arc.json (already on profile via applyWorkspaceOverrides)
+  const workspaceMcpServers = (profile as unknown as Record<string, unknown>)["mcpServers"];
+  if (
+    workspaceMcpServers &&
+    typeof workspaceMcpServers === "object" &&
+    !Array.isArray(workspaceMcpServers)
+  ) {
+    servers = { ...servers, ...workspaceMcpServers as Record<string, McpServerConfig> };
   }
 
-  return raw as Record<string, McpServerConfig>;
+  return servers;
 }
 
 // ─── Command registration ────────────────────────────────────────────

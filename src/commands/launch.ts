@@ -1,12 +1,14 @@
 import { spawnSync } from "node:child_process";
-import { loadConfig, resolveProfile } from "../config.js";
+import { loadConfig } from "../config.js";
 import { buildProfileEnv } from "../auth.js";
+import { resolveEffectiveProfile } from "../../packages/core/src/workspace.js";
 import { error, info, warn, cmd } from "../display.js";
 import { logAction } from "../log.js";
 import { getAdapter } from "../../packages/cli/src/adapters/index.js";
 import { waitForProcessExit } from "../../packages/core/src/process.js";
 import { createDefaultHookBus } from "../../packages/core/src/hooks/create-default-bus.js";
 import { writeLogEvent } from "../../packages/core/src/logging.js";
+import type { Profile } from "../types.js";
 import type { HookContext } from "../../packages/core/src/hooks/types.js";
 import type { AgentProcess } from "../../packages/core/src/adapters/types.js";
 
@@ -63,19 +65,12 @@ export async function handleLaunch(
     passthrough = passthrough.slice(1);
   }
 
-  const rawProfile = config.profiles[profileName];
-
-  if (!rawProfile) {
-    error(
-      `Profile "${profileName}" not found. Run "arc list" to see available profiles.`
-    );
-    process.exit(1);
-  }
-
-  // Resolve inheritance chain (deep-merges parent → child)
-  let profile: typeof rawProfile;
+  // Resolve profile through workspace-aware pipeline (arc.json > explicit > activeProfile)
+  let profile: Profile;
   try {
-    profile = resolveProfile(config, profileName);
+    const result = resolveEffectiveProfile(config, profileName);
+    profile = result.profile;
+    profileName = result.profileName; // may be overridden by arc.json
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     error(msg);
