@@ -1,3 +1,4 @@
+export * from "./circuit-breaker.js";
 export * from "./config.js";
 export * from "./health.js";
 export * from "./workspace.js";
@@ -97,3 +98,146 @@ export {
   pullProfileToShared,
   type PullResult,
 } from "./shared.js";
+
+// Phase 20 — Three-Tier Permission Model
+export {
+  createPermissionPolicy,
+  evaluatePermission,
+  COORDINATOR_DEFAULTS,
+  INTERACTIVE_DEFAULTS,
+  WORKER_DEFAULTS,
+  type PermissionPolicy,
+  type PermissionDecision,
+} from "./permissions.js";
+
+// Phase 19 — Context Management
+export {
+  ContextManager,
+  estimateTokens,
+  type ContextBudget,
+  type ContextState,
+  type ContextTurn,
+} from "./context-manager.js";
+
+// Phase 21 — Semantic Phase Indicators
+export {
+  detectPhase,
+  getPhaseVerb,
+  getPhaseCompletionVerb,
+  type AgentPhase,
+} from "./phase-indicators.js";
+
+// Phase 16.2 — Streaming Event Taxonomy
+export {
+  StreamEventBus,
+  type StreamEvent,
+  type StreamEventType,
+  type StreamEventOf,
+  type StreamEventHandler,
+} from "./stream-events.js";
+
+// Phase 15 — Memory System
+export {
+  SessionMemory,
+  PersistentMemory,
+  decayScore,
+  isExpired,
+  searchMemories,
+  extractMemories,
+  type MemoryEntry,
+  type MemoryType,
+  type MemoryScope,
+  type MemorySearchOptions,
+  type MemoryPruneOptions,
+  type MemoryStore,
+} from "./memory/index.js";
+
+// Phase 16 — Skill System (+ Phase 22 skillify/stuck-detector)
+export {
+  loadSkillsFromDirectory,
+  SkillRegistry,
+  mcpToSkill,
+  detectRepeatedPatterns,
+  generateSkillFromPattern,
+  StuckDetector,
+} from "./skills/index.js";
+export type {
+  Skill,
+  SkillStep,
+  SkillSource,
+  ContractSkill,
+  ReviewVerdict,
+  FindingSeverity,
+  ReviewFinding,
+  ReviewOutput,
+  StuckDetection,
+} from "./skills/index.js";
+
+// Phase 17 — Task Management
+export {
+  TaskStore,
+  MessageBus,
+  CronStore,
+  parseCronExpression,
+} from "./tasks/index.js";
+export type {
+  Task,
+  TaskStatus,
+  TaskPriority,
+  AgentMessage,
+  MessageType,
+  CronJob,
+  TaskListFilters,
+  TaskCreateOptions,
+  MessageHandler,
+  SendOptions,
+} from "./tasks/index.js";
+
+// Phase 11 — Cloud Sync
+export {
+  FilesystemSyncProvider,
+  SyncManager,
+  type SyncConfig,
+  type SyncProvider,
+  type SyncDelta,
+  type SyncChange,
+  type SyncStatus,
+} from "./sync/index.js";
+
+// Phase 23 — Plugin Registry
+export {
+  PluginRegistry,
+  type PluginManifest,
+  type PluginCapability,
+  type InstalledPlugin,
+} from "./plugins/index.js";
+
+// Phase 18 — Session Continuity
+export {
+  SessionStore,
+  isResumeIntent,
+  type SessionThread,
+  type SessionStatus,
+  type SessionFilter,
+} from "./sessions.js";
+
+// Phase 24 — Remote Agent Support
+export {
+  RemoteAgentRegistry,
+  checkHealth,
+  type RemoteAgent,
+  type RemoteAgentConfig,
+  type RemoteAgentTransport,
+  type RemoteAgentStatus,
+} from "./remote.js";
+
+// Phase 25 — Dark Factory Mode
+export {
+  FactoryController,
+  type FactorySpec,
+  type FactoryWave,
+  type FactoryTask,
+  type FactoryStatus,
+  type FactoryState,
+  type FactoryWaveResult,
+} from "./factory.js";

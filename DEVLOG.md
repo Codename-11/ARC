@@ -85,27 +85,93 @@ Mapping commits since 2026-03-28 to spec phases:
 
 ---
 
+### Phase 3: Logging Framework (DONE — pre-existing)
+- Structured JSONL log at `~/.arc/logs/structured.jsonl`
+- `writeLogEvent()`, `logAction()`, `queryLogEvents()` in `core/logging.ts`
+- `arc logs` CLI command with `--limit`, `--level`, `--component`, `--profile`, `--json` flags
+
+### Phase 4: Graceful Shutdown + Health Checks (DONE — pre-existing)
+- `runCommandWithLifecycle()` — signal forwarding (SIGINT/SIGTERM/SIGHUP), cleanup, exit code normalization
+- `withLifecycleScope()` — registerCleanup/runCleanups pattern with signal handlers
+- Health check types + `buildHealthReport()` in `core/health.ts`
+
+### Phase 11: Cloud Sync (DONE)
+- `SyncProvider` interface + `SyncConfig`, `SyncDelta`, `SyncChange` types
+- `FilesystemSyncProvider` — shared directory sync with atomic writes, mtime change detection
+- `SyncManager` — wraps any provider with cursor tracking and status
+
+### Phase 14: Circuit Breaker (DONE)
+- `CircuitBreaker` class — consecutive failure tracking, auto-trip at threshold
+- `getEffectiveEnforcement()` — degrades advise/enforce to log when tripped
+- Auto-reset after configurable cooldown, optional alert callback
+- `serialFallbackActive` getter for parallel→serial degradation
+
+### Phase 15: Memory System (DONE)
+- `SessionMemory` — in-memory Map-backed ephemeral storage
+- `PersistentMemory` — JSON file-backed at `~/.arc/memory/`
+- `decayScore()` — exponential decay with half-life + access boost
+- `searchMemories()` — deterministic keyword/scope/type/recency ranking
+- `extractMemories()` — heuristic extraction (corrections, preferences, patterns, decisions)
+
+### Phase 16: Skill System (DONE)
+- `Skill`, `SkillStep`, `ContractSkill`, `ReviewOutput` types
+- `SkillRegistry` — register/unregister/findByTrigger
+- `loadSkillsFromDirectory()` — JSON skill file loader
+- `mcpToSkill()` — MCP tool → skill adapter
+
+### Phase 17: Task Management (DONE)
+- `TaskStore` — JSON file-backed CRUD at `~/.arc/tasks/tasks.json`
+- `MessageBus` — in-memory agent-to-agent message routing with subscribe
+- `CronStore` — cron job persistence with `parseCronExpression()` (5-field cron)
+
+### Phase 18: Session Continuity (DONE)
+- `SessionStore` — JSON-backed at `~/.arc/sessions.json`
+- create/suspend/resume/complete lifecycle
+- `isResumeIntent()` — heuristic detection of "continue"/"resume" intents
+
+### Phase 19: Context Management (DONE)
+- `ContextManager` — turn tracking, token budget, compaction trigger
+- `estimateTokens()` — word/char heuristic
+- `compact(summarizer)` — summarize old turns, keep last N verbatim
+
+### Phase 20: Three-Tier Permission Model (DONE)
+- `PermissionPolicy` with coordinator/interactive/worker defaults
+- `evaluatePermission()` — deny > ask > allow precedence with audit logging
+- Worker tier blocks destructive ops (delete/spawn/deploy/push/force/reset/destroy)
+
+### Phase 21: Semantic Phase Indicators (DONE)
+- `detectPhase(toolName)` — deterministic tool→phase mapping
+- `AgentPhase` type (thinking/reading/writing/executing/reviewing/testing/deploying/idle)
+- `StreamEventBus` — typed event emitter for 10 stream event types
+
+### Phase 22: Skillify + Stuck Detector (DONE)
+- `detectRepeatedPatterns()` — sliding window repeated sequence detection
+- `generateSkillFromPattern()` — auto-generate skill definitions
+- `StuckDetector` — Jaccard similarity on recent actions, cycling recovery strategies
+
+### Phase 23: Plugin Registry (DONE)
+- `PluginRegistry` — JSON-backed at `~/.arc/plugins/installed.json`
+- install/uninstall/enable/disable with semver compatibility check
+- `PluginManifest` with capability declarations
+
+### Phase 24: Remote Agent Support (DONE)
+- `RemoteAgentRegistry` — JSON-backed at `~/.arc/remote-agents.json`
+- register/unregister/updateStatus with HTTP health checks
+- Supports http/ssh/mcp transports
+
+### Phase 25: Dark Factory Mode (DONE)
+- `FactoryController` — state machine (idle→planning→executing→verifying→gating→completed)
+- `FactorySpec` with waves, tasks, consensus gate config
+- `advanceWave()` progression with wave result tracking
+
+---
+
 ## What's NOT Built Yet (Spec Phases Remaining)
 
 | Phase | What | Priority | Status |
 |---|---|---|---|
-| **3** | Logging framework + `arc logs` | P0 | Not started |
-| **4** | Graceful shutdown + health checks | P0 | Not started |
-| **11** | Cloud sync (providers, conflict resolution) | P2 | Not started |
 | **12** | Web dashboard (Express + WebSocket) | P2 | Not started |
 | **13** | OpenTelemetry integration | P2 | Not started |
-| **14** | Circuit breaker | P2 | Not started |
-| **15** | Memory system (session/persistent/team) | P2 | Not started |
-| **16** | Skill system (loader, registry, MCP adapter) | P2 | Not started |
-| **17** | Task management (first-class tools) | P2 | Not started |
-| **18** | Session continuity (thread resume, bg jobs) | P2 | Not started |
-| **19** | Context management (auto-compaction) | P2 | Not started |
-| **20** | Three-tier permission model | P2 | Not started |
-| **21** | Semantic phase indicators | P2 | Not started |
-| **22** | Skillify + stuck detector | P3 | Not started |
-| **23** | Plugin registry | P3 | Not started |
-| **24** | Remote agent support | P3 | Not started |
-| **25** | Dark Factory mode | P3 | Not started |
 
 **Deferred to v2:** A2A protocol, prompt routing, agent personas/buddy system, S3 sync provider.
 
