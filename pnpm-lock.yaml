@@ -76,6 +76,9 @@ importers:
       '@axiom-labs/arc-core':
         specifier: workspace:*
         version: link:../core
+      '@axiom-labs/arc-mcp':
+        specifier: workspace:*
+        version: link:../mcp
 
   packages/core: {}
 

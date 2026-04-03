@@ -2,6 +2,7 @@ import { Command } from "commander";
 import { loadConfig } from "./config.js";
 import { info, getBanner, getVersion } from "./display.js";
 import { checkForUpdate } from "./update.js";
+import { registerMcpCommand } from "./commands/mcp.js";
 
 export function createProgram(): Command {
   const program = new Command();
@@ -688,6 +689,10 @@ Examples:
       const mod = await import("./commands/resolve.js");
       await mod.handleResolveConfigDir();
     });
+
+  // === MCP Server ===
+
+  registerMcpCommand(program);
 
   // Hide internal command from help output
   const resolveCmd = program.commands.find(

@@ -12,7 +12,7 @@ export default defineConfig({
     js: "#!/usr/bin/env node",
   },
   external: ["@napi-rs/keyring", "@inquirer/prompts"],
-  noExternal: ["@axiom-labs/arc-core", "@axiom-labs/arc-adapter-claude", "@axiom-labs/arc-adapter-openclaw"],
+  noExternal: ["@axiom-labs/arc-core", "@axiom-labs/arc-adapter-claude", "@axiom-labs/arc-adapter-openclaw", "@axiom-labs/arc-mcp"],
   esbuildOptions(options) {
     options.jsx = "automatic";
   },

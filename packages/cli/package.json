@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@axiom-labs/arc-core": "workspace:*",
-    "@axiom-labs/arc-adapter-claude": "workspace:*"
+    "@axiom-labs/arc-adapter-claude": "workspace:*",
+    "@axiom-labs/arc-mcp": "workspace:*"
   }
 }
