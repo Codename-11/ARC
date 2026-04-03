@@ -1,0 +1,26 @@
+{
+  "id": "arc",
+  "name": "ARC Agent Supervisor",
+  "description": "Integrates ARC profile-based supervision, policy enforcement, and agent tools into OpenClaw's lifecycle bus.",
+  "version": "2.0.0",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "profileName": {
+        "type": "string",
+        "description": "ARC profile name to load supervision rules from."
+      },
+      "enforcementMode": {
+        "type": "string",
+        "enum": ["strict", "permissive", "audit"],
+        "description": "How strictly ARC enforces policy rules. 'strict' blocks violations, 'permissive' warns only, 'audit' logs without warning."
+      }
+    },
+    "required": ["profileName"]
+  },
+  "uiHints": {
+    "category": "supervision",
+    "icon": "shield",
+    "setupUrl": "https://github.com/axiom-labs/arc#openclaw-setup"
+  }
+}

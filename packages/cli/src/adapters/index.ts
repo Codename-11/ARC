@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import claudeAdapter from "@axiom-labs/arc-adapter-claude";
+import openclawAdapter from "@axiom-labs/arc-adapter-openclaw";
 import { retrieveSecret, writeLogEvent } from "@axiom-labs/arc-core";
 import {
   spawnManagedProcess,
@@ -479,6 +480,7 @@ const adapters = new Map<string, RuntimeAdapter>([
   [claudeAdapter.id, claudeAdapter],
   [geminiAdapter.id, geminiAdapter],
   [codexAdapter.id, codexAdapter],
+  [openclawAdapter.id, openclawAdapter],
 ]);
 
 export function listAdapters(): RuntimeAdapter[] {
