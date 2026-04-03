@@ -40,8 +40,12 @@ EXECUTION_PLAN.md
 EXECUTION_PROMPT.txt
 CLAUDE.md
 
-# ── GSD baseline (auto-generated) ──
-.gsd
+# Tooling state (OMX, Subframe, GSD)
+.omx/
+.subframe/
+.gsd/
+
+# Build / misc
 *.code-workspace
 .next/
 build/

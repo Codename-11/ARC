@@ -1,3 +1,0 @@
-PowerShell 7.6.0
-Loading personal and system profiles took 1270ms.
-  Bailey [main ≡  ?5 ~4]  ~\Desktop\Open-Projects\clawport-ui

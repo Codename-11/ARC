@@ -1,3 +1,0 @@
-PowerShell 7.6.0
-Loading personal and system profiles took 15070ms.
-  Bailey ~

@@ -1,5 +1,0 @@
-{
-  "last_turn_at": "2026-04-03T13:21:45.872Z",
-  "turn_count": 4,
-  "last_agent_output": "The failure was caused by a live `gsd-pi` process locking its own install directory. `node.exe` PID "
-}
