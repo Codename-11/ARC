@@ -1,4 +1,4 @@
-// Hook system barrel — re-exports all hook types and the HookBus class.
+// Hook system barrel — re-exports all hook types, HookBus, concrete hooks, and utilities.
 
 export type {
   EnforcementMode,
@@ -16,3 +16,6 @@ export type {
 } from "./types.js";
 
 export { HookBus } from "./hook-bus.js";
+export { sourceClassifyHook } from "./source-classify.js";
+export { riskDetectionHook } from "./risk-detection.js";
+export { classifyRisk } from "./risk-classifier.js";
