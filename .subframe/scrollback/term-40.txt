@@ -1,0 +1,11 @@
+  Bailey [master ≡  ?30 ~42 -1756 |  +4]  ~\Desktop\Open-Projects\ARC arc launch
+ℹ Launching claude with profile: claude-alt
+ ▐▛███▜▌   Claude Code v2.1.86
+▝▜█████▛▘  Opus 4.6 (1M context) · Claude Max
+  ▘▘ ▝▝    ~\Desktop\Open-Projects\ARC
+
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯  
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   Opus 4.6 (1M context)  0/1m ▱▱▱▱▱▱▱▱▱▱ 0%  ⚙ auto │ thinking on 
+   5h ●○○○○○○○○○ 7%  7d ●●○○○○○○○○ 19%  5h resets 9:59pm │ 7d resets apr 2, 8:59pm 

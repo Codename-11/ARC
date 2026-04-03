@@ -1,0 +1,5 @@
+- [ ] Confirm final health-check UX: separate `arc health` command vs `arc doctor --json` / `--health` mode.
+- [ ] Confirm target workspace names and whether the published package remains `@axiom-labs/arc-cli` with a single `arc` bin.
+- [ ] Decide whether compatibility shims are acceptable between phases 1 and 2, or whether moved modules must be cut over immediately.
+- [ ] Confirm whether phase 3 should preserve backwards readability of `~/.arc/activity.log` or explicitly migrate/replace it.
+- [ ] Confirm whether execution should occur in a dedicated git worktree because another ARC worktree already exists locally.

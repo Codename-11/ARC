@@ -1,0 +1,3 @@
+PowerShell 7.6.0
+Loading personal and system profiles took 1467ms.
+  Bailey [main ≡  ~5]  ~\Desktop\Open-Projects\SubFrame

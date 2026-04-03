@@ -1,0 +1,57 @@
+PowerShell 7.6.0
+Loading personal and system profiles took 15672ms.
+  Bailey [master ≡  ?5]  ~\Desktop\Open-Projects\ARC npm install -g @axiom-labs/arc-cli
+
+added 84 packages in 15s
+
+32 packages are looking for funding
+  run `npm fund` for details
+  Bailey [master ≡  ?5]  ~\Desktop\Open-Projects\ARC arc
+  Bailey [master ≡  ?5]  ~\Desktop\Open-Projects\ARC pnpm teardown:force
+
+> @axiom-labs/arc-cli@0.1.0 teardown:force C:\Users\Bailey\Desktop\Open-Projects\ARC
+> node scripts/uninstall.js --force
+
+
+ARC Uninstaller
+✔ Keyring entries removed (via @napi-rs/keyring)
+ℹ Removing config directory: C:\Users\Bailey\.arc
+✔ Config directory removed
+ℹ Checking for global package installation...
+ℹ Found npm global link, removing...
+✔ Removed npm global link
+ℹ Checking for local arc shims in: C:\Users\Bailey\.local\bin
+ℹ No local arc shims found
+ℹ Checking for shell integration...
+ℹ No shell integration found
+
+--- Summary ---
+
+✔ ARC has been completely removed from your system!
+
+If you installed via npm/pnpm globally, you may also want to run:
+  npm uninstall -g @axiom-labs/arc-cli
+  # or
+  pnpm uninstall -g @axiom-labs/arc-cli
+
+Restart your terminal for changes to take effect.
+
+(node:54804) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concat
+enated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+  Bailey [master ≡  ?5]  ~\Desktop\Open-Projects\ARC arc
+arc: The term 'arc' is not recognized as a name of a cmdlet, function, script file, or executable program.
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+
+[General Feedback]
+  The most similar commands are:
+    ➤ ac
+
+  Bailey [master ≡  ?5]  ~\Desktop\Open-Projects\ARC npm install -g @axiom-labs/arc-cli
+
+added 84 packages in 9s
+
+32 packages are looking for funding
+  run `npm fund` for details
+  Bailey [master ≡  ?5]  ~\Desktop\Open-Projects\ARC arc
+  Bailey [master ≡  ?5]  ~\Desktop\Open-Projects\ARC

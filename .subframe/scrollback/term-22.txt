@@ -1,0 +1,38 @@
+PowerShell 7.6.0
+Loading personal and system profiles took 816ms.
+  Bailey [windows-port-spike ≢  ?3 ~1]  ~\Desktop\Open-Projects\CC-Stats ls
+
+    Directory: C:\Users\Bailey\Desktop\Open-Projects\CC-Stats
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d----           3/27/2026 11:15 AM                _bmad-output
+d----           3/27/2026 11:15 AM                .github
+d----           3/27/2026 11:01 AM                .subframe
+d----           3/27/2026 11:15 AM                cc-hdrm
+d----           3/27/2026 11:15 AM                cc-hdrmTests
+d----           3/27/2026 11:19 AM                docs
+d----           3/27/2026 11:53 AM                windows
+-a---           3/27/2026 12:02 PM            557 .gitignore
+-a---           3/27/2026 11:15 AM           6714 AGENTS.md
+-a---           3/27/2026 11:15 AM          11582 CHANGELOG.md
+-a---           3/27/2026 11:15 AM              9 CLAUDE.md
+-a---           3/27/2026 11:15 AM           5589 CODE_OF_CONDUCT.md
+-a---           3/27/2026 11:15 AM           5735 CONTRIBUTING.md
+-a---           3/27/2026 11:15 AM           1095 LICENSE
+-a---           3/27/2026 11:15 AM           1308 project.yml
+-a---           3/27/2026 11:15 AM           5045 README.md
+-a---           3/27/2026 12:57 PM            775 run_dev.ps1
+
+  Bailey [windows-port-spike ≢  ?4 ~1]  ~\Desktop\Open-Projects\CC-Stats .\run_dev.ps1
+Starting CC Stats Avalonia dev app...
+Project: C:\Users\Bailey\Desktop\Open-Projects\CC-Stats\windows\CCStats.Desktop\CCStats.Desktop.csproj
+  Bailey [windows-port-spike ≢  ?4 ~1]  ~\Desktop\Open-Projects\CC-Stats .\run_dev.ps1
+Starting CC Stats Avalonia dev app...
+Project: C:\Users\Bailey\Desktop\Open-Projects\CC-Stats\windows\CCStats.Desktop\CCStats.Desktop.csproj
+  Bailey [windows-port-spike ≢  ?4 ~1]  ~\Desktop\Open-Projects\CC-Stats .\run_dev.ps1
+Starting CC Stats Avalonia dev app...
+Project: C:\Users\Bailey\Desktop\Open-Projects\CC-Stats\windows\CCStats.Desktop\CCStats.Desktop.csproj
+  Bailey [windows-port-spike ≢  ?4 ~1]  ~\Desktop\Open-Projects\CC-Stats .\run_dev.ps1
+Starting CC Stats Avalonia dev app...
+Project: C:\Users\Bailey\Desktop\Open-Projects\CC-Stats\windows\CCStats.Desktop\CCStats.Desktop.csproj

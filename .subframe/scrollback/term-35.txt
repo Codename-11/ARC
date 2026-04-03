@@ -1,0 +1,17 @@
+PowerShell 7.6.0
+Loading personal and system profiles took 952ms.
+  Bailey [master ≡  ?30 ~42 -1756 |  +4]  ~\Desktop\Open-Projects\ARC pnpm build
+
+> @axiom-labs/arc-cli@0.1.0-beta build C:\Users\Bailey\Desktop\Open-Projects\ARC
+> tsup
+
+CLI Building entry: src/index.ts
+CLI Using tsconfig: tsconfig.json
+CLI tsup v8.5.1
+CLI Using tsup config: C:\Users\Bailey\Desktop\Open-Projects\ARC\tsup.config.ts
+CLI Target: node18
+CLI Cleaning output folder
+ESM Build start
+ESM dist\index.js 157.29 KB
+ESM ⚡️ Build success in 80ms
+  Bailey [master ≡  ?30 ~42 -1756 |  +4]  ~\Desktop\Open-Projects\ARC arc

@@ -1,0 +1,13 @@
+PowerShell 7.6.0
+Loading personal and system profiles took 925ms.
+  Bailey [master ≡  ?30 ~42 -1756 |  +4]  ~\Desktop\Open-Projects\ARC arc launch --dangerously-skip-permiss
+ions    
+ℹ Launching claude with profile: claude-alt
+ ▐▛███▜▌   Claude Code v2.1.86
+▝▜█████▛▘  Opus 4.6 (1M context) · Claude Max
+  ▘▘ ▝▝    ~\Desktop\Open-Projects\ARC
+
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯  
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  Press Ctrl-C again to exit

@@ -1,0 +1,80 @@
+PowerShell 7.6.0
+Loading personal and system profiles took 965ms.
+  Bailey [master ≡  ?30 ~42 -1756 |  +4]  ~\Desktop\Open-Projects\ARC arc
+node:internal/process/promises:394
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+Error: Rendered more hooks than during the previous render.
+    at updateWorkInProgressHook (C:\Users\Bailey\Desktop\Open-Projects\ARC\node_modules\.pnpm\react-reconciler@0.
+33.0_react@19.2.4\node_modules\react-reconciler\cjs\react-reconciler.development.js:5521:17)
+    at updateCallback (C:\Users\Bailey\Desktop\Open-Projects\ARC\node_modules\.pnpm\react-reconciler@0.33.0_react
+@19.2.4\node_modules\react-reconciler\cjs\react-reconciler.development.js:6416:18)
+    at Object.useCallback (C:\Users\Bailey\Desktop\Open-Projects\ARC\node_modules\.pnpm\react-reconciler@0.33.0_r
+eact@19.2.4\node_modules\react-reconciler\cjs\react-reconciler.development.js:18148:16)
+    at process.env.NODE_ENV.exports.useCallback (C:\Users\Bailey\Desktop\Open-Projects\ARC\node_modules\.pnpm\rea
+ct@19.2.4\node_modules\react\cjs\react.development.js:1204:34)
+    at useScreenSize (file:///C:/Users/Bailey/Desktop/Open-Projects/ARC/node_modules/.pnpm/fullscreen-ink@0.1.0_@
+types+react@19.2.14/node_modules/fullscreen-ink/dist/esm/useScreenSize.js:9:21)
+    at Vi (file:///C:/Users/Bailey/Desktop/Open-Projects/ARC/dist/index.js:21:40918)
+    at Object.react_stack_bottom_frame (C:\Users\Bailey\Desktop\Open-Projects\ARC\node_modules\.pnpm\react-reconc
+iler@0.33.0_react@19.2.4\node_modules\react-reconciler\cjs\react-reconciler.development.js:17596:20)
+    at renderWithHooks (C:\Users\Bailey\Desktop\Open-Projects\ARC\node_modules\.pnpm\react-reconciler@0.33.0_reac
+t@19.2.4\node_modules\react-reconciler\cjs\react-reconciler.development.js:5335:22)
+    at updateFunctionComponent (C:\Users\Bailey\Desktop\Open-Projects\ARC\node_modules\.pnpm\react-reconciler@0.3
+3.0_react@19.2.4\node_modules\react-reconciler\cjs\react-reconciler.development.js:7720:19)
+    at beginWork (C:\Users\Bailey\Desktop\Open-Projects\ARC\node_modules\.pnpm\react-reconciler@0.33.0_react@19.2
+.4\node_modules\react-reconciler\cjs\react-reconciler.development.js:9277:18)
+
+Node.js v24.14.0
+PS>cclear
+cclear: The term 'cclear' is not recognized as a name of a cmdlet, function, script file, or executable program. 
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.        
+
+[General Feedback]
+  The most similar commands are:
+    ➤ clear
+
+  Bailey [master ≡  ?30 ~42 -1756 |  +4]  ~\Desktop\Open-Projects\ARC pnpm build
+
+> @axiom-labs/arc-cli@0.1.0-beta build C:\Users\Bailey\Desktop\Open-Projects\ARC
+> tsup
+
+CLI Building entry: src/index.ts
+CLI Using tsconfig: tsconfig.json
+CLI tsup v8.5.1
+CLI Using tsup config: C:\Users\Bailey\Desktop\Open-Projects\ARC\tsup.config.ts
+CLI Target: node18
+CLI Cleaning output folder
+ESM Build start
+ESM dist\index.js 157.29 KB
+ESM ⚡️ Build success in 65ms
+  Bailey [master ≡  ?30 ~42 -1756 |  +4]  ~\Desktop\Open-Projects\ARC arc
+node:internal/process/promises:394
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+Error: Rendered more hooks than during the previous render.
+    at updateWorkInProgressHook (C:\Users\Bailey\Desktop\Open-Projects\ARC\node_modules\.pnpm\react-reconciler@0.
+33.0_react@19.2.4\node_modules\react-reconciler\cjs\react-reconciler.development.js:5521:17)
+    at updateCallback (C:\Users\Bailey\Desktop\Open-Projects\ARC\node_modules\.pnpm\react-reconciler@0.33.0_react
+@19.2.4\node_modules\react-reconciler\cjs\react-reconciler.development.js:6416:18)
+    at Object.useCallback (C:\Users\Bailey\Desktop\Open-Projects\ARC\node_modules\.pnpm\react-reconciler@0.33.0_r
+eact@19.2.4\node_modules\react-reconciler\cjs\react-reconciler.development.js:18148:16)
+    at process.env.NODE_ENV.exports.useCallback (C:\Users\Bailey\Desktop\Open-Projects\ARC\node_modules\.pnpm\rea
+ct@19.2.4\node_modules\react\cjs\react.development.js:1204:34)
+    at useScreenSize (file:///C:/Users/Bailey/Desktop/Open-Projects/ARC/node_modules/.pnpm/fullscreen-ink@0.1.0_@
+types+react@19.2.14/node_modules/fullscreen-ink/dist/esm/useScreenSize.js:9:21)
+    at Vi (file:///C:/Users/Bailey/Desktop/Open-Projects/ARC/dist/index.js:21:40918)
+    at Object.react_stack_bottom_frame (C:\Users\Bailey\Desktop\Open-Projects\ARC\node_modules\.pnpm\react-reconc
+iler@0.33.0_react@19.2.4\node_modules\react-reconciler\cjs\react-reconciler.development.js:17596:20)
+    at renderWithHooks (C:\Users\Bailey\Desktop\Open-Projects\ARC\node_modules\.pnpm\react-reconciler@0.33.0_reac
+t@19.2.4\node_modules\react-reconciler\cjs\react-reconciler.development.js:5335:22)
+    at updateFunctionComponent (C:\Users\Bailey\Desktop\Open-Projects\ARC\node_modules\.pnpm\react-reconciler@0.3
+3.0_react@19.2.4\node_modules\react-reconciler\cjs\react-reconciler.development.js:7720:19)
+    at beginWork (C:\Users\Bailey\Desktop\Open-Projects\ARC\node_modules\.pnpm\react-reconciler@0.33.0_react@19.2
+.4\node_modules\react-reconciler\cjs\react-reconciler.development.js:9277:18)
+
+Node.js v24.14.0
+  Bailey [master ≡  ?30 ~42 -1756 |  +4]  ~\Desktop\Open-Projects\ARC ^C
+  Bailey [master ≡  ?30 ~42 -1756 |  +4]  ~\Desktop\Open-Projects\ARC 

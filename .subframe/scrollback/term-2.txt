@@ -1,0 +1,4999 @@
+
+
+
+
+
+
+
+        iles: ProfileEntry[];\r\n  loading: boolean;\r\n  config: ArcConfig;\r\n  reload: () => void;"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "bles ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ...
+
+ΓÇó Called agent-forge.read_mcp_resource({"server":"agent-forge","uri":"workspace://file/src/tui/theme.tsx"})
+  Γöö {"server": "agent-forge", "uri": "workspace://file/src/tui/theme.tsx", "contents": [{"uri": "workspace://file/src/tui/theme.tsx", "mimeType": "text/plain", "text": "import "
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "on handleExec(\r\n  name: string | undefined,\r\n  rawArgs: string[]\r
+\n): Promise<void> {\r\n  const config = loadConfig();\r\n  let profileName: string;\r\n  let passthrough: string[];\r\n\
+
+
+
+
+
+
+
+
+
+        r\n  if (name && config.profiles[name]) {\r\n    // Valid profile name ΓÇö everything after i"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "ΓÇó Calling agent-forge.read_mcp_resource({"server":"agent-forge","uri
+":"workspace://file/src/commands/shell.ts"})
+
+ΓÇó Working (1m 09s ΓÇó esc to interrupt)
+
+
+ΓÇ║ Improve documentation in @filename
+
+  gpt-5.4 high ┬╖ 81% left ┬╖ ~\Desktop\Open-Projects\ARC
+ΓÇó Called agent-forge.read_mcp_resource({"server":"ag"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "r\n\r\n  const profileEnv = await buildProfileEnv(profile, profileName
+);\r\n\r\n  let shellCmd: string;\r\n  if (process.platform === \"win32\") {\r\n    shellCmd = process.env[\"COMSPEC\"] ??
+
+
+
+
+
+
+
+        \"cmd.exe\"...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ΓÇó Calling agent-forge.read_mcp_resource({"server":"agent-forge"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "ΓÇó Called agent-forge.read_mcp_resource({"server":"agent-forge","uri"
+:"workspace://file/src/commands/set-key.ts"})
+
+
+
+
+
+
+
+  Γöö {"server": "agent-forge", "uri": "workspace://file/src/commands/set-key.ts", "contents": [{"uri": "workspace://file/src/commands/set-key.ts", "mimeType": "text/plain", "text":
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "return null;\r\n  }\r\n}\r\n\r\nfunction readKeyFromStdin(): Promise<s
+tring> {\r\n  return new Promise((resolve, reject) => {\r\n    let data = \"\";\r\n    process.stdin.setEncoding(\"utf-8\
+
+
+
+
+
+
+
+        ");\r\n ...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ΓÇó Called agent-forge.read_mcp_resource({"server":"agent-forge","ur"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "from \"node:path\";\r\n\r\ntype ShellType = \"bash\" | \"zsh\" | \"fis
+h\" | \"powershell\";\r\n\r\nfunction detectShell(): ShellType {\r\n  const shellEnv = process.env[\"SHELL\"];\r\n  if (s
+
+
+
+
+
+
+
+        hellEnv) {\r\n    const base = path.basename(shellEnv);\r\n    if (base === \"zsh\") return \"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "\"$(arc she...
+ΓÇóWorking(1m 09s ΓÇó esc to interrupt)
+
+ΓÇ║Improve documentation in @filename
+  gpt-5.4 high ┬╖ 81% left ┬╖ ~\Desktop\Open-Projects\ARC
+g
+72
+
+
+
+
+
+
+
+
+10
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+
+ΓÇóWorki
+Workin
+
+ΓÇó
+Working
+
+ΓÇóWorking
+
+
+ΓÇóWorking1
+
+
+ΓÇóWorking
+orking
+
+ΓÇó
+rking
+
+ΓÇóking
+
+
+ΓÇóing
+
+ng
+g
+
+
+
+
+
+
+
+
+
+2
+
+
+
+
+
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "ARC
+ng
+g
+
+
+
+
+
+
+
+
+
+2
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇóWor
+
+
+ΓÇóWork
+Worki
+
+ΓÇó
+Workin
+
+ΓÇó
+Working
+
+ΓÇóWorking
+3
+
+ΓÇóWorking
+Working
+
+ΓÇó
+orking
+
+ΓÇó
+rking
+
+ΓÇóking
+
+
+ΓÇóing
+ng
+
+g
+
+
+
+
+
+
+
+
+
+4
+
+
+
+
+
+
+
+
+W
+Wo
+
+
+ΓÇóWor
+
+
+ΓÇóWork
+Worki
+
+ΓÇó
+Workin
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+5
+
+ΓÇóWorking
+Working
+
+ΓÇó
+orking
+
+ΓÇórking
+
+
+ΓÇóking
+
+
+ΓÇóing
+ng
+
+g
+
+
+
+
+
+
+
+
+
+6
+
+
+
+
+
+
+
+
+W
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "[44;2H
+
+
+
+
+
+
+
+4
+
+
+
+
+
+
+
+
+W
+Wo
+
+
+ΓÇóWor
+
+
+ΓÇóWork
+Worki
+
+ΓÇó
+Workin
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+5
+
+ΓÇóWorking
+Working
+
+ΓÇó
+orking
+
+ΓÇórking
+
+
+ΓÇóking
+
+
+ΓÇóing
+ng
+
+g
+
+
+
+
+
+
+
+
+
+6
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+Worki
+
+ΓÇó
+Workin
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+Working7
+
+ΓÇó
+Working
+
+ΓÇó
+orking
+
+ΓÇórking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+
+g
+
+
+
+
+
+
+
+
+
+8
+
+
+
+
+
+
+
+
+W
+Wo
+
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "K
+
+ΓÇóing
+ng
+
+g
+
+
+
+
+
+
+
+
+
+6
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+Worki
+
+ΓÇó
+Workin
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+Working7
+
+ΓÇó
+Working
+
+ΓÇó
+orking
+
+ΓÇórking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+
+g
+
+
+
+
+
+
+
+
+
+8
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+
+ΓÇóWorki
+Workin
+
+ΓÇó
+Working
+
+ΓÇó
+Working
+
+ΓÇóWorking9
+
+
+ΓÇóWorking
+orking
+
+ΓÇó
+rking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+g
+
+
+
+
+
+
+
+
+
+20
+
+
+
+
+
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "[44;2H
+g
+
+
+
+
+
+
+
+
+
+8
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+
+ΓÇóWorki
+Workin
+
+ΓÇó
+Working
+
+ΓÇó
+Working
+
+ΓÇóWorking9
+
+
+ΓÇóWorking
+orking
+
+ΓÇó
+rking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+g
+
+
+
+
+
+
+
+
+
+20
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+
+ΓÇóWorki
+Workin
+
+ΓÇó
+Working
+
+ΓÇó
+Working
+
+ΓÇóWorking1
+
+
+ΓÇóWorking
+orking
+
+ΓÇó
+rking
+
+ΓÇóking
+
+
+ΓÇóing
+
+ng
+g
+
+
+
+
+
+
+
+
+
+2
+
+
+
+
+
+
+
+
+W
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "ΓÇóking
+ing
+
+ΓÇó
+ng
+g
+
+
+
+
+
+
+
+
+
+20
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+
+ΓÇóWorki
+Workin
+
+ΓÇó
+Working
+
+ΓÇó
+Working
+
+ΓÇóWorking1
+
+
+ΓÇóWorking
+orking
+
+ΓÇó
+rking
+
+ΓÇóking
+
+
+ΓÇóing
+
+ng
+g
+
+
+
+
+
+
+
+
+
+2
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇóWor
+
+
+ΓÇóWork
+
+
+ΓÇóWorki
+Workin
+
+ΓÇó
+Working
+
+ΓÇóWorking
+
+
+ΓÇóWorking3
+Working
+
+ΓÇó
+orking
+
+ΓÇó
+rking
+
+ΓÇóking
+
+
+ΓÇóing
+ng
+
+g
+
+
+
+
+
+
+
+
+
+4
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "8;2;231;231;231morki
+
+ΓÇó
+Workin
+
+ΓÇó
+Working
+
+ΓÇóWorking
+5
+
+ΓÇóWorking
+Working
+
+ΓÇó
+orking
+
+ΓÇórking
+
+
+ΓÇóking
+
+
+ΓÇóing
+ng
+
+g
+
+
+
+
+
+
+
+
+
+6
+
+
+
+
+
+
+
+
+W
+Wo
+
+
+ΓÇóWor
+
+
+ΓÇóWork
+Worki
+
+ΓÇó
+Workin
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+7
+
+ΓÇóWorking
+Working
+
+ΓÇó
+orking
+
+ΓÇórking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+
+g
+
+
+
+
+
+
+
+
+
+8
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+
+ΓÇóWorki
+
+Workin"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "8
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+
+ΓÇóWorki
+
+Workin
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+Working9
+
+ΓÇó
+Working
+
+ΓÇó
+orking
+
+ΓÇórking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+
+g
+
+
+
+
+
+
+
+
+
+30
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+
+ΓÇóWorki
+Workin
+
+ΓÇó
+Working
+
+ΓÇó
+Working
+
+ΓÇóWorking1
+
+
+ΓÇóWorking
+orking
+
+ΓÇó
+rking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+g
+
+
+
+
+
+
+
+
+
+
+2
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "[44;2Hrking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+g
+
+
+
+
+
+
+
+
+
+
+2
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+
+ΓÇóWorki
+
+Workin
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+Working3
+
+ΓÇó
+Working
+
+ΓÇóorking
+
+
+ΓÇórking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+g
+
+
+
+
+
+
+
+
+
+4
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+
+ΓÇóWorki
+Workin
+
+ΓÇó
+Working
+
+ΓÇóWorking
+
+
+ΓÇóWorking5
+
+
+ΓÇóWorking
+orking
+
+ΓÇórking
+
+
+ΓÇóking
+
+
+ΓÇóing
+ng
+
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "ΓÇóWorki
+Workin
+
+ΓÇó
+Working
+
+ΓÇóWorking
+
+
+ΓÇóWorking5
+
+
+ΓÇóWorking
+orking
+
+ΓÇórking
+
+
+ΓÇóking
+
+
+ΓÇóing
+ng
+
+g
+
+
+
+
+
+
+
+
+
+6
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+
+ΓÇóWork
+Worki
+
+ΓÇó
+Workin
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+Working7
+
+ΓÇó
+Working
+
+ΓÇó
+orking
+
+ΓÇórking
+
+
+ΓÇóking
+
+
+ΓÇóing
+ng
+
+g
+
+
+
+
+
+
+
+
+
+8
+
+
+
+
+
+
+
+
+W
+Wo
+
+
+ΓÇóWor
+
+
+ΓÇóWork
+Worki
+
+ΓÇó
+Workin
+
+ΓÇóWorking
+
+
+ΓÇóWor"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "[?25h
+
+
+
+
+
+
+W
+Wo
+
+
+ΓÇóWor
+
+
+ΓÇóWork
+Worki
+
+ΓÇó
+Workin
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+9
+
+ΓÇóWorking
+Working
+
+ΓÇó
+orking
+
+ΓÇórking
+
+
+ΓÇóking
+
+
+ΓÇóing
+ng
+
+g
+
+
+
+
+
+
+
+
+
+40
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+
+ΓÇóWorki
+
+
+ΓÇóWorkin
+Working
+
+
+
+ΓÇó Working (1m 40s ΓÇó esc to interrupt)
+
+
+ΓÇ║ Improve documentation in @filename
+
+  gpt-5.4 high ┬╖ 72% left"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "gpt-5.4 high ┬╖ 72% left ┬╖ ~\Desktop\Open-Projects\ARC
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓ
+öÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö
+ÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+ΓÇó Working (1m 40s ΓÇó esc to interrupt)
+
+
+ΓÇ║ Imp"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "H
+2
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+Worki
+
+ΓÇó
+Workin
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+Working3
+
+ΓÇó
+Working
+
+ΓÇó
+orking
+
+ΓÇórking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+g
+
+
+
+
+
+
+
+
+
+
+4
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+
+ΓÇóWorki
+Workin
+
+ΓÇó
+Working
+
+ΓÇó
+Working
+
+ΓÇóWorking5
+
+
+ΓÇóWorking
+orking
+
+ΓÇó
+rking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+g
+
+
+
+
+
+
+
+
+
+6
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇóWor
+
+
+ΓÇóWork"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: ";128;128;128morking
+
+ΓÇó
+rking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+g
+
+
+
+
+
+
+
+
+
+6
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇóWor
+
+
+ΓÇóWork
+
+
+ΓÇóWorki
+Workin
+
+ΓÇó
+Working
+
+ΓÇóWorking
+
+
+ΓÇóWorking7
+Working
+
+ΓÇó
+orking
+
+ΓÇó
+rking
+
+ΓÇóking
+
+
+ΓÇóing
+ng
+
+g
+
+
+
+
+
+
+
+
+
+8
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+Worki
+
+ΓÇó
+Workin
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+Working9
+
+ΓÇó
+Working
+
+ΓÇó
+orking
+
+ΓÇórking
+
+
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "48;37HWorkin
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+Working9
+
+ΓÇó
+Working
+
+ΓÇó
+orking
+
+ΓÇórking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+
+g
+
+
+
+
+
+
+
+
+
+50
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+
+ΓÇóWorki
+
+Workin
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+Working1
+
+ΓÇó
+Working
+
+ΓÇó
+orking
+
+ΓÇórking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+
+g
+
+
+
+
+
+
+
+
+
+2
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+
+ΓÇóWorki
+
+
+ΓÇóWorkin
+Working
+
+
+ΓÇóWor"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "ARC
+
+2
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+
+ΓÇóWorki
+
+
+ΓÇóWorkin
+Working
+
+
+ΓÇóWorking
+Working3
+
+ΓÇó
+Working
+
+ΓÇóorking
+
+
+ΓÇórking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+g
+
+
+
+
+
+
+
+
+
+
+4
+
+
+
+
+
+
+
+
+W
+Wo
+
+
+ΓÇóWor
+
+
+ΓÇóWork
+Worki
+
+ΓÇó
+Workin
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+Working5
+
+ΓÇó
+Working
+
+ΓÇó
+orking
+
+ΓÇórking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+
+g
+
+
+
+
+
+
+
+
+
+6
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóW"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "46;2H
+orking
+
+ΓÇórking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+
+g
+
+
+
+
+
+
+
+
+
+6
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+
+ΓÇóWorki
+
+Workin
+
+ΓÇó
+Working
+
+ΓÇó
+Working
+Working7
+
+ΓÇó
+Working
+
+ΓÇó
+orking
+
+ΓÇó
+rking
+
+ΓÇóking
+
+ing
+
+ΓÇó
+ng
+
+g
+
+
+
+
+
+
+
+
+
+
+
+8
+
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+Worki
+
+ΓÇó
+Workin
+
+ΓÇó
+Working
+
+ΓÇó
+Working
+9
+
+ΓÇóWorking
+Working
+
+ΓÇó
+orking
+
+
+ΓÇórking
+
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "[KWor
+
+ΓÇóWork
+
+Worki
+
+ΓÇó
+Workin
+
+ΓÇó
+Working
+
+ΓÇó
+Working
+9
+
+ΓÇóWorking
+Working
+
+ΓÇó
+orking
+
+
+ΓÇórking
+
+
+ΓÇóking
+
+
+ΓÇóing
+ng
+
+g
+
+
+
+
+
+
+
+
+
+
+
+200
+
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+Worki
+
+ΓÇó
+Workin
+
+ΓÇó
+Working
+
+ΓÇó
+Working
+Working1
+
+ΓÇó
+Working
+
+ΓÇó
+orking
+
+ΓÇó
+rking
+
+
+ΓÇóking
+
+
+ΓÇóing
+ng
+
+g
+
+
+
+
+
+
+
+
+
+
+2
+
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇó
+Wor
+
+
+ΓÇóWork
+
+
+ΓÇó"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "5h
+ΓÇóking
+
+
+ΓÇóing
+ng
+
+g
+
+
+
+
+
+
+
+
+
+
+2
+
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇó
+Wor
+
+
+ΓÇóWork
+
+
+ΓÇóWorki
+Workin
+
+ΓÇó
+Working
+
+
+ΓÇóWorking
+3
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+orking
+
+
+ΓÇórking
+
+ΓÇóking
+
+
+
+ΓÇóing
+ng
+
+g
+
+
+
+
+
+
+
+
+
+
+4
+
+
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇóWor
+
+
+ΓÇóWork
+
+
+ΓÇóWorki
+
+Workin
+
+ΓÇó
+Working
+
+ΓÇó
+Working
+5
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+
+orking
+
+ΓÇórking
+
+ΓÇóking
+
+
+ΓÇóing
+
+ng
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "[48;37H
+
+ΓÇóWorki
+
+Workin
+
+ΓÇó
+Working
+
+ΓÇó
+Working
+5
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+
+orking
+
+ΓÇórking
+
+ΓÇóking
+
+
+ΓÇóing
+
+ng
+g
+
+
+
+
+
+
+
+
+
+
+
+6
+
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+Worki
+
+ΓÇó
+Workin
+
+ΓÇó
+Working
+
+ΓÇó
+Working
+7
+
+ΓÇóWorking
+Working
+
+ΓÇó
+orking
+
+
+ΓÇórking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+
+g
+
+
+
+
+
+
+
+
+
+
+8
+
+
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+
+ΓÇóWork
+
+
+ΓÇóWorki
+
+Wo"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "?25lng
+
+g
+
+
+
+
+
+
+
+
+
+
+8
+
+
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+
+ΓÇóWork
+
+
+ΓÇóWorki
+
+Workin
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+
+
+ΓÇóWorking9
+
+
+ΓÇóWorking
+orking
+
+
+ΓÇórking
+
+
+ΓÇóking
+
+
+ΓÇóing
+
+ng
+g
+
+
+
+
+
+
+
+
+
+
+10
+
+
+
+
+
+
+
+
+
+W
+Wo
+
+
+ΓÇóWor
+
+
+ΓÇóWork
+
+
+ΓÇóWorki
+Workin
+
+
+ΓÇóWorking
+
+
+ΓÇó
+Working
+Working1
+
+ΓÇó
+Working
+
+ΓÇó
+orking
+
+ΓÇó
+rking
+
+ΓÇóking
+
+
+ΓÇóing
+
+ng
+
+g
+
+
+
+
+
+
+
+
+
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "[48;37H
+ΓÇóWorki
+Workin
+
+
+ΓÇóWorking
+
+
+ΓÇó
+Working
+Working1
+
+ΓÇó
+Working
+
+ΓÇó
+orking
+
+ΓÇó
+rking
+
+ΓÇóking
+
+
+ΓÇóing
+
+ng
+
+g
+
+
+
+
+
+
+
+
+
+
+2
+
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇóWor
+
+
+ΓÇóWork
+
+Worki
+
+ΓÇó
+Workin
+
+ΓÇó
+Working
+
+ΓÇóWorking
+
+Working3
+
+ΓÇó
+Working
+
+ΓÇó
+orking
+
+ΓÇó
+rking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+
+g
+
+
+
+
+
+
+
+
+
+
+4
+
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+Worki
+
+ΓÇó
+Work"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "4
+
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+Worki
+
+ΓÇó
+Workin
+
+ΓÇó
+Working
+
+
+ΓÇóWorking
+5
+
+ΓÇóWorking
+Working
+
+ΓÇó
+orking
+
+
+ΓÇórking
+
+
+ΓÇóking
+
+
+ΓÇóing
+
+ng
+g
+
+
+
+
+
+
+
+
+
+
+
+6
+
+
+
+
+
+
+
+
+
+
+W
+Wo
+
+
+ΓÇóWor
+
+
+ΓÇóWork
+
+
+ΓÇóWorki
+
+Workin
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+7
+
+ΓÇóWorking
+Working
+
+ΓÇó
+orking
+
+ΓÇó
+rking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+
+g
+
+
+
+
+
+
+
+
+
+
+8
+
+
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "50;56HWorkin
+
+ΓÇóWorking
+
+
+ΓÇóWorking
+7
+
+ΓÇóWorking
+Working
+
+ΓÇó
+orking
+
+ΓÇó
+rking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+
+g
+
+
+
+
+
+
+
+
+
+
+8
+
+
+
+
+
+
+
+
+
+
+W
+Wo
+
+ΓÇó
+Wor
+
+
+ΓÇóWork
+
+
+ΓÇóWorki
+Workin
+
+ΓÇó
+Working
+
+ΓÇó
+Working
+Working9
+
+ΓÇó
+Working
+
+ΓÇó
+orking
+
+ΓÇórking
+
+
+ΓÇóking
+
+
+ΓÇóing
+ng
+
+g
+
+
+
+
+
+
+
+
+
+
+20
+
+
+
+
+
+
+
+
+
+
+W
+Wo
+
+
+ΓÇóWor
+
+
+ΓÇóWork
+
+
+ΓÇóWorki
+Workin
+
+ΓÇó
+Worki"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "26l
+
+20
+
+
+
+
+
+
+
+
+
+
+W
+Wo
+
+
+ΓÇóWor
+
+
+ΓÇóWork
+
+
+ΓÇóWorki
+Workin
+
+ΓÇó
+Working
+
+
+ΓÇóWorking
+
+
+ΓÇóWorking1
+
+Working
+
+ΓÇóorking
+
+
+ΓÇórking
+
+
+ΓÇóking
+
+
+ΓÇóing
+ng
+
+g
+
+
+
+
+
+
+
+
+
+
+2
+
+
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+Worki
+
+ΓÇó
+Workin
+
+ΓÇó
+Working
+
+ΓÇó
+Working
+3
+
+ΓÇóWorking
+Working
+
+ΓÇó
+orking
+
+ΓÇó
+rking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+
+g
+
+
+
+
+
+
+
+
+
+
+4
+
+
+
+
+
+
+
+
+
+W
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "[m
+Working
+3
+
+ΓÇóWorking
+Working
+
+ΓÇó
+orking
+
+ΓÇó
+rking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+
+g
+
+
+
+
+
+
+
+
+
+
+4
+
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+
+ΓÇóWor
+
+
+ΓÇóWork
+
+
+ΓÇóWorki
+Workin
+
+ΓÇó
+Working
+
+
+ΓÇóWorking
+
+
+ΓÇóWorking5
+Working
+
+ΓÇó
+orking
+
+ΓÇó
+rking
+
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+
+g
+
+
+
+
+
+
+
+
+
+
+6
+
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+Worki
+
+ΓÇó
+Workin
+
+ΓÇó
+Working
+
+ΓÇó
+Working
+Working7
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "2026h
+
+
+6
+
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇó
+Wor
+
+ΓÇóWork
+
+Worki
+
+ΓÇó
+Workin
+
+ΓÇó
+Working
+
+ΓÇó
+Working
+Working7
+
+ΓÇó
+Working
+
+ΓÇó
+orking
+
+ΓÇórking
+
+ΓÇóking
+
+
+
+
+
+
+8
+
+
+
+
+
+
+
+
+
+W
+
+Wo
+
+ΓÇó
+Wor
+
+
+ΓÇóWork
+
+
+ΓÇóWorki
+Workin
+
+ΓÇó
+Working
+
+ΓÇó
+Working
+
+ΓÇóWorking9
+
+Working
+
+ΓÇó
+orking
+
+ΓÇórking
+
+
+ΓÇóking
+
+
+ΓÇóing
+ng
+
+g
+
+
+
+
+
+
+
+
+
+
+30
+
+
+
+
+
+
+
+
+
+W
+Wo
+
+
+ΓÇóWork
+
+Worki
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "26l
+ΓÇórking
+
+
+ΓÇóking
+
+
+ΓÇóing
+ng
+
+g
+
+
+
+
+
+
+
+
+
+
+30
+
+
+
+
+
+
+
+
+
+W
+Wo
+
+
+ΓÇóWork
+
+Worki
+
+ΓÇó
+Workin
+
+ΓÇóWorking
+
+ΓÇóWorking
+
+
+ΓÇóWorking1
+
+
+ΓÇóWorking
+orking
+
+
+ΓÇórking
+
+ΓÇóking
+ing
+
+ΓÇó
+ng
+
+
+
+
+
+
+
+
+
+
+2
+
+
+
+
+
+W
+
+Wo
+
+ΓÇó
+Wor
+
+
+ΓÇóWork
+
+
+ΓÇóWorki
+Workin
+
+ΓÇó
+Working
+
+
+ΓÇóWorking
+3
+
+ΓÇóWorking
+Working
+
+ΓÇó
+orking
+
+ΓÇó
+
+ΓÇórking
+
+
+ΓÇóing
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: ";2;138;138;138mg
+
+
+ΓÇóWorking
+3
+
+ΓÇóWorking
+Working
+
+ΓÇó
+orking
+
+ΓÇó
+
+ΓÇórking
+
+
+ΓÇóing
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+and directory linking for memory and projects.","exports":["deepMerge","getSharedSettings","getSharedManifest","syncSharedToProfile","unsyncSharedFromProfile","pullProfileToSha"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "K"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "K"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "[50;2H"
+[Onboarding] Cancelling analysis for C:\Users\Bailey\Desktop\Open-Projects\ARC
+Destroyed terminal term-1
+[Onboarding] Analysis pipeline error: Error: Analysis cancelled by user.
+    at EventTarget.abortListener (C:\Users\Bailey\Desktop\Open-Projects\SubFrame\dist\main\index.js:26307:11)
+    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:757:20)
+    at EventTarget.dispatchEvent (node:internal/event_target:692:26)
+    at abortSignal (node:internal/abort_controller:369:10)
+    at AbortController.abort (node:internal/abort_controller:403:5)
+    at cancelStream (C:\Users\Bailey\Desktop\Open-Projects\SubFrame\dist\main\index.js:22021:30)
+    at IpcMainImpl.<anonymous> (C:\Users\Bailey\Desktop\Open-Projects\SubFrame\dist\main\index.js:27130:9)
+    at IpcMainImpl.emit (node:events:517:28)
+    at WebContents.<anonymous> (node:electron/js2c/browser_init:2:77585)
+    at WebContents.emit (node:events:517:28) {
+  terminalId: 'term-1'
+}
+Terminal term-1 exited: -1073741510
+
+[dev] Electron exited (code 0). Stopping watchers...
+  Bailey [main ↑1  ?9 ~41]  ~\Desktop\Open-Projects\SubFrame npm run dev
+
+> subframe@0.10.0-beta dev
+> node scripts/dev.js
+
+[dev] Starting dev environment (main watch + renderer watch + Electron)...
+
+[dev:main] Watching src/main/**
+
+[dev:main] Initial build complete.
+[dev:renderer] [build-react] Watching for changes...
+[dev] Starting Electron...
+
+(node:61156) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concat
+enated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[dev] userData isolated: C:\Users\Bailey\AppData\Roaming\SubFrame-dev
+[updater] Dev mode ΓÇö auto-updater disabled
+[API Server] Listening on http://127.0.0.1:53289
+[Web Server] Listening on http://0.0.0.0 (LAN):56105
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[Onboarding] MCP config written to C:\Users\Bailey\AppData\Local\Temp\subframe-mcp\analysis-analysis-1774635758021-mcp.json
+[Onboarding] MCP interactive command: codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analysis.args=['C:/Users/Bailey/Desktop/Open-Projects/Sub
+Frame/mcp/subframe-analysis-server.mjs']" -c "mcp_servers.subframe-analysis.env.SUBFRAME_PROMPT_FILE=C:/Users/Bailey/AppData/Local/Temp/sf-onboard-prompt-1774635758021.txt" -c "mcp_
+servers.subframe-analysis.env.SUBFRAME_RESULT_FILE=C:/Users/Bailey/AppData/Local/Temp/sf-onboard-result-1774635758021.json" -c "mcp_servers.subframe-analysis.env.SUBFRAME_SESSION_ID
+=analysis-1774635758021"
+Created terminal term-1 in C:\Users\Bailey\Desktop\Open-Projects\ARC (shell: C:\WINDOWS\system32\cmd.exe, project: C:\Users\Bailey\Desktop\Open-Projects\ARC)
+[Onboarding] Created analysis terminal term-1 for C:\Users\Bailey\Desktop\Open-Projects\ARC
+[Onboarding] Starting interactive MCP session in terminal term-1
+[Onboarding] Sending command to terminal term-1: codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.sub...
+[Onboarding] Ready poll #1 for term-1: transcript=222 chars
+[Onboarding] Ready poll #2 for term-1: transcript=3381 chars
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] Ready poll #3 for term-1: transcript=9151 chars
+[Onboarding] Ready marker detected in terminal term-1
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] Sending MCP instruction to terminal term-1 (inputMethod=pasteFromFile)
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Γöé model:     gpt-5.4 high   /model to change Γöé
+                                                                                                                                                          ΓÇ║ Explain this codebase
+  gpt-5.4 high ┬╖ 100% left ┬╖ ~\Desktop\Open-Projects\ARC
+                  "
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "?2026l
+
+                                                                                                                                                                     
+                                                              W
+
+                                                              "
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "2
+
+
+
+
+
+
+
+
+
+                                                                                                                                                                     
+                                                              W
+                                                            "
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "ΓÇórking
+
+
+ΓÇóking
+                                                                                                                                                                     
+                                                              ing
+
+ΓÇó
+                                                   "
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "W
+
+                                                                                                                                                                     
+                                                              Wo
+
+
+ΓÇó
+                                                               "
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "ΓÇ║ Explain this codebase                             
+                                                                                                        gpt-5.4 high ┬╖ 100% left ┬╖ ~\Desktop\Open-Projects\ARC     
+ΓÇó Called subframe-analysis.get_analysis_prompt({})
+
+
+
+
+
+
+  Γöö You are analyzing a software"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "6
+
+
+
+
+
+
+
+
+
+
+                                                                                                  W
+                                                                                                  Wo
+
+ΓÇó
+                                                                                    "
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "W
+                                                                                                  Wo
+
+
+ΓÇóWor
+
+
+ΓÇóWork
+                                                                                                  Worki
+
+ΓÇó
+                                                                           "
+Destroyed terminal term-1
+[Onboarding] Analysis complete for C:\Users\Bailey\Desktop\Open-Projects\ARC (9271 chars)
+[Onboarding] Parsed analysis: 19 modules, 5 tasks suggested
+Terminal term-1 exited: -1073741510
+[Onboarding] Analysis log saved to C:\Users\Bailey\Desktop\Open-Projects\ARC\.subframe\analysis.log
+
+[dev] Electron exited (code 0). Stopping watchers...
+  Bailey [main ↑1  ?9 ~41]  ~\Desktop\Open-Projects\SubFrame npm run dev
+
+> subframe@0.10.0-beta dev
+> node scripts/dev.js
+
+[dev] Starting dev environment (main watch + renderer watch + Electron)...
+
+[dev:main] Watching src/main/**
+
+[dev:main] Initial build complete.
+[dev:renderer] [build-react] Watching for changes...
+[dev] Starting Electron...
+
+(node:45952) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concat
+enated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[dev] userData isolated: C:\Users\Bailey\AppData\Roaming\SubFrame-dev
+[updater] Dev mode ΓÇö auto-updater disabled
+[API Server] Listening on http://127.0.0.1:53520
+[Web Server] Listening on http://0.0.0.0 (LAN):56105
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[Onboarding] MCP config written to C:\Users\Bailey\AppData\Local\Temp\subframe-mcp\analysis-analysis-1774635964722-mcp.json
+[Onboarding] MCP interactive command: claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\Temp\subframe-mcp\analysis-analysis-1774635964722-m
+cp.json"
+Created terminal term-1 in C:\Users\Bailey\Desktop\Open-Projects\ARC (shell: C:\WINDOWS\system32\cmd.exe, project: C:\Users\Bailey\Desktop\Open-Projects\ARC)
+[Onboarding] Created analysis terminal term-1 for C:\Users\Bailey\Desktop\Open-Projects\ARC
+[Onboarding] Starting interactive MCP session in terminal term-1
+[Onboarding] Sending command to terminal term-1: claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\Ap...
+[Onboarding] Ready poll #1 for term-1: transcript=222 chars
+[Onboarding] Ready poll #2 for term-1: transcript=1314 chars
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774635964722-mcp.json"
+Microsoft Windo"
+[Onboarding] Ready poll #3 for term-1: transcript=2211 chars
+[Onboarding] Ready marker detected in terminal term-1
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774635964722-mcp.json"
+Microsoft Windo"
+[Onboarding] Sending MCP instruction to terminal term-1 (inputMethod=sendKeys)
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774635964722-mcp.json"
+Microsoft Windo"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774635964722-mcp.json"
+Microsoft Windo"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774635964722-mcp.json"
+Microsoft Windo"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774635964722-mcp.json"
+Microsoft Windo"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774635964722-mcp.json"
+Microsoft Windo"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774635964722-mcp.json"
+Microsoft Windo"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774635964722-mcp.json"
+Microsoft Windo"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774635964722-mcp.json"
+Microsoft Windo"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "77C
+
+     --- FILE: package.json (2422 chars) ---
+     {
+
+       "name": "@axiom-labs/arc",
+
+       "version": "0.1.0-beta",
+
+       "type": "module",
+
+       "description": "ARC ΓÇö Agent Runtime Control. Unified CLI for managing
+     profiles and environments for agent tools (Claude, Gemini, Codex, "
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "---
+     <p align="center">
+       <img src="assets/arc-hero.svg" alt="ARC ΓÇö Agent Runtime Control"
+     width="800">
+     </p>
+
+     <p align="center">
+       <a href="https://www.npmjs.com/package/@axiom-labs/arc"><img
+     src="https://img.shields.io/npm/v/@axiom-labs/arc.svg" alt="npm
+     versi"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "PowerShell |
+     | **Windows-First** | Local shim install, user PATH management,
+     PowerShell support |
+     | **Env Isolation** | Auth env vars sanitized between profiles to
+     prevent credential leaks |
+     | **Shared Layer** | Sync MCP servers, commands, memory, and CLAUDE.md
+     across p"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "shims or shell integration may
+     have changed
+     ```
+
+     > **What `arc update` does:** For bootstrap installs, pulls latest code,
+      reinstalls deps, rebuilds, and refreshes shims. For npm installs,
+     checks for newer versions on the registry and refreshes shims and shell
+     integrati"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "all profiles
+     arc doctor                         # Run diagnostics
+     ```
+
+     ### Shared layer
+
+     ```bash
+     arc shared status                  # Show shared layer contents and sync
+      state
+     arc shared enable [name]           # Enable shared layer for a profile
+     arc shared d"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "cli -- --help         # Run built CLI
+     pnpm cli:dev -- --help     # Run from source (no build step)
+     pnpm dev:tui               # Run TUI dashboard from source
+     pnpm dev:watch             # Rebuild on file change
+     pnpm typecheck
+     ```
+
+     See [Development](./docs/development.md)"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "d) | Install, requirements,
+     first profile |
+     | [Profiles](./docs/profiles.md) | Create, switch, import, delete |
+     | [Authentication](./docs/authentication.md) | OAuth, API key, Bedrock,
+     Vertex, Foundry |
+     | [Shell Integration](./docs/shell-integration.md) | Bash, zsh, fish,
+   "
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "e.ts
+     src\commands\resolve.ts
+     src\commands\set-key.ts
+     src\commands\shared.ts
+     src\commands\shell-init.ts
+     src\commands\shell.ts
+     src\commands\status.ts
+     src\config.ts
+     src\index.ts
+     src\keyring.ts
+     src\paths.ts
+     src\version.ts
+     src\detect.ts
+     src"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "are analyzing a software project called "ARC" for SubFrame, a
+     terminal-centric IDE for AI coding tools.
+
+     Your job is to read the provided project files and produce a structured
+     analysis that SubFrame will import into its project intelligence files.
+
+     ## Project Files
+
+     --- FIL"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "ed npm registry check,
+     self-update via `npm install -g`
+     - **Credential hot-swap:** `src/swap.ts` ΓÇö [experimental] swap auth
+     credentials in canonical tool dir without changing
+     MCPs/settings/history. CLI: `arc swap capture/to/list/delete`. TUI:
+     SwapOverlay via command palette
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "time Control. Unified CLI for managing
+     profiles and environments for agent tools (Claude, Gemini, Codex, and
+     more).",
+
+       "main": "./dist/index.js",
+
+       "bin": {
+
+         "arc": "./dist/index.js"
+
+       },
+
+       "files": [
+
+         "dist",
+
+         "scripts"
+
+       ],
+
+     "
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Codename-11/ARC.git"
+
+       },
+
+       "homepage": "https://github.com/Codename-11/ARC#readme",
+
+       "bugs": {
+
+         "url": "https://github.com/Codename-11/ARC/issues"
+
+       },
+
+       "publishConfig": {
+
+         "access": "public"
+
+       },
+
+       "engines": {
+
+         "node": ">=18"
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "src="https://img.shields.io/node/v/@axiom-labs/arc.svg" alt="Node.js
+     Version"></a>
+       <a
+     href="https://github.com/Codename-11/ARC/actions/workflows/ci.yml"><img
+     src="https://github.com/Codename-11/ARC/actions/workflows/ci.yml/badge.s
+     vg" alt="CI"></a>
+     </p>
+
+     <p align"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "t** | Local shim install, user PATH management,
+     PowerShell support |
+     | **Env Isolation** | Auth env vars sanitized between profiles to
+     prevent credential leaks |
+     | **Shared Layer** | Sync MCP servers, commands, memory, and CLAUDE.md
+     across profiles |
+     | **TUI Dashboard**"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "ne-liner ΓÇö it is idempotent (pulls latest code,
+     reinstalls deps, refreshes shims):
+
+     **PowerShell:**
+     ```powershell
+     irm https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/boo
+     tstrap.ps1 | iex
+     ```
+
+     **macOS / Linux:**
+     ```bash
+     curl -fsSL https://"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "on first run).
+
+     ## Usage
+
+     ### Profile management
+
+     ```bash
+     arc create <name>                  # Create a profile (prompts for tool
+     + auth)
+     arc list                           # List all profiles
+     arc use <name>                     # Switch active profile
+     arc prof"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "shims and integration
+     arc uninstall                      # Remove shims, PATH, integration,
+     and data
+     ```
+
+     ### Advanced
+
+     ```bash
+     arc exec [name] -- <cmd>           # Run a command with profile
+     environment
+     arc shell [name]                   # Open a subshell wit"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "# Shared projects
+     ```
+
+     See [Configuration](./docs/configuration.md).
+
+     ## Documentation
+
+     | Guide | |
+     |-------|-|
+     | [Getting Started](./docs/getting-started.md) | Install, requirements,
+     first profile |
+     | [Profiles](./docs/profiles.md) | Create, switch, import, d"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "tps://nodejs.org/) >= 18
+     - [pnpm](https://pnpm.io/) (any recent version; the repo pins via
+     `packageManager`)
+
+     ## Setup
+
+     ```bash
+     git clone https://github.com/Codename-11/ARC.git
+     cd ARC
+     pnpm install
+     pnpm build
+     ```
+
+     ## Development
+
+     ```bash
+     pnp"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "ture
+
+     ```
+     src/
+       index.ts          # Entry point
+       cli.ts            # Command registration (Commander.js)
+       version.ts        # Single source of truth for version
+       config.ts         # Config load/save
+       auth.ts           # Credential detection and env building
+  "
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "src\tui\wizardTypes.ts
+     src\commands\setup.ts
+     src\update.ts
+     src\auth.ts
+     src\import-utils.ts
+     src\shared.ts
+     src\cli.ts
+     src\log.ts
+     src\commands\launch.ts
+     src\swap.ts
+     src\tui\createProfile.ts
+
+ΓùÅ Search(pattern: "src/**/*.tsx")
+┬á┬áΓÄ┐ ┬áFound 26 files
+     src"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: ";119;87m* ArchitectingΓÇª (16s ┬╖ Γåô 132 tokens ┬╖ thinking)
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓ
+öÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+Γ¥»┬á
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓ
+öÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  εé░ Opus 4.6 (1M context) εé░ 40k/1m Γû▒Γû▒Γû▒Γû▒Γû▒Γû▒Γû▒Γû▒Γû▒Γû▒ 4% εé░ ΓÜÖ auto Γöé thinking on ΓÇª
+  ΓÅ╡ΓÅ╡ bypas"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "5
+
+ Read(C:\Users\Bailey\Desktop\Open-Projects\ARC\src\auth.ts┬╖lines1-40)┬╖ ArchitectingΓÇª (17s ┬╖ Γåô 152 tokens ┬╖ thinking)
+   Γ¥»┬á
+Γ£óArchitectingΓÇª5thinking ΓûÉΓû¢ΓûêΓûêΓûêΓû£Γûî   Claude Code v2.1.85
+Γû¥Γû£ΓûêΓûêΓûêΓûêΓûêΓû¢Γûÿ  Opus 4.6 (1M context) ┬╖ Claude Max
+  ΓûÿΓûÿ Γû¥Γû¥    ~\Desktop\Open-Projects\ARC
+
+Γ¥» Call the get_analysis_prompt to"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "w the instructions in the prompt
+exactly. When done, call the submit_analysis tool with the structured JSON
+result. Do NOT create, modify, or delete any files. Only analyze and report.
+
+ΓùÅ subframe-analysis - get_analysis_prompt (MCP)
+  ΓÄ┐ ┬áRunningΓÇª
+  ΓÄ┐ ┬áYou are analyzing a software project called "AR"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "- **Doctor repair actions:** install hints, re-auth instructions,
+     PATH/shell fix hints displayed inline
+       - **Shared layer controls:** `h` key in ProfilesView toggles shared
+     layer per profile; sync status in SettingsView and ProfileList
+       - **Credential hot-swap:** SwapOverlay
+  "
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "oss-platform (macOS, Linux)
+
+     ## Development Commands
+
+     ```bash
+     pnpm cli:dev -- --help     # Run from source
+     pnpm dev:tui               # TUI dashboard from source
+     pnpm dev:tui:watch          # TUI with hot-reload
+     pnpm typecheck             # Must pass before commit
+     "
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "C
+       ],
+
+       "scripts": {
+
+         "build": "tsup",
+
+         "dev": "tsx src/index.ts",
+
+         "dev:tui": "tsx src/index.ts dashboard",
+
+         "dev:tui:watch": "node scripts/dev-tui.mjs",
+
+         "dev:watch": "tsup --watch",
+
+         "cli": "node ./dist/index.js",
+
+         "cli:de"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: ""license": "MIT",
+
+       "repository": {
+
+         "type": "git",
+
+         "url": "git+https://github.com/Codename-11/ARC.git"
+
+       },
+
+       "homepage": "https://github.com/Codename-11/ARC#readme",
+
+       "bugs": {
+
+         "url": "https://github.com/Codename-11/ARC/issues"
+
+       },
+
+    "
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "src="https://img.shields.io/npm/v/@axiom-labs/arc.svg" alt="npm
+     version"></a>
+       <a href="https://opensource.org/licenses/MIT"><img
+     src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License:
+     MIT"></a>
+       <a href="https://nodejs.org"><img
+     src="https://img.shield"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "and Foundry |
+     | **Secure Storage** | API keys stored in the OS keyring with plaintext
+     fallback |
+     | **Shell Integration** | Wraps agent commands in bash, zsh, fish, and
+     PowerShell |
+     | **Windows-First** | Local shim install, user PATH management,
+     PowerShell support |
+    "
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "[35C
+
+     See [Getting Started](./docs/getting-started.md) for requirements and
+     platform notes.
+
+     ## Updating
+
+     ### Bootstrap install
+
+     Re-run the same one-liner ΓÇö it is idempotent (pulls latest code,
+     reinstalls deps, refreshes shims):
+
+     **PowerShell:**
+     ```powershell
+"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "# Launch the agent tool for a profile
+     arc launch work
+
+     # Switch the active profile
+     arc use personal
+     ```
+
+     Running `arc` with no arguments opens the **TUI dashboard** (or the
+     onboarding wizard on first run).
+
+     ## Usage
+
+     ### Profile management
+
+     ```bash
+     a"
+Destroyed terminal term-1
+[Onboarding] Analysis complete for C:\Users\Bailey\Desktop\Open-Projects\ARC (9482 chars)
+[Onboarding] Parsed analysis: 20 modules, 5 tasks suggested
+[Onboarding] Analysis log saved to C:\Users\Bailey\Desktop\Open-Projects\ARC\.subframe\analysis.log
+Terminal term-1 exited: -1073741510
+
+[dev] Electron exited (code 0). Stopping watchers...
+  Bailey [main ↑1  ?9 ~41]  ~\Desktop\Open-Projects\SubFrame npm run dev
+
+> subframe@0.10.0-beta dev
+> node scripts/dev.js
+
+[dev] Starting dev environment (main watch + renderer watch + Electron)...
+
+[dev:main] Watching src/main/**
+
+[dev:renderer] [build-react] Watching for changes...
+[dev] Starting Electron...
+
+(node:31156) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concat
+enated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[dev] userData isolated: C:\Users\Bailey\AppData\Roaming\SubFrame-dev
+[updater] Dev mode ΓÇö auto-updater disabled
+[API Server] Listening on http://127.0.0.1:63242
+[Web Server] Listening on http://0.0.0.0 (LAN):56105
+[dev:main] Initial build complete.
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[Onboarding] MCP config written to C:\Users\Bailey\AppData\Local\Temp\subframe-mcp\analysis-analysis-1774639421854-mcp.json
+[Onboarding] MCP interactive command: codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analysis.args=['C:/Users/Bailey/Desktop/Open-Projects/Sub
+Frame/mcp/subframe-analysis-server.mjs']" -c "mcp_servers.subframe-analysis.env.SUBFRAME_PROMPT_FILE=C:/Users/Bailey/AppData/Local/Temp/sf-onboard-prompt-1774639421854.txt" -c "mcp_
+servers.subframe-analysis.env.SUBFRAME_RESULT_FILE=C:/Users/Bailey/AppData/Local/Temp/sf-onboard-result-1774639421854.json" -c "mcp_servers.subframe-analysis.env.SUBFRAME_SESSION_ID
+=analysis-1774639421854"
+Created terminal term-1 in C:\Users\Bailey\Desktop\Open-Projects\ARC (shell: C:\WINDOWS\system32\cmd.exe, project: C:\Users\Bailey\Desktop\Open-Projects\ARC)
+[Onboarding] Created analysis terminal term-1 for C:\Users\Bailey\Desktop\Open-Projects\ARC
+[Onboarding] Starting interactive MCP session in terminal term-1
+[Onboarding] Sending command to terminal term-1: codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.sub...
+[Onboarding] Ready poll #1 for term-1: transcript=222 chars
+[Onboarding] Ready poll #2 for term-1: transcript=3637 chars
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] Ready poll #3 for term-1: transcript=3645 chars
+[Onboarding] Ready poll #4 for term-1: transcript=3645 chars
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] Ready poll #5 for term-1: transcript=3645 chars
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] Ready marker detected in terminal term-1
+[dev] Bundle changed ΓÇö reloading renderer
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] Sending MCP instruction to terminal term-1 (inputMethod=pasteFromFile)
+Created terminal term-2 in C:\Users\Bailey\Desktop\Open-Projects\ARC (shell: C:\WINDOWS\system32\cmd.exe, project: C:\Users\Bailey\Desktop\Open-Projects\ARC)
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>codex --yolo -c "mcp_servers.subframe-analysis.command=node" -c "mcp_servers.subframe-analys
+is.args=['C:/Users/Bailey/Desktop/Open-Projects/SubFrame/mcp/subframe-analy"
+Destroyed terminal term-1
+[Onboarding] Analysis complete for C:\Users\Bailey\Desktop\Open-Projects\ARC (8319 chars)
+[Onboarding] Parsed analysis: 17 modules, 5 tasks suggested
+Terminal term-1 exited: -1073741510
+[Onboarding] Analysis log saved to C:\Users\Bailey\Desktop\Open-Projects\ARC\.subframe\analysis.log
+[Tasks] Watcher error (path may have been deleted): EPERM
+[AgentState] Watcher error (path may have been deleted): EPERM
+Terminal term-2 exited: 9009
+
+[dev] Electron exited (code 0). Stopping watchers...
+  Bailey [main ↑1  ?9 ~41]  ~\Desktop\Open-Projects\SubFrame w^C
+  Bailey [main ↑1  ?9 ~41]  ~\Desktop\Open-Projects\SubFrame npm run dev
+
+> subframe@0.10.0-beta dev
+> node scripts/dev.js
+
+[dev] Starting dev environment (main watch + renderer watch + Electron)...
+
+[dev:main] Watching src/main/**
+
+[dev:main] Initial build complete.
+[dev:renderer] [build-react] Watching for changes...
+[dev] Starting Electron...
+
+(node:57432) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concat
+enated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[dev] userData isolated: C:\Users\Bailey\AppData\Roaming\SubFrame-dev
+[updater] Dev mode ΓÇö auto-updater disabled
+[API Server] Listening on http://127.0.0.1:59754
+[Web Server] Listening on http://0.0.0.0 (LAN):56105
+[dev] CSS changed ΓÇö reloading renderer
+[dev] CSS changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[Onboarding] MCP config written to C:\Users\Bailey\AppData\Local\Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json
+[Onboarding] MCP interactive command: claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\Temp\subframe-mcp\analysis-analysis-1774640959860-m
+cp.json"
+Created terminal term-1 in C:\Users\Bailey\Desktop\Open-Projects\ARC (shell: C:\WINDOWS\system32\cmd.exe, project: C:\Users\Bailey\Desktop\Open-Projects\ARC)
+[Onboarding] Created analysis terminal term-1 for C:\Users\Bailey\Desktop\Open-Projects\ARC
+[Onboarding] Starting interactive MCP session in terminal term-1
+[Onboarding] Sending command to terminal term-1: claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\Ap...
+[Onboarding] Ready poll #1 for term-1: transcript=222 chars
+[Onboarding] Ready poll #2 for term-1: transcript=1287 chars
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Ready poll #3 for term-1: transcript=2110 chars
+[Onboarding] Ready marker detected in terminal term-1
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Sending MCP instruction to terminal term-1 (inputMethod=sendKeys)
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] No JSON found in AI response. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Version 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Failed to parse AI response: Unexpected token '.', "..." is not valid JSON. Use "View Terminal" to inspect the raw output. Raw output preview: "Microsoft Windows [Versi
+on 10.0.26200.8039]
+(c) Microsoft Corporation. All rights reserved.C:\Users\Bailey\Desktop\Open-Projects\ARC>claude --dangerously-skip-permissions --verbose --mcp-config "C:\Users\Bailey\AppData\Local\
+Temp\subframe-mcp\analysis-analysis-1774640959860-mcp.json"
+Microsoft Windo"
+[Onboarding] Cancelling analysis for C:\Users\Bailey\Desktop\Open-Projects\ARC
+Destroyed terminal term-1
+[Onboarding] Analysis pipeline error: Error: Analysis cancelled by user.
+    at EventTarget.abortListener (C:\Users\Bailey\Desktop\Open-Projects\SubFrame\dist\main\index.js:26310:11)
+    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:757:20)
+    at EventTarget.dispatchEvent (node:internal/event_target:692:26)
+    at abortSignal (node:internal/abort_controller:369:10)
+    at AbortController.abort (node:internal/abort_controller:403:5)
+    at cancelStream (C:\Users\Bailey\Desktop\Open-Projects\SubFrame\dist\main\index.js:22021:30)
+    at IpcMainImpl.<anonymous> (C:\Users\Bailey\Desktop\Open-Projects\SubFrame\dist\main\index.js:27133:9)
+    at IpcMainImpl.emit (node:events:517:28)
+    at WebContents.<anonymous> (node:electron/js2c/browser_init:2:77585)
+    at WebContents.emit (node:events:517:28) {
+  terminalId: 'term-1'
+}
+Terminal term-1 exited: -1073741510
+[AgentState] Watcher error (path may have been deleted): EPERM
+[Web Server] Listening on http://127.0.0.1:56105
+C:\Users\Bailey\Desktop\Open-Projects\SubFrame\node_modules\electron\dist\electron.exe exited with signal SIGINT
+  Bailey [main ↑1  ?9 ~42]  ~\Desktop\Open-Projects\SubFrame npm run dev
+
+> subframe@0.10.0-beta dev
+> node scripts/dev.js
+
+[dev] Starting dev environment (main watch + renderer watch + Electron)...
+
+[dev:main] Watching src/main/**
+
+[dev:main] Initial build complete.
+[dev:renderer] [build-react] Watching for changes...
+[dev] Starting Electron...
+
+(node:29780) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concat
+enated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[dev] userData isolated: C:\Users\Bailey\AppData\Roaming\SubFrame-dev
+[updater] Dev mode ΓÇö auto-updater disabled
+[Web Server] Disabled via settings
+[API Server] Listening on http://127.0.0.1:61329
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[Web Server] Listening on http://127.0.0.1:56105
+[Web Server] Listening on http://0.0.0.0 (LAN):56105
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] CSS changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+C:\Users\Bailey\Desktop\Open-Projects\SubFrame\node_modules\electron\dist\electron.exe exited with signal SIGINT
+  Bailey [main ↑1  ?9 ~43]  ~\Desktop\Open-Projects\SubFrame npm run dev
+
+> subframe@0.10.0-beta dev
+> node scripts/dev.js
+
+[dev] Starting dev environment (main watch + renderer watch + Electron)...
+
+[dev:main] Watching src/main/**
+
+[dev:main] Initial build complete.
+[dev:renderer] [build-react] Watching for changes...
+[dev] Starting Electron...
+
+(node:31740) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concat
+enated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[dev] userData isolated: C:\Users\Bailey\AppData\Roaming\SubFrame-dev
+[updater] Dev mode ΓÇö auto-updater disabled
+[Web Server] Disabled via settings
+[API Server] Listening on http://127.0.0.1:61777
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] CSS changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[Web Server] Listening on http://0.0.0.0 (LAN):56105
+Created terminal term-1 in C:\Users\Bailey\Desktop\Open-Projects\ARC (shell: pwsh.exe, project: C:\Users\Bailey\Desktop\Open-Projects\ARC)
+[Renderer:warn] task queue exceeded allotted deadline by 54ms (file:///C:/Users/Bailey/Desktop/Open-Projects/SubFrame/dist/renderer.js:61623)
+[Renderer:warn] task queue exceeded allotted deadline by 95ms (file:///C:/Users/Bailey/Desktop/Open-Projects/SubFrame/dist/renderer.js:61623)
+[dev] Bundle changed ΓÇö reloading renderer
+Created terminal term-2 in C:\Users\Bailey\Desktop\Open-Projects\ARC (shell: pwsh.exe, project: C:\Users\Bailey\Desktop\Open-Projects\ARC)
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+Created terminal term-3 in C:\Users\Bailey\Desktop\Open-Projects\ARC (shell: pwsh.exe, project: C:\Users\Bailey\Desktop\Open-Projects\ARC)
+Destroyed terminal term-1
+Destroyed terminal term-2
+Destroyed terminal term-3
+
+[dev] Electron exited (code 0). Stopping watchers...
+  Bailey [main ↑1  ?9 ~43]  ~\Desktop\Open-Projects\SubFrame npm run dev
+
+> subframe@0.10.0-beta dev
+> node scripts/dev.js
+
+[dev] Starting dev environment (main watch + renderer watch + Electron)...
+
+[dev:main] Watching src/main/**
+
+[dev:renderer] [build-react] Watching for changes...
+[dev] Starting Electron...
+
+(node:50224) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concat
+enated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[dev:main] Initial build complete.
+[dev] userData isolated: C:\Users\Bailey\AppData\Roaming\SubFrame-dev
+[updater] Dev mode ΓÇö auto-updater disabled
+[Web Server] Disabled via settings
+[API Server] Listening on http://127.0.0.1:60141
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+Created terminal term-1 in C:\Users\Bailey\Desktop\Open-Projects\ARC (shell: pwsh.exe, project: C:\Users\Bailey\Desktop\Open-Projects\ARC)
+[dev] Bundle changed ΓÇö reloading renderer
+Created terminal term-2 in C:\Users\Bailey\Desktop\Open-Projects\ARC (shell: pwsh.exe, project: C:\Users\Bailey\Desktop\Open-Projects\ARC)
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+Destroyed terminal term-2
+Terminal term-2 exited: -1073741510
+[Web Server] Listening on http://0.0.0.0 (LAN):56105
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+Destroyed terminal term-1
+
+[dev] Electron exited (code 0). Stopping watchers...
+  Bailey [main ↑1  ?12 ~44]  ~\Desktop\Open-Projects\SubFrame npm run dev
+
+> subframe@0.10.0-beta dev
+> node scripts/dev.js
+
+[dev] Starting dev environment (main watch + renderer watch + Electron)...
+
+[dev:main] Watching src/main/**
+
+[dev:main] Initial build complete.
+[dev:renderer] [build-react] Watching for changes...
+[dev] Starting Electron...
+
+(node:41720) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concat
+enated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[dev] userData isolated: C:\Users\Bailey\AppData\Roaming\SubFrame-dev
+[updater] Dev mode ΓÇö auto-updater disabled
+[API Server] Listening on http://127.0.0.1:60929
+[Web Server] Listening on http://0.0.0.0 (LAN):56105
+[dev] CSS changed ΓÇö reloading renderer
+[dev] CSS changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+C:\Users\Bailey\Desktop\Open-Projects\SubFrame\node_modules\electron\dist\electron.exe exited with signal SIGINT
+  Bailey [main ↑1  ?12 ~45]  ~\Desktop\Open-Projects\SubFrame ^C
+  Bailey [main ↑1  ?12 ~45]  ~\Desktop\Open-Projects\SubFrame npm run dev
+
+> subframe@0.10.0-beta dev
+> node scripts/dev.js
+
+[dev] Starting dev environment (main watch + renderer watch + Electron)...
+
+[dev:main] Watching src/main/**
+
+[dev:main] Initial build complete.
+[dev:renderer] [build-react] Watching for changes...
+[dev] Starting Electron...
+
+(node:3820) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concate
+nated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[dev] userData isolated: C:\Users\Bailey\AppData\Roaming\SubFrame-dev
+[updater] Dev mode ΓÇö auto-updater disabled
+[API Server] Listening on http://127.0.0.1:54705
+[Web Server] Listening on http://0.0.0.0 (LAN):56105
+[dev] CSS changed ΓÇö reloading renderer
+[dev] CSS changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+Created terminal term-1 in C:\Users\Bailey\Desktop\Open-Projects\ARC (shell: pwsh.exe, project: C:\Users\Bailey\Desktop\Open-Projects\ARC)
+C:\Users\Bailey\Desktop\Open-Projects\SubFrame\node_modules\electron\dist\electron.exe exited with signal SIGINT
+  Bailey [main ↑1  ?12 ~45]  ~\Desktop\Open-Projects\SubFrame npm run dev
+
+> subframe@0.10.0-beta dev
+> node scripts/dev.js
+
+[dev] Starting dev environment (main watch + renderer watch + Electron)...
+
+[dev:main] Watching src/main/**
+
+[dev:renderer] [build-react] Watching for changes...
+[dev] Starting Electron...
+
+(node:9924) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concate
+nated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+[dev] userData isolated: C:\Users\Bailey\AppData\Roaming\SubFrame-dev
+[updater] Dev mode ΓÇö auto-updater disabled
+[API Server] Listening on http://127.0.0.1:61453
+[Web Server] Listening on http://0.0.0.0 (LAN):56105
+[dev:main] Initial build complete.
+Created terminal term-1 in C:\Users\Bailey\Desktop\Open-Projects\ARC (shell: pwsh.exe, project: C:\Users\Bailey\Desktop\Open-Projects\ARC)
+[dev] CSS changed ΓÇö reloading renderer
+[dev] CSS changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+Created terminal term-2 in C:\Users\Bailey\Desktop\Open-Projects\ARC (shell: pwsh.exe, project: C:\Users\Bailey\Desktop\Open-Projects\ARC)
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:error] %o
+
+%s
+
+%s
+ ReferenceError: cappedKeys is not defined The above error occurred in the <ViewTabBar> component. React will try to recreate this component tree from scratch using the error bounda
+ry you provided, ErrorBoundary. (file:///C:/Users/Bailey/Desktop/Open-Projects/SubFrame/dist/renderer.js:8290)
+[Renderer:error] [ErrorBoundary:Terminal] ReferenceError: cappedKeys is not defined 
+    at ViewTabBar (file:///C:/Users/Bailey/Desktop/Open-Projects/SubFrame/dist/renderer.js:182129:22)
+    at div (<anonymous>)
+    at TerminalArea (file:///C:/Users/Bailey/Desktop/Open-Projects/SubFrame/dist/renderer.js:182790:23)
+    at ErrorBoundary (file:///C:/Users/Bailey/Desktop/Open-Projects/SubFrame/dist/renderer.js:28777:11)
+    at div (<anonymous>)
+    at div (<anonymous>)
+    at div (<anonymous>)
+    at div (<anonymous>)
+    at App (file:///C:/Users/Bailey/Desktop/Open-Projects/SubFrame/dist/renderer.js:196628:26)
+    at QueryClientProvider (file:///C:/Users/Bailey/Desktop/Open-Projects/SubFrame/dist/renderer.js:24511:9)
+    at ErrorBoundary (file:///C:/Users/Bailey/Desktop/Open-Projects/SubFrame/dist/renderer.js:28777:11) (file:///C:/Users/Bailey/Desktop/Open-Projects/SubFrame/dist/renderer.js:2878
+7)
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
+[dev] Bundle changed ΓÇö reloading renderer
+[Renderer:warn] %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged. (node:electron/js2c/renderer_init:2)
