@@ -5,8 +5,8 @@
 <h1 align="center">ARC — Agent Runtime Control</h1>
 
 <p align="center">
-  Unified profile and environment manager for agent CLIs.<br>
-  Isolated configs, credentials, and environments — one tool to launch them all.
+  Unified agent runtime control plane for AI coding assistants.<br>
+  Profiles, supervision, hooks, memory, tasks, telemetry, and a web dashboard — one tool to run them all.
 </p>
 
 <p align="center">
@@ -22,6 +22,7 @@
   <a href="./docs/authentication.md">Auth</a> ·
   <a href="./docs/advanced.md#shared-layer">Shared Layer</a> ·
   <a href="./docs/shell-integration.md">Shell</a> ·
+  <a href="./docs/spec/SPEC.md">Spec</a> ·
   <a href="./docs/index.md">Docs</a>
 </p>
 
@@ -31,22 +32,86 @@
   <img src="assets/screenshots/dash-dark.png" alt="ARC Dashboard" width="700">
 </p>
 
+## What is ARC?
+
+ARC started as a profile manager for agent CLIs (v0.1). It has since absorbed the [Axiom-Supervisor](https://github.com/Codename-11/axiom-supervisor) project and implements all 25 phases of the [v2.0 spec](./docs/spec/SPEC.md) — becoming a unified control plane for the full lifecycle of AI coding agents.
+
+One binary. One config directory (`~/.arc/`). Every agent runtime — Claude Code, Codex CLI, Gemini CLI, OpenClaw, or anything that speaks MCP/HTTP/stdio.
+
 ## Features
 
-| Feature | Description |
-|---------|-------------|
-| **Named Profiles** | Create and switch between multiple accounts and tool configs |
-| **Tool-Agnostic** | Profiles target any agent binary: `claude`, `gemini`, `codex`, or custom |
-| **Auth Flexibility** | OAuth, API key, AWS Bedrock, Google Vertex AI, and Foundry |
-| **Secure Storage** | API keys stored in the OS keyring with plaintext fallback |
-| **Shell Integration** | Wraps agent commands in bash, zsh, fish, and PowerShell |
-| **Windows-First** | Local shim install, user PATH management, PowerShell support |
-| **Env Isolation** | Auth env vars sanitized between profiles to prevent credential leaks |
-| **Shared Layer** | Sync MCP servers, commands, memory, and CLAUDE.md across profiles |
-| **TUI Dashboard** | Interactive terminal UI with profiles, diagnostics, settings, and guide |
-| **Persistent Launch Flags** | Default flags per profile (e.g. `--dangerously-skip-permissions`) |
-| **Credential Hot-Swap** | [experimental] Switch accounts without changing MCPs or settings |
+| Layer | Capabilities |
+|-------|-------------|
+| **Identity** | Named profiles, credentials, auth (OAuth/API key/Bedrock/Vertex/Foundry), OS keyring, env isolation |
+| **Launch** | Tool detection, shell shims, per-profile flags, workspace-aware auto-selection (`arc.json`) |
+| **Adapters** | Claude Code (SDK bridge + hooks + plugin), Codex CLI, Gemini CLI, OpenClaw, Generic (MCP/HTTP) |
+| **Supervision** | Hook pipeline (4-mode enforcement), risk classification, preflight/postflight, retry loops, circuit breaker |
+| **MCP** | Dual-role: host (connect to tool servers) and server (expose 5 supervision tools via stdio/HTTP) |
+| **Memory** | Session + persistent memory, exponential decay scoring, keyword search, auto-extraction from conversation |
+| **Skills** | Directory-based skill loading, MCP-to-skill adapters, self-improving skillify, stuck detector |
+| **Tasks** | Task CRUD, cron scheduling, agent-to-agent message bus |
+| **Sessions** | Create/suspend/resume/complete lifecycle, resume-intent detection |
+| **Permissions** | Three-tier model (coordinator/interactive/worker) with deny > ask > allow precedence |
+| **Telemetry** | OpenTelemetry spans, JSONL + console + OTLP exporters, `arc.*` attribute namespace |
+| **Web Dashboard** | REST API (10 endpoints), WebSocket real-time push, SPA with 9 view components |
+| **Dark Factory** | Autonomous operation mode: spec in, software out — state machine with wave progression |
+| **Secrets** | Encrypted secret store (Argon2id KDF, AES-256-GCM per-entry), `arc secret` CLI |
+| **Sync** | Shared config layer, cloud sync provider interface, filesystem sync with atomic writes |
+| **Plugins** | JSON-backed plugin registry with semver compatibility, install/uninstall/enable/disable |
+| **Remote Agents** | Registry for remote agents (HTTP/SSH/MCP transports) with health checks |
+| **Shared Layer** | Sync MCP servers, commands, CLAUDE.md, memory, and projects across profiles |
+| **TUI Dashboard** | Interactive terminal UI with profiles, diagnostics, settings, guide, and workspace shell |
 | **Self-Update** | Built-in version check and `arc update` for self-updating |
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     ARC CLI / TUI / Web                      │
+│  Profiles · Credentials · Dashboard · Doctor · Onboarding    │
+│  TUI: quick ops (Ink)  ·  Web: deep observability            │
+├─────────────────────────────────────────────────────────────┤
+│                    Orchestration Layer                        │
+│  Hook Pipeline · Risk Classifier · Retry Loop · Roundtable   │
+│  Session Tracker · Alert Engine · Scope Tracker · Traces     │
+│  Circuit Breaker · Dark Factory Controller                   │
+├──────────┬──────────┬──────────┬──────────┬─────────────────┤
+│  Claude  │  Codex   │  Gemini  │ OpenClaw │  Generic        │
+│  Adapter │  Adapter  │  Adapter │  Adapter │  Adapter        │
+│  SDK +   │  Process │  Process │  Plugin  │  MCP Server     │
+│  Hooks + │  Wrap +  │  Wrap +  │  API +   │  or HTTP        │
+│  Plugin  │  MCP +   │  MCP +   │  Hooks   │                 │
+│  System  │  JSON    │  stdio   │          │                 │
+├──────────┴──────────┴──────────┴──────────┴─────────────────┤
+│                     Protocol Layer                           │
+│  MCP Host (connect to tool servers)                          │
+│  MCP Server (expose ARC supervision as tools)                │
+│  A2A Agent Cards (capability discovery + task delegation)    │
+├─────────────────────────────────────────────────────────────┤
+│                      Storage Layer                           │
+│  Profiles & Config (~/.arc/)  ·  OS Keyring (credentials)    │
+│  JSON stores (tasks, sessions, memory, plugins, agents)      │
+│  JSONL traces  ·  OpenTelemetry Export (OTLP)                │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Package Structure
+
+ARC is a pnpm monorepo:
+
+```
+packages/
+  core/              # Hook bus, risk classifier, config, types, health, lifecycle,
+                     # process, workspace, adapters, secrets, circuit breaker,
+                     # context manager, permissions, telemetry, memory, skills,
+                     # tasks, sessions, plugins, remote agents, factory, sync
+  cli/               # Commander.js commands, TUI (Ink), auth, detect, import,
+                     # shared layer, swap, update, shell integration
+  mcp/               # MCP server (5 supervision tools) + host manager + HTTP transport
+  adapter-claude/    # Claude Code adapter (SDK bridge, auth, detect, import, shared)
+  adapter-openclaw/  # OpenClaw adapter (plugin manifest, hooks, tools)
+  dashboard/         # Web dashboard: REST API, WebSocket, SPA frontend
+```
 
 ## Installation
 
@@ -111,6 +176,7 @@ arc use <name>                     # Switch active profile
 arc profile show [name]            # Show profile details
 arc profile delete <name>          # Delete a profile
 arc profile import                 # Import existing tool config
+arc which                          # Show resolved profile source
 ```
 
 ### Launch
@@ -125,9 +191,75 @@ arc launch [name] -- --model opus  # Pass flags through to the tool
 ```bash
 arc                                # Open TUI dashboard
 arc dashboard                      # Same — explicit command
+arc web                            # Open web dashboard
 ```
 
-### Shared layer
+### Sessions & Tasks
+
+```bash
+arc sessions list                  # List all sessions
+arc sessions show <id>             # Show session details
+arc tasks create <title>           # Create a task
+arc tasks list                     # List tasks
+arc tasks update <id> --status done  # Update task status
+```
+
+### Memory & Skills
+
+```bash
+arc memory search <query>          # Search persistent memory
+arc memory list                    # List stored memories
+arc skills list                    # List loaded skills
+arc skills load <dir>              # Load skills from directory
+```
+
+### MCP
+
+```bash
+arc mcp serve                      # Start ARC as an MCP server (stdio)
+arc mcp serve --transport http     # Start with HTTP transport
+arc mcp connect <uri>              # Connect to an external MCP server
+arc mcp list                       # List connected MCP servers
+arc mcp disconnect <name>          # Disconnect from an MCP server
+```
+
+### Secrets
+
+```bash
+arc secret set <key> <value>       # Store an encrypted secret
+arc secret get <key>               # Retrieve a secret
+arc secret list                    # List secret keys
+arc secret delete <key>            # Delete a secret
+```
+
+### Telemetry & Logs
+
+```bash
+arc logs                           # View structured logs
+arc logs --level error --limit 20  # Filter logs
+arc telemetry status               # Show telemetry config
+```
+
+### Factory & Remote
+
+```bash
+arc factory start <spec>           # Start dark factory run
+arc factory status                 # Show factory state
+arc remote list                    # List registered remote agents
+arc remote register <url>          # Register a remote agent
+```
+
+### Plugins & Sync
+
+```bash
+arc plugins list                   # List installed plugins
+arc plugins install <name>         # Install a plugin
+arc sync status                    # Show sync state
+arc sync push                      # Push to sync provider
+arc sync pull                      # Pull from sync provider
+```
+
+### Shared Layer
 
 ```bash
 arc shared pull [name]             # Push config to shared layer
@@ -161,14 +293,17 @@ arc shell-init --shell powershell | Out-String | Invoke-Expression    # PowerShe
 ```
 ~/.arc/
   config.json              # Profile registry, active profile, settings
-  profiles/
-    <name>/                # Isolated tool config dir per profile
-      .credentials.json    # OAuth tokens (Claude)
-      oauth_creds.json     # OAuth tokens (Gemini)
-      auth.json            # OAuth tokens (Codex)
-      settings.json        # Tool settings
+  profiles/<name>/         # Isolated tool config dir per profile
   shared/                  # Shared layer (synced across profiles)
   credentials/             # [experimental] Hot-swap snapshots
+  memory/                  # Persistent memory store
+  tasks/tasks.json         # Task store
+  sessions.json            # Session store
+  plugins/installed.json   # Plugin registry
+  remote-agents.json       # Remote agent registry
+  logs/structured.jsonl    # Structured log
+  traces/                  # OpenTelemetry JSONL traces
+  skills/                  # Skill definitions
 ```
 
 ## Documentation
@@ -181,6 +316,7 @@ arc shell-init --shell powershell | Out-String | Invoke-Expression    # PowerShe
 | [Shell Integration](./docs/shell-integration.md) | Bash, zsh, fish, PowerShell |
 | [Advanced Usage](./docs/advanced.md) | Shared layer, credential hot-swap, exec, subshell |
 | [Configuration](./docs/configuration.md) | Data layout and config schema |
+| [Spec v2.0](./docs/spec/SPEC.md) | Full architecture and phase spec |
 | [Development](./docs/development.md) | Build, test, contribute |
 | [Troubleshooting](./docs/troubleshooting.md) | Common issues and fixes |
 
@@ -195,7 +331,19 @@ pnpm uninstall:local       # Remove shims (keeps ~/.arc/ config)
 
 pnpm dev:tui               # Run TUI from source
 pnpm dev:tui:watch         # TUI with hot-reload
+pnpm dev:dashboard         # Run web dashboard from source
 pnpm typecheck             # TypeScript strict-mode check
+pnpm build                 # Production bundle
+pnpm test                  # Run all tests (E2E + integration)
+pnpm test:watch            # Tests with hot-reload
+```
+
+Package-level development:
+
+```bash
+pnpm --filter @axiom-labs/arc-core build
+pnpm --filter @axiom-labs/arc-mcp test
+pnpm --filter @axiom-labs/arc-dashboard dev
 ```
 
 See [Development](./docs/development.md) for the full guide.
