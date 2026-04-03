@@ -21,6 +21,7 @@ import type {
   AdapterCapabilities,
 } from "@axiom-labs/arc-core";
 import type { ManagedProcessHandle } from "@axiom-labs/arc-core";
+import { createGenericAdapter } from "./generic.js";
 
 interface OAuthCredentials {
   accessToken: string;
@@ -380,13 +381,7 @@ export function listAdapters(): RuntimeAdapter[] {
 }
 
 export function getAdapter(tool = "claude"): RuntimeAdapter {
-  return adapters.get(tool) ?? createBasicAdapter({
-    id: tool,
-    displayName: tool,
-    dirName: `.${tool}`,
-    markerFiles: ["config.json", "settings.json"],
-    installHint: `Ensure \"${tool}\" is installed and available on your PATH.`,
-  });
+  return adapters.get(tool) ?? createGenericAdapter(tool);
 }
 
 export function detectToolConfigs(): DetectedTool[] {
