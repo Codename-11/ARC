@@ -6,6 +6,7 @@ export default defineConfig({
     alias: {
       "@axiom-labs/arc-core": path.resolve(__dirname, "packages/core/src/index.ts"),
       "@axiom-labs/arc-adapter-claude": path.resolve(__dirname, "packages/adapter-claude/src/index.ts"),
+      "@axiom-labs/arc-adapter-openclaw": path.resolve(__dirname, "packages/adapter-openclaw/src/index.ts"),
     },
   },
   test: {

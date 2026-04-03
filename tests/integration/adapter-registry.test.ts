@@ -10,13 +10,14 @@ import os from "node:os";
 // They describe current behavior, not ideal behavior.
 
 describe("Adapter registry", () => {
-  it("listAdapters() returns exactly 3 adapters", () => {
+  it("listAdapters() returns exactly 4 adapters", () => {
     const adapters = listAdapters();
-    expect(adapters).toHaveLength(3);
+    expect(adapters).toHaveLength(4);
     const ids = adapters.map((a) => a.id);
     expect(ids).toContain("claude");
     expect(ids).toContain("gemini");
     expect(ids).toContain("codex");
+    expect(ids).toContain("openclaw");
   });
 
   it('getAdapter("claude") returns adapter with id "claude" and displayName "Claude Code"', () => {

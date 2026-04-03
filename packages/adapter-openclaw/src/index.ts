@@ -1,3 +1,11 @@
 export * from "./adapter.js";
-// Plugin-side exports (register function, hooks, tools) are added in T02.
 export { openclawAdapter as default } from "./adapter.js";
+export { default as register } from "./plugin.js";
+export type {
+  OpenClawPluginApi,
+  OpenClawToolDefinition,
+  ToolRegistrationOptions,
+  ToolContent,
+  ToolResult,
+  HookMeta,
+} from "./types.js";
