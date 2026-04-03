@@ -70,6 +70,8 @@ export interface HookContext {
   riskTier?: RiskTier;
   /** Accumulated metadata from prior hooks in the pipeline. */
   hookMetadata?: HookMetadata;
+  /** Turn identifier within a session, used by attempt-tracker and audit hooks. */
+  turnId?: string;
 }
 
 /** Response object for post-processing hooks. */
@@ -100,6 +102,26 @@ export interface Hook {
   inject?(ctx: HookContext): HookMetadata | undefined;
   /** Optionally post-process an agent response. */
   postProcess?(ctx: HookContext, response: AgentResponse): Promise<void>;
+}
+
+// ─── Completion audit ────────────────────────────────────────────────
+
+/** Result of a deterministic completion audit on an agent response. */
+export interface CompletionAudit {
+  /** Overall completion status. */
+  status: "complete" | "partial" | "failed" | "uncertain";
+  /** Checks that passed during the audit. */
+  checksPassed: string[];
+  /** Checks that failed during the audit. */
+  checksFailed: string[];
+  /** Steps from the task spec that were not addressed. */
+  missingSteps: string[];
+  /** Whether the agent exceeded its task scope. */
+  overreachDetected: boolean;
+  /** Confidence score from 0 (no confidence) to 1 (full confidence). */
+  confidence: number;
+  /** Recommended next action based on status × confidence matrix. */
+  recommendation: "complete" | "continue" | "retry" | "escalate";
 }
 
 // ─── Pipeline aggregation ────────────────────────────────────────────

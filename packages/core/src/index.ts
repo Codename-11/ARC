@@ -52,6 +52,7 @@ export {
   sourceClassifyHook,
   riskDetectionHook,
   classifyRisk,
+  HookStateStore,
 } from "./hooks/index.js";
 export type {
   HookEvent,
@@ -61,6 +62,7 @@ export type {
   HookResult,
   Hook,
   PreHookPipelineResult,
+  CompletionAudit,
 } from "./hooks/index.js";
 
 // shared.ts wrappers (convenience layer over shared-layer + shared-fs)

@@ -13,9 +13,11 @@ export type {
   AgentResponse,
   Hook,
   PreHookPipelineResult,
+  CompletionAudit,
 } from "./types.js";
 
 export { HookBus } from "./hook-bus.js";
+export { HookStateStore } from "./hook-state.js";
 export { createDefaultHookBus } from "./create-default-bus.js";
 export { sourceClassifyHook } from "./source-classify.js";
 export { riskDetectionHook } from "./risk-detection.js";
