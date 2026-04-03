@@ -306,8 +306,11 @@ describe("Generic adapter real lifecycle (via getAdapter)", () => {
     expect(proc.tool).toBe("node");
     pidsToClean.push(proc.pid);
 
-    // Wait briefly for the short script to exit
-    await new Promise((r) => setTimeout(r, 500));
+    // Wait for the short script to exit (up to 3s with polling)
+    for (let i = 0; i < 30; i++) {
+      if (!isProcessRunning(proc.pid)) break;
+      await new Promise((r) => setTimeout(r, 100));
+    }
 
     // Process should have exited
     expect(isProcessRunning(proc.pid)).toBe(false);
@@ -382,8 +385,11 @@ describe("Generic adapter real lifecycle (via getAdapter)", () => {
     // Terminate it
     await adapter.terminate(proc);
 
-    // Give a moment for cleanup
-    await new Promise((r) => setTimeout(r, 500));
+    // Wait for process to exit (up to 3s with polling)
+    for (let i = 0; i < 30; i++) {
+      if (!isProcessRunning(proc.pid)) break;
+      await new Promise((r) => setTimeout(r, 100));
+    }
 
     // Verify it's dead
     expect(isProcessRunning(proc.pid)).toBe(false);

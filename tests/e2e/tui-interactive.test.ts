@@ -124,7 +124,7 @@ const TAB = "\t";
 /**
  * Small async delay to let React/Ink re-render after keypress events.
  */
-function delay(ms = 50): Promise<void> {
+function delay(ms = 150): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 

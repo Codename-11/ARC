@@ -307,11 +307,11 @@ describe("Health monitor", () => {
     // Health monitor was started
     expect(_testInternals.healthMonitors.has(proc.pid)).toBe(true);
 
-    // Wait for the process to die and the health check to detect it
-    // The interval is 10s, but we can verify the monitor was registered
-    // and that the process is indeed dead. In a real scenario the monitor
-    // would fire and log the unexpected death.
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // Wait for the process to die (up to 3s with polling)
+    for (let i = 0; i < 30; i++) {
+      if (!isProcessRunning(proc.pid)) break;
+      await new Promise((r) => setTimeout(r, 100));
+    }
     expect(isProcessRunning(proc.pid)).toBe(false);
 
     // Clean up the monitor manually since we didn't call terminate
