@@ -87,6 +87,10 @@ describe("Gemini adapter capabilities", () => {
     expect(adapter.capabilities.hooks).toBe(false);
   });
 
+  it("capabilities.jsonOutput is true", () => {
+    expect(adapter.capabilities.jsonOutput).toBe(true);
+  });
+
   it("getInstallHint() returns a string", () => {
     const hint = adapter.getInstallHint();
     expect(hint).toBeTypeOf("string");
@@ -117,8 +121,8 @@ describe("Codex adapter capabilities", () => {
 });
 
 describe("Lifecycle stubs (adapters without real lifecycle)", () => {
-  // Codex now has a real lifecycle implementation — only test claude and gemini stubs
-  const stubAdapterIds = ["claude", "gemini"] as const;
+  // Codex and Gemini now have real lifecycle implementations — only test claude stubs
+  const stubAdapterIds = ["claude"] as const;
 
   for (const id of stubAdapterIds) {
     describe(`${id} adapter`, () => {
@@ -192,6 +196,47 @@ describe("Codex adapter real lifecycle", () => {
       // If codex is installed, it spawned successfully
       expect(proc.pid).toBeTypeOf("number");
       expect(proc.tool).toBe("codex");
+      // Clean up
+      await adapter.terminate(proc);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      // "not implemented" would mean stubs are still in place — that should NOT happen
+      expect(msg).not.toBe("not implemented");
+      // Any other error (spawn failure, binary not found) is acceptable
+    }
+  });
+});
+
+describe("Gemini adapter real lifecycle", () => {
+  const adapter = getAdapter("gemini");
+  const dummyProcess = {
+    pid: 2147483647,
+    tool: "gemini",
+    profile: "default",
+    startedAt: new Date(),
+  };
+
+  it("isRunning() returns false for a non-existent pid (does not throw)", () => {
+    expect(adapter.isRunning(dummyProcess)).toBe(false);
+  });
+
+  it("terminate() resolves without throwing for a non-existent pid", async () => {
+    await expect(adapter.terminate(dummyProcess)).resolves.toBeUndefined();
+  });
+
+  it("launch() spawns a real process (does not throw 'not implemented')", async () => {
+    const dummyProfile = {
+      authType: "api-key" as const,
+      tool: "gemini" as const,
+      configDir: "/tmp/fake",
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      const proc = await adapter.launch(dummyProfile, { args: ["--help"], env: {} });
+      // If gemini is installed, it spawned successfully
+      expect(proc.pid).toBeTypeOf("number");
+      expect(proc.tool).toBe("gemini");
       // Clean up
       await adapter.terminate(proc);
     } catch (err: unknown) {

@@ -325,6 +325,110 @@ const codexLifecycle: LifecycleOverrides = {
   },
 };
 
+// ─── Gemini adapter lifecycle ────────────────────────────────────────
+
+/** Map from AgentProcess pid → ManagedProcessHandle for output streaming and cleanup. */
+const geminiProcessHandles = new Map<number, ManagedProcessHandle>();
+
+function buildGeminiArgs(profile: Profile, userArgs: string[]): string[] {
+  const args = ["-p", "--output-format", "stream-json"];
+
+  // Forward model from profile settings if present
+  const model = profile.envOverrides?.["GEMINI_MODEL"];
+  if (model) {
+    args.push("--model", model);
+  }
+
+  // Forward sandbox flag from profile settings if present (boolean flag)
+  const sandbox = profile.envOverrides?.["GEMINI_SANDBOX"];
+  if (sandbox) {
+    args.push("--sandbox");
+  }
+
+  // Forward approval-mode from profile settings if present
+  const approvalMode = profile.envOverrides?.["GEMINI_APPROVAL_MODE"];
+  if (approvalMode) {
+    args.push("--approval-mode", approvalMode);
+  }
+
+  args.push(...userArgs);
+  return args;
+}
+
+const geminiLifecycle: LifecycleOverrides = {
+  async launch(profile: Profile, options: LaunchOptions): Promise<AgentProcess> {
+    const binary = "gemini";
+    const args = buildGeminiArgs(profile, options.args);
+
+    if (options.beforeSpawn) {
+      await options.beforeSpawn();
+    }
+
+    const env: NodeJS.ProcessEnv = { ...process.env, ...options.env };
+    const handle = spawnManagedProcess({
+      command: binary,
+      args,
+      env,
+      cwd: options.cwd,
+      component: "gemini",
+    });
+
+    geminiProcessHandles.set(handle.pid, handle);
+
+    // Clean up handle reference when child exits
+    handle.child.once("exit", () => {
+      geminiProcessHandles.delete(handle.pid);
+    });
+
+    return {
+      pid: handle.pid,
+      tool: "gemini",
+      profile: "default",
+      startedAt: new Date(),
+    };
+  },
+
+  async terminate(agentProcess: AgentProcess): Promise<void> {
+    geminiProcessHandles.delete(agentProcess.pid);
+    await terminateProcess(agentProcess.pid, "gemini");
+  },
+
+  isRunning(agentProcess: AgentProcess): boolean {
+    const alive = isProcessRunning(agentProcess.pid);
+    writeLogEvent({
+      level: "debug",
+      component: "gemini",
+      action: alive ? "process:alive" : "process:dead",
+      message: `pid=${agentProcess.pid}`,
+      data: { pid: agentProcess.pid },
+    });
+    return alive;
+  },
+
+  onOutput(agentProcess: AgentProcess, handler: (event: OutputEvent) => void): void {
+    const handle = geminiProcessHandles.get(agentProcess.pid);
+    if (!handle?.child.stdout) {
+      writeLogEvent({
+        level: "warn",
+        component: "gemini",
+        action: "process:output",
+        message: `no stdout stream for pid=${agentProcess.pid}`,
+      });
+      return;
+    }
+
+    const rl = createInterface({ input: handle.child.stdout });
+    rl.on("line", (line) => {
+      const parsed = parseJsonlLine(line);
+      handler({
+        type: parsed.type,
+        content: parsed.content,
+        timestamp: new Date(),
+      });
+    });
+  },
+};
+
 // ─── Adapter definitions ─────────────────────────────────────────────
 
 const geminiAdapter = createBasicAdapter({
@@ -340,12 +444,13 @@ const geminiAdapter = createBasicAdapter({
     sdkControl: false,
     pluginSystem: false,
     mcpSupport: true,
-    jsonOutput: false,
+    jsonOutput: true,
     sandboxing: true,
     processWrap: true,
     remoteSupport: false,
     permissionTier: "interactive",
   },
+  lifecycle: geminiLifecycle,
 });
 
 const codexAdapter = createBasicAdapter({
