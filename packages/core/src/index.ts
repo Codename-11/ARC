@@ -5,6 +5,7 @@ export * from "./keyring.js";
 export * from "./lifecycle.js";
 export * from "./logging.js";
 export * from "./paths.js";
+export * from "./process.js";
 
 // shared-fs: exclude deepMerge (conflicts with shared-layer's deepMerge)
 export {

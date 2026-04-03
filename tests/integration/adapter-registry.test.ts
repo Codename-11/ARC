@@ -112,10 +112,11 @@ describe("Codex adapter capabilities", () => {
   });
 });
 
-describe("Lifecycle stubs (all adapters)", () => {
-  const adapterIds = ["claude", "gemini", "codex"] as const;
+describe("Lifecycle stubs (adapters without real lifecycle)", () => {
+  // Codex now has a real lifecycle implementation — only test claude and gemini stubs
+  const stubAdapterIds = ["claude", "gemini"] as const;
 
-  for (const id of adapterIds) {
+  for (const id of stubAdapterIds) {
     describe(`${id} adapter`, () => {
       const adapter = getAdapter(id);
       const dummyProfile = {
@@ -150,4 +151,22 @@ describe("Lifecycle stubs (all adapters)", () => {
       });
     });
   }
+});
+
+describe("Codex adapter real lifecycle", () => {
+  const adapter = getAdapter("codex");
+  const dummyProcess = {
+    pid: 2147483647,
+    tool: "codex",
+    profile: "default",
+    startedAt: new Date(),
+  };
+
+  it("isRunning() returns false for a non-existent pid (does not throw)", () => {
+    expect(adapter.isRunning(dummyProcess)).toBe(false);
+  });
+
+  it("terminate() resolves without throwing for a non-existent pid", async () => {
+    await expect(adapter.terminate(dummyProcess)).resolves.toBeUndefined();
+  });
 });

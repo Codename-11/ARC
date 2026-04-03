@@ -1,15 +1,26 @@
+import { createInterface } from "node:readline";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import claudeAdapter from "@axiom-labs/arc-adapter-claude";
-import { retrieveSecret } from "@axiom-labs/arc-core";
+import { retrieveSecret, writeLogEvent } from "@axiom-labs/arc-core";
+import {
+  spawnManagedProcess,
+  terminateProcess,
+  isProcessRunning,
+  parseJsonlLine,
+} from "@axiom-labs/arc-core";
 import type { Profile } from "@axiom-labs/arc-core";
 import type {
+  AgentProcess,
   CredentialStatus,
   DetectedTool,
+  LaunchOptions,
+  OutputEvent,
   RuntimeAdapter,
   AdapterCapabilities,
 } from "@axiom-labs/arc-core";
+import type { ManagedProcessHandle } from "@axiom-labs/arc-core";
 
 interface OAuthCredentials {
   accessToken: string;
@@ -72,6 +83,14 @@ function readCodexOAuthCredentials(configDir: string): OAuthCredentials | null {
   };
 }
 
+/** Optional lifecycle overrides injected into createBasicAdapter. */
+interface LifecycleOverrides {
+  launch?: (profile: Profile, options: LaunchOptions) => Promise<AgentProcess>;
+  terminate?: (process: AgentProcess) => Promise<void>;
+  isRunning?: (process: AgentProcess) => boolean;
+  onOutput?: (process: AgentProcess, handler: (event: OutputEvent) => void) => void;
+}
+
 function createBasicAdapter(config: {
   id: string;
   displayName: string;
@@ -81,6 +100,7 @@ function createBasicAdapter(config: {
   credentialReader?: (configDir: string) => OAuthCredentials | null;
   configEnvVar?: string;
   capabilities?: AdapterCapabilities;
+  lifecycle?: LifecycleOverrides;
 }): RuntimeAdapter {
   const adapterCapabilities: AdapterCapabilities = config.capabilities ?? {
     hooks: false,
@@ -188,17 +208,123 @@ function createBasicAdapter(config: {
         },
       ];
     },
-    async launch(_profile, _options) {
+    async launch(profile, options) {
+      if (config.lifecycle?.launch) return config.lifecycle.launch(profile, options);
       throw new Error("not implemented");
     },
-    async terminate(_process) {
+    async terminate(agentProcess) {
+      if (config.lifecycle?.terminate) return config.lifecycle.terminate(agentProcess);
       throw new Error("not implemented");
     },
-    isRunning(_process) {
+    isRunning(agentProcess) {
+      if (config.lifecycle?.isRunning) return config.lifecycle.isRunning(agentProcess);
       throw new Error("not implemented");
+    },
+    onOutput(agentProcess, handler) {
+      if (config.lifecycle?.onOutput) return config.lifecycle.onOutput(agentProcess, handler);
     },
   };
 }
+
+// ─── Codex adapter lifecycle ─────────────────────────────────────────
+
+/** Map from AgentProcess pid → ManagedProcessHandle for output streaming and cleanup. */
+const codexProcessHandles = new Map<number, ManagedProcessHandle>();
+
+function buildCodexArgs(profile: Profile, userArgs: string[]): string[] {
+  const args = ["exec", "--json", "--full-stdout"];
+
+  // Forward approval-mode from profile settings if present
+  const approvalMode = profile.envOverrides?.["CODEX_APPROVAL_MODE"];
+  if (approvalMode) {
+    args.push("--approval-mode", approvalMode);
+  }
+
+  // Forward model from profile settings if present
+  const model = profile.envOverrides?.["CODEX_MODEL"];
+  if (model) {
+    args.push("--model", model);
+  }
+
+  args.push(...userArgs);
+  return args;
+}
+
+const codexLifecycle: LifecycleOverrides = {
+  async launch(profile: Profile, options: LaunchOptions): Promise<AgentProcess> {
+    const binary = "codex";
+    const args = buildCodexArgs(profile, options.args);
+
+    if (options.beforeSpawn) {
+      await options.beforeSpawn();
+    }
+
+    const env: NodeJS.ProcessEnv = { ...process.env, ...options.env };
+    const handle = spawnManagedProcess({
+      command: binary,
+      args,
+      env,
+      cwd: options.cwd,
+      component: "codex",
+    });
+
+    codexProcessHandles.set(handle.pid, handle);
+
+    // Clean up handle reference when child exits
+    handle.child.once("exit", () => {
+      codexProcessHandles.delete(handle.pid);
+    });
+
+    return {
+      pid: handle.pid,
+      tool: "codex",
+      profile: "default",
+      startedAt: new Date(),
+    };
+  },
+
+  async terminate(agentProcess: AgentProcess): Promise<void> {
+    codexProcessHandles.delete(agentProcess.pid);
+    await terminateProcess(agentProcess.pid, "codex");
+  },
+
+  isRunning(agentProcess: AgentProcess): boolean {
+    const alive = isProcessRunning(agentProcess.pid);
+    writeLogEvent({
+      level: "debug",
+      component: "codex",
+      action: alive ? "process:alive" : "process:dead",
+      message: `pid=${agentProcess.pid}`,
+      data: { pid: agentProcess.pid },
+    });
+    return alive;
+  },
+
+  onOutput(agentProcess: AgentProcess, handler: (event: OutputEvent) => void): void {
+    const handle = codexProcessHandles.get(agentProcess.pid);
+    if (!handle?.child.stdout) {
+      writeLogEvent({
+        level: "warn",
+        component: "codex",
+        action: "process:output",
+        message: `no stdout stream for pid=${agentProcess.pid}`,
+      });
+      return;
+    }
+
+    const rl = createInterface({ input: handle.child.stdout });
+    rl.on("line", (line) => {
+      const parsed = parseJsonlLine(line);
+      handler({
+        type: parsed.type,
+        content: parsed.content,
+        timestamp: new Date(),
+      });
+    });
+  },
+};
+
+// ─── Adapter definitions ─────────────────────────────────────────────
 
 const geminiAdapter = createBasicAdapter({
   id: "gemini",
@@ -240,6 +366,7 @@ const codexAdapter = createBasicAdapter({
     remoteSupport: false,
     permissionTier: "interactive",
   },
+  lifecycle: codexLifecycle,
 });
 
 const adapters = new Map<string, RuntimeAdapter>([
