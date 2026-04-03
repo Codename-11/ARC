@@ -243,6 +243,52 @@ Examples:
       await mod.handleSetKey(name, opts ?? {});
     });
 
+  // === Secret Store Commands ===
+
+  const secret = program
+    .command("secret")
+    .alias("s")
+    .description("Manage encrypted secrets");
+
+  secret
+    .command("set <name>")
+    .description("Store a secret (interactive prompt, --from-stdin, or --from-file)")
+    .option("--from-stdin", "Read secret value from stdin pipe")
+    .option("--from-file <path>", "Read secret value from a file")
+    .action(async (name: string, opts: { fromStdin?: boolean; fromFile?: string }) => {
+      const mod = await import("./commands/secret.js");
+      await mod.handleSecretSet(name, opts);
+    });
+
+  secret
+    .command("get <name>")
+    .description("Retrieve a secret value")
+    .option("--quiet", "Output value only (no decoration)")
+    .action(async (name: string, opts: { quiet?: boolean }) => {
+      const mod = await import("./commands/secret.js");
+      await mod.handleSecretGet(name, opts);
+    });
+
+  secret
+    .command("list")
+    .alias("ls")
+    .description("List all stored secrets (metadata only)")
+    .option("--json", "Output machine-readable JSON")
+    .action(async (opts: { json?: boolean }) => {
+      const mod = await import("./commands/secret.js");
+      await mod.handleSecretList(opts);
+    });
+
+  secret
+    .command("delete <name>")
+    .alias("rm")
+    .description("Delete a secret")
+    .option("--force", "Skip confirmation prompt")
+    .action(async (name: string, opts: { force?: boolean }) => {
+      const mod = await import("./commands/secret.js");
+      await mod.handleSecretDelete(name, opts);
+    });
+
   program
     .command("status")
     .description("Show status of all profiles")
