@@ -194,6 +194,31 @@ export class CronStore {
     return readCrons();
   }
 
+  /** Update fields on an existing cron job. Returns the updated job, or null if not found. */
+  update(id: string, fields: Partial<Pick<CronJob, "name" | "schedule" | "enabled" | "lastRun" | "nextRun" | "taskTemplate">>): CronJob | null {
+    const crons = readCrons();
+    const idx = crons.findIndex((c) => c.id === id);
+    if (idx === -1) return null;
+
+    // Validate schedule if it's being changed
+    if (fields.schedule) {
+      parseCronExpression(fields.schedule);
+    }
+
+    Object.assign(crons[idx], fields);
+    writeCrons(crons);
+
+    writeLogEvent({
+      level: "info",
+      component: "cron",
+      action: "update",
+      message: `Cron job '${id}' updated.`,
+      data: { cronId: id, fields: Object.keys(fields) },
+    });
+
+    return crons[idx];
+  }
+
   /**
    * Get all enabled cron jobs whose schedule matches the current time
    * (truncated to the current minute).

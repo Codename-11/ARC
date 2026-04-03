@@ -1,6 +1,6 @@
 // ARC Dashboard — Sessions View
 import { api } from '../scripts/api.js';
-import { registerView } from '../scripts/router.js';
+import { registerView, navigateTo, setViewParam } from '../scripts/router.js';
 
 function statusTag(status) {
   const cls = status === 'active' ? 'tag--active' :
@@ -16,6 +16,17 @@ function timeAgo(iso) {
   if (d < 3600000) return `${Math.floor(d / 60000)}m ago`;
   if (d < 86400000) return `${Math.floor(d / 3600000)}h ago`;
   return `${Math.floor(d / 86400000)}d ago`;
+}
+
+function attachRowHandlers() {
+  document.querySelectorAll('tr[data-session-id]').forEach(row => {
+    row.addEventListener('click', () => {
+      const sessionId = row.getAttribute('data-session-id');
+      if (!sessionId) return;
+      setViewParam('sessionFilter', sessionId);
+      navigateTo('traces');
+    });
+  });
 }
 
 async function render() {
@@ -39,13 +50,16 @@ async function render() {
   }
 
   const rows = sessions.map(s => `
-    <tr>
+    <tr data-session-id="${s.id || ''}" style="cursor: pointer">
       <td>${s.name || s.id?.slice(0, 8) || '—'}</td>
       <td class="data">${s.profile || '—'}</td>
       <td>${s.adapter || '—'}</td>
       <td>${statusTag(s.status)}</td>
       <td class="data numeric">${timeAgo(s.lastActive)}</td>
     </tr>`).join('');
+
+  // Attach click handlers after the DOM is updated
+  setTimeout(attachRowHandlers, 0);
 
   return `
     <div class="main__header">

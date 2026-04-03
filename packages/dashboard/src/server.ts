@@ -152,6 +152,11 @@ export interface DashboardServer {
   server: http.Server;
   /** The WebSocket server for real-time push. */
   ws: WebSocketServer;
+  /**
+   * Start polling stores for changes and broadcasting updates via WebSocket.
+   * Returns a cleanup function that stops the polling interval.
+   */
+  startPolling(intervalMs?: number): () => void;
 }
 
 export function createDashboardServer(
@@ -287,6 +292,32 @@ export function createDashboardServer(
           else resolve();
         });
       });
+    },
+
+    startPolling(intervalMs = 3000): () => void {
+      let lastCounts = { sessions: 0, tasks: 0 };
+
+      const timer = setInterval(() => {
+        const currentCounts = {
+          sessions: ctx.sessions?.list()?.length ?? 0,
+          tasks: ctx.tasks?.list()?.length ?? 0,
+        };
+
+        if (
+          currentCounts.sessions !== lastCounts.sessions ||
+          currentCounts.tasks !== lastCounts.tasks
+        ) {
+          wsServer.broadcast("update", currentCounts);
+          lastCounts = currentCounts;
+        }
+      }, intervalMs);
+
+      // Allow the timer to not hold the process open on its own.
+      if (timer && typeof timer === "object" && "unref" in timer) {
+        (timer as NodeJS.Timeout).unref();
+      }
+
+      return () => clearInterval(timer);
     },
   };
 }

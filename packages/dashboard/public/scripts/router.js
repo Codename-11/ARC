@@ -2,9 +2,25 @@
 
 const views = new Map();
 let activeView = null;
+const viewParams = new Map();
 
 export function registerView(name, renderFn) {
   views.set(name, renderFn);
+}
+
+/** Store a parameter that the target view can read during render. */
+export function setViewParam(key, value) {
+  viewParams.set(key, value);
+}
+
+/** Read (and optionally consume) a view parameter. */
+export function getViewParam(key) {
+  return viewParams.get(key) ?? null;
+}
+
+/** Remove a view parameter. */
+export function clearViewParam(key) {
+  viewParams.delete(key);
 }
 
 export async function navigateTo(name) {

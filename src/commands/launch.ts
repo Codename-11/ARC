@@ -1,4 +1,6 @@
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
 import { loadConfig } from "../config.js";
 import { buildProfileEnv } from "../auth.js";
 import { resolveEffectiveProfile } from "../../packages/core/src/workspace.js";
@@ -7,12 +9,15 @@ import { logAction } from "../log.js";
 import { getAdapter } from "../../packages/cli/src/adapters/index.js";
 import { waitForProcessExit } from "../../packages/core/src/process.js";
 import { createDefaultHookBus } from "../../packages/core/src/hooks/create-default-bus.js";
-import { writeLogEvent } from "../../packages/core/src/logging.js";
-import { SessionStore } from "../../packages/core/src/sessions.js";
+import { writeLogEvent, queryLogEvents } from "../../packages/core/src/logging.js";
+import { SessionStore, isResumeIntent } from "../../packages/core/src/sessions.js";
 import { TelemetryProvider, JsonFileExporter, startSessionSpan } from "../../packages/core/src/telemetry/index.js";
 import { CircuitBreaker } from "../../packages/core/src/circuit-breaker.js";
 import { createPermissionPolicy, evaluatePermission } from "../../packages/core/src/permissions.js";
 import { ContextManager } from "../../packages/core/src/context-manager.js";
+import { getArcDir } from "../../packages/core/src/paths.js";
+import { SkillRegistry, loadSkillsFromDirectory } from "../../packages/core/src/skills/index.js";
+import { PersistentMemory, extractMemories } from "../../packages/core/src/memory/index.js";
 import type { Profile } from "../types.js";
 import type { HookContext } from "../../packages/core/src/hooks/types.js";
 import type { AgentProcess } from "../../packages/core/src/adapters/types.js";
@@ -85,6 +90,30 @@ export async function handleLaunch(
   const tool = profile.tool ?? "claude";
   const enforcement = profile.enforcement ?? "log";
 
+  // ─── Session auto-resume detection ──────────────────────────────────
+  // Lightweight: detect whether the user's launch args suggest resume intent
+  // and whether a suspended session exists. Informational only for now.
+  try {
+    const resumeStore = new SessionStore();
+    const suspended = resumeStore.list({ profile: profileName, status: "suspended" });
+    if (suspended.length > 0) {
+      const resumeText = passthrough.join(" ");
+      const hasResumeIntent = resumeText.length > 0 && isResumeIntent(resumeText);
+      if (hasResumeIntent || suspended.length === 1) {
+        const target = suspended[0];
+        writeLogEvent({
+          level: "info",
+          component: "launch",
+          action: "session:resume-available",
+          message: `Suspended session available: ${target.name}`,
+          data: { sessionId: target.id, profile: profileName, resumeIntent: hasResumeIntent },
+        });
+      }
+    }
+  } catch {
+    // Non-fatal — resume detection must never block launch
+  }
+
   // ─── Core module initialization ─────────────────────────────────────
   // These integrations are non-blocking: failures are logged but never
   // prevent the agent from launching.
@@ -156,6 +185,28 @@ export async function handleLaunch(
       message: `Core module initialization failed (non-blocking): ${msg}`,
       data: { profile: profileName, tool },
     });
+  }
+
+  // ─── Skills auto-load ───────────────────────────────────────────────
+  // Auto-load skills from ~/.arc/skills/ if the directory exists
+  try {
+    const skillsDir = path.join(getArcDir(), "skills");
+    if (fs.existsSync(skillsDir)) {
+      const skills = await loadSkillsFromDirectory(skillsDir);
+      const registry = new SkillRegistry();
+      for (const skill of skills) {
+        registry.register(skill);
+      }
+      writeLogEvent({
+        level: "info",
+        component: "launch",
+        action: "skills:loaded",
+        message: `${skills.length} skills loaded`,
+        data: { profile: profileName, count: skills.length },
+      });
+    }
+  } catch {
+    // Non-fatal — skill loading must never block launch
   }
 
   const profileEnv = await buildProfileEnv(profile, profileName);
@@ -308,6 +359,40 @@ export async function handleLaunch(
         message: `Failed to complete session: ${msg}`,
       });
     }
+
+    // Auto-extract memories from session log (lightweight)
+    try {
+      const logEntries = queryLogEvents({ profile: profileName, limit: 50 });
+      const textForExtraction = logEntries
+        .map((e) => e.message || e.detail || "")
+        .filter(Boolean)
+        .join("\n");
+      if (textForExtraction.length > 0) {
+        const extracted = extractMemories(textForExtraction, sessionId || "unknown");
+        if (extracted.length > 0) {
+          const mem = new PersistentMemory("persistent");
+          for (const entry of extracted) {
+            mem.add(entry.content, entry.type, {
+              tags: entry.tags,
+              ttl: entry.ttl,
+              relevanceScore: entry.relevanceScore,
+              sourceSession: entry.sourceSession,
+              sourceAgent: entry.sourceAgent,
+            });
+          }
+          writeLogEvent({
+            level: "info",
+            component: "launch",
+            action: "memory:extracted",
+            message: `${extracted.length} memories extracted`,
+            data: { profile: profileName, sessionId: sessionId || "unknown", count: extracted.length },
+          });
+        }
+      }
+    } catch {
+      // Non-fatal — memory extraction must never block exit
+    }
+
     try {
       if (telemetry && sessionSpan) {
         telemetry.endSpan(sessionSpan, exitCode === 0 ? "ok" : "error");

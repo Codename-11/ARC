@@ -3,6 +3,11 @@
  */
 import pc from "picocolors";
 import { createDashboardServer } from "../../packages/dashboard/src/server.js";
+import { SessionStore } from "../../packages/core/src/sessions.js";
+import { TaskStore } from "../../packages/core/src/tasks/index.js";
+import { SkillRegistry } from "../../packages/core/src/skills/index.js";
+import { PersistentMemory } from "../../packages/core/src/memory/index.js";
+import { RemoteAgentRegistry } from "../../packages/core/src/remote.js";
 
 // ---------------------------------------------------------------------------
 // Handler
@@ -18,7 +23,24 @@ export async function handleDashboardWeb(opts: {
     process.exit(1);
   }
 
-  const dashboard = createDashboardServer({ port });
+  // Resolve the dashboard public directory relative to this file's location.
+  const rawPublicDir = new URL(
+    "../../../packages/dashboard/public",
+    import.meta.url,
+  ).pathname;
+  const publicDir = rawPublicDir.replace(/^\/([A-Za-z]:)/, "$1");
+
+  // Instantiate real stores backed by ~/.arc/ JSON files.
+  const sessions = new SessionStore();
+  const tasks = new TaskStore();
+  const skills = new SkillRegistry();
+  const memory = new PersistentMemory("persistent");
+  const remoteAgents = new RemoteAgentRegistry();
+
+  const dashboard = createDashboardServer(
+    { port, host: "localhost", publicDir, corsOrigin: "*" },
+    { sessions, tasks, skills, memory, remoteAgents },
+  );
 
   try {
     await dashboard.start();
@@ -27,6 +49,9 @@ export async function handleDashboardWeb(opts: {
     process.stderr.write(pc.red(`Failed to start dashboard: ${msg}`) + "\n");
     process.exit(1);
   }
+
+  // Start polling stores for changes and broadcasting via WebSocket.
+  const stopPolling = dashboard.startPolling();
 
   const url = `http://localhost:${port}`;
 
@@ -52,6 +77,7 @@ export async function handleDashboardWeb(opts: {
   // Keep process alive and handle graceful shutdown
   const shutdown = async () => {
     process.stdout.write(pc.dim("\n  Shutting down...\n"));
+    stopPolling();
     await dashboard.stop();
     process.exit(0);
   };

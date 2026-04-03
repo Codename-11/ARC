@@ -2,6 +2,8 @@ import { loadConfig } from "../config.js";
 import { getCredentialStatus } from "../auth.js";
 import { info, stripAnsi } from "../display.js";
 import pc from "picocolors";
+import { SessionStore } from "../../packages/core/src/sessions.js";
+import { TaskStore } from "../../packages/core/src/tasks/index.js";
 
 function formatExpiry(expiresAt: number): string {
   const now = Date.now();
@@ -108,5 +110,23 @@ export async function handleStatus(): Promise<void> {
 
   process.stdout.write(
     ["  " + headerRow, "  " + separator, ...dataRows.map((r) => "  " + r)].join("\n") + "\n"
+  );
+
+  // Session & task summary
+  const sessionStore = new SessionStore();
+  const allSessions = sessionStore.list();
+  const activeSessions = allSessions.filter((s) => s.status === "active").length;
+
+  const taskStore = new TaskStore();
+  const allTasks = taskStore.list();
+  const workingTasks = allTasks.filter((t) => t.status === "working").length;
+  const completedTasks = allTasks.filter((t) => t.status === "completed").length;
+
+  process.stdout.write("\n");
+  process.stdout.write(
+    `  ${pc.bold("Sessions:")} ${activeSessions} active ${pc.dim("·")} ${allSessions.length} total\n`
+  );
+  process.stdout.write(
+    `  ${pc.bold("Tasks:")} ${workingTasks} working ${pc.dim("·")} ${completedTasks} completed ${pc.dim("·")} ${allTasks.length} total\n`
   );
 }

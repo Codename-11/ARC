@@ -178,6 +178,7 @@ export {
   TaskStore,
   MessageBus,
   CronStore,
+  CronScheduler,
   parseCronExpression,
 } from "./tasks/index.js";
 export type {
