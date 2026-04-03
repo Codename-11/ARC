@@ -4,11 +4,14 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import type { Transport } from "@modelcontextprotocol/sdk/shared/transport";
 import { writeLogEvent } from "@axiom-labs/arc-core";
 
+import { classifyRisk } from "@axiom-labs/arc-core";
+
 import type {
   McpServerConfig,
   ManagedMcpServer,
   ToolInfo,
   TransportFactory,
+  CallToolResult,
 } from "./types.js";
 
 // ─── Default transport factory ───────────────────────────────────────
@@ -209,5 +212,88 @@ export class McpHostManager {
       }
     }
     return result;
+  }
+
+  /**
+   * Call a tool on a connected external MCP server with risk classification gate.
+   *
+   * Builds an action description, runs classifyRisk(). If the tier is
+   * "destructive", blocks the call and returns a structured error. Otherwise
+   * forwards to the external server and returns the result.
+   */
+  async callTool(
+    serverName: string,
+    toolName: string,
+    args: Record<string, unknown>,
+  ): Promise<CallToolResult> {
+    const entry = this.servers.get(serverName);
+    if (!entry) {
+      throw new Error(
+        `Server "${serverName}" not found. Connected servers: [${[...this.servers.keys()].join(", ")}]`,
+      );
+    }
+    if (entry.status !== "connected") {
+      throw new Error(
+        `Server "${serverName}" is not connected (status: ${entry.status})`,
+      );
+    }
+
+    // Build action description with truncated args for log safety
+    const argsSummary = JSON.stringify(args);
+    const truncatedArgs =
+      argsSummary.length > 200
+        ? argsSummary.slice(0, 200) + "…"
+        : argsSummary;
+    const actionDescription = `Call tool '${toolName}' on external MCP server '${serverName}' with args: ${truncatedArgs}`;
+
+    // Risk classification gate
+    const risk = classifyRisk(actionDescription);
+
+    if (risk.tier === "destructive") {
+      writeLogEvent({
+        level: "warn",
+        component: "mcp:host",
+        message: `Risk-blocked tool call: "${toolName}" on "${serverName}" — tier: ${risk.tier}`,
+        detail: JSON.stringify({
+          server: serverName,
+          tool: toolName,
+          tier: risk.tier,
+          reasons: risk.reasons,
+        }),
+      });
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              blocked: true,
+              tier: risk.tier,
+              reasons: risk.reasons,
+            }),
+          },
+        ],
+        isError: true,
+      };
+    }
+
+    // Forward to external server
+    const result = await entry.client.callTool({
+      name: toolName,
+      arguments: args,
+    });
+
+    writeLogEvent({
+      level: "info",
+      component: "mcp:host",
+      message: `Tool call forwarded: "${toolName}" on "${serverName}" — tier: ${risk.tier}`,
+      detail: JSON.stringify({
+        server: serverName,
+        tool: toolName,
+        tier: risk.tier,
+      }),
+    });
+
+    return result as CallToolResult;
   }
 }

@@ -50,5 +50,16 @@ export interface ManagedMcpServer {
   error?: string;
 }
 
+// ─── Tool call result ────────────────────────────────────────────────
+
+/**
+ * Simplified CallToolResult matching the essential MCP SDK shape.
+ * Used as the return type for McpHostManager.callTool().
+ */
+export interface CallToolResult {
+  content: Array<{ type: string; text: string }>;
+  isError?: boolean;
+}
+
 /** Transport factory signature used by McpHostManager for DI. */
 export type TransportFactory = (config: McpServerConfig) => Transport;

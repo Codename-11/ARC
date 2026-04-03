@@ -17,4 +17,5 @@ export type {
   McpServerStatus,
   ToolInfo,
   TransportFactory,
+  CallToolResult,
 } from "./types.js";
