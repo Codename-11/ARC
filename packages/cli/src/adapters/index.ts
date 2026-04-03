@@ -8,6 +8,7 @@ import type {
   CredentialStatus,
   DetectedTool,
   RuntimeAdapter,
+  AdapterCapabilities,
 } from "@axiom-labs/arc-core";
 
 interface OAuthCredentials {
@@ -79,10 +80,24 @@ function createBasicAdapter(config: {
   installHint: string;
   credentialReader?: (configDir: string) => OAuthCredentials | null;
   configEnvVar?: string;
+  capabilities?: AdapterCapabilities;
 }): RuntimeAdapter {
+  const adapterCapabilities: AdapterCapabilities = config.capabilities ?? {
+    hooks: false,
+    sdkControl: false,
+    pluginSystem: false,
+    mcpSupport: false,
+    jsonOutput: false,
+    sandboxing: false,
+    processWrap: true,
+    remoteSupport: false,
+    permissionTier: "interactive",
+  };
+
   return {
     id: config.id,
     displayName: config.displayName,
+    capabilities: adapterCapabilities,
     detectConfigs(): DetectedTool[] {
       const configDir = path.join(os.homedir(), config.dirName);
       if (!fs.existsSync(configDir)) return [];
@@ -173,6 +188,15 @@ function createBasicAdapter(config: {
         },
       ];
     },
+    async launch(_profile, _options) {
+      throw new Error("not implemented");
+    },
+    async terminate(_process) {
+      throw new Error("not implemented");
+    },
+    isRunning(_process) {
+      throw new Error("not implemented");
+    },
   };
 }
 
@@ -184,6 +208,17 @@ const geminiAdapter = createBasicAdapter({
   installHint: "See Google's documentation for Gemini CLI installation instructions.",
   credentialReader: readGeminiOAuthCredentials,
   configEnvVar: "GEMINI_CONFIG_DIR",
+  capabilities: {
+    hooks: false,
+    sdkControl: false,
+    pluginSystem: false,
+    mcpSupport: true,
+    jsonOutput: false,
+    sandboxing: true,
+    processWrap: true,
+    remoteSupport: false,
+    permissionTier: "interactive",
+  },
 });
 
 const codexAdapter = createBasicAdapter({
@@ -194,6 +229,17 @@ const codexAdapter = createBasicAdapter({
   installHint: "Install with: npm install -g @openai/codex",
   credentialReader: readCodexOAuthCredentials,
   configEnvVar: "CODEX_HOME",
+  capabilities: {
+    hooks: false,
+    sdkControl: false,
+    pluginSystem: false,
+    mcpSupport: true,
+    jsonOutput: true,
+    sandboxing: true,
+    processWrap: true,
+    remoteSupport: false,
+    permissionTier: "interactive",
+  },
 });
 
 const adapters = new Map<string, RuntimeAdapter>([

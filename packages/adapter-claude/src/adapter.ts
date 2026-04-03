@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { RuntimeAdapter } from "@axiom-labs/arc-core";
+import type { RuntimeAdapter, AdapterCapabilities } from "@axiom-labs/arc-core";
 import { getClaudeCredentialStatus, buildClaudeProfileEnv } from "./auth.js";
 import { pullSharedClaudeMd, removeSharedClaudeMd, syncSharedClaudeMd } from "./shared.js";
 
@@ -68,9 +68,22 @@ function finalizeImport({
   return { copiedItems: [...copiedItems, ".claude.json"] };
 }
 
+const claudeCapabilities: AdapterCapabilities = {
+  hooks: true,
+  sdkControl: true,
+  pluginSystem: true,
+  mcpSupport: true,
+  jsonOutput: true,
+  sandboxing: false,
+  processWrap: true,
+  remoteSupport: false,
+  permissionTier: "interactive",
+};
+
 export const claudeAdapter: RuntimeAdapter = {
   id: "claude",
   displayName: "Claude Code",
+  capabilities: claudeCapabilities,
   detectConfigs,
   getCredentialStatus: getClaudeCredentialStatus,
   buildProfileEnv: buildClaudeProfileEnv,
@@ -88,6 +101,16 @@ export const claudeAdapter: RuntimeAdapter = {
     pullProfile(profileConfigDir) {
       return pullSharedClaudeMd(profileConfigDir) ? ["CLAUDE.md"] : [];
     },
+  },
+
+  async launch(_profile, _options) {
+    throw new Error("not implemented");
+  },
+  async terminate(_process) {
+    throw new Error("not implemented");
+  },
+  isRunning(_process) {
+    throw new Error("not implemented");
   },
 };
 
