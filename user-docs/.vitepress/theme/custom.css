@@ -42,6 +42,25 @@
   letter-spacing: -0.02em;
 }
 
+/* Hero image — scale up and remove VitePress constraints */
+.VPHero .image-container {
+  max-width: 560px !important;
+  width: 560px !important;
+}
+
+.VPHero .image-container .image-bg {
+  display: none !important;
+}
+
+.VPHero .image-container img,
+.VPHero .image-container .VPImage {
+  max-width: 560px !important;
+  width: 560px !important;
+  height: auto !important;
+  border-radius: 16px;
+  filter: drop-shadow(0 24px 48px rgba(0, 0, 0, 0.5));
+}
+
 /* ---------- Feature cards ---------- */
 
 .VPFeature {

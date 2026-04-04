@@ -1,75 +1,57 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 720" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" fill="none">
   <defs>
-    <linearGradient id="bg" x1="240" y1="80" x2="1360" y2="640" gradientUnits="userSpaceOnUse">
+    <linearGradient id="bg" x1="0" y1="0" x2="480" y2="400" gradientUnits="userSpaceOnUse">
       <stop stop-color="#0B1220"/>
       <stop offset="1" stop-color="#04070D"/>
     </linearGradient>
-    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(510 244) rotate(34.138) scale(634.451 387.089)">
-      <stop stop-color="#2563EB" stop-opacity=".28"/>
-      <stop offset=".52" stop-color="#1D4ED8" stop-opacity=".08"/>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(240 140) rotate(30) scale(280 200)">
+      <stop stop-color="#2563EB" stop-opacity=".22"/>
+      <stop offset=".6" stop-color="#1D4ED8" stop-opacity=".05"/>
       <stop offset="1" stop-color="#020617" stop-opacity="0"/>
     </radialGradient>
-    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M40 0H0V40" stroke="#334155" stroke-opacity=".18"/>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M28 0H0V28" stroke="#334155" stroke-opacity=".1"/>
     </pattern>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#020617" flood-opacity=".45"/>
-    </filter>
   </defs>
 
-  <rect width="1600" height="720" rx="40" fill="url(#bg)"/>
-  <rect width="1600" height="720" rx="40" fill="url(#grid)"/>
-  <rect width="1600" height="720" rx="40" fill="url(#glow)"/>
+  <!-- Background -->
+  <rect width="480" height="400" rx="24" fill="url(#bg)"/>
+  <rect width="480" height="400" rx="24" fill="url(#grid)"/>
+  <rect width="480" height="400" rx="24" fill="url(#glow)"/>
+  <rect x="1" y="1" width="478" height="398" rx="23" fill="none" stroke="#1E293B" stroke-opacity=".5"/>
 
-  <g filter="url(#shadow)">
-    <rect x="96" y="96" width="1408" height="528" rx="28" fill="#0A0F1A" fill-opacity=".88" stroke="#1E293B"/>
-    <rect x="136" y="136" width="424" height="448" rx="24" fill="#050A13" stroke="#23324A"/>
-    <rect x="588" y="136" width="876" height="448" rx="24" fill="#070C15" stroke="#1E293B"/>
+  <!-- Logo icon — centered at top -->
+  <g transform="translate(170, 40)">
+    <rect x="-16" y="-16" width="172" height="172" rx="20" fill="#0F172A" stroke="#334155" stroke-opacity=".5"/>
+    <polyline points="26 16 4 16 4 124 26 124" stroke="#94A3B8" stroke-width="14" stroke-linecap="square" stroke-linejoin="miter"/>
+    <polyline points="58 46 100 70 58 94" stroke="#3B82F6" stroke-width="14" stroke-linecap="square" stroke-linejoin="miter"/>
+    <polyline points="142 16 164 16 164 124 142 124" stroke="#94A3B8" stroke-width="14" stroke-linecap="square" stroke-linejoin="miter"/>
   </g>
 
-  <g opacity=".82">
-    <path d="M134 220H562" stroke="#1E293B"/>
-    <path d="M134 276H562" stroke="#1E293B"/>
-    <path d="M134 332H562" stroke="#1E293B"/>
-    <path d="M134 388H562" stroke="#1E293B"/>
-    <path d="M134 444H562" stroke="#1E293B"/>
-    <path d="M134 500H562" stroke="#1E293B"/>
+  <!-- Wordmark + subtitle — centered below icon -->
+  <g font-family="'Space Grotesk', system-ui, sans-serif" text-anchor="middle">
+    <text x="240" y="248" fill="#F8FAFC" font-size="48" font-weight="800" letter-spacing="-2">ARC</text>
+    <text x="240" y="278" fill="#93C5FD" font-size="12" font-weight="700" letter-spacing="4" font-family="'Space Mono', monospace">AGENT RUNTIME CONTROL</text>
   </g>
 
-  <g transform="translate(222 224)">
-    <rect x="-38" y="-38" width="280" height="280" rx="24" fill="#0F172A" stroke="#334155"/>
-    <polyline points="38 26 6 26 6 178 38 178" stroke="#94A3B8" stroke-width="22" stroke-linecap="square" stroke-linejoin="miter"/>
-    <polyline points="100 74 164 102 100 130" stroke="#3B82F6" stroke-width="22" stroke-linecap="square" stroke-linejoin="miter"/>
-    <polyline points="226 26 258 26 258 178 226 178" stroke="#94A3B8" stroke-width="22" stroke-linecap="square" stroke-linejoin="miter"/>
-    <rect x="-10" y="268" width="116" height="34" rx="17" fill="#0F172A" stroke="#334155"/>
-    <text x="48" y="290" fill="#93C5FD" font-family="JetBrains Mono, SFMono-Regular, Menlo, monospace" font-size="18" text-anchor="middle">[&gt;]</text>
+  <!-- Feature pills — centered row -->
+  <g font-family="'Space Mono', monospace" font-size="11" font-weight="700">
+    <rect x="34" y="310" width="84" height="26" rx="13" fill="#0B1220" stroke="#2563EB"/>
+    <text x="76" y="327" fill="#BFDBFE" text-anchor="middle">profiles</text>
+
+    <rect x="128" y="310" width="72" height="26" rx="13" fill="#0B1220" stroke="#334155"/>
+    <text x="164" y="327" fill="#CBD5E1" text-anchor="middle">hooks</text>
+
+    <rect x="210" y="310" width="82" height="26" rx="13" fill="#0B1220" stroke="#334155"/>
+    <text x="251" y="327" fill="#CBD5E1" text-anchor="middle">memory</text>
+
+    <rect x="302" y="310" width="70" height="26" rx="13" fill="#0B1220" stroke="#334155"/>
+    <text x="337" y="327" fill="#CBD5E1" text-anchor="middle">tasks</text>
+
+    <rect x="382" y="310" width="92" height="26" rx="13" fill="#0B1220" stroke="#334155"/>
+    <text x="428" y="327" fill="#CBD5E1" text-anchor="middle">dashboard</text>
   </g>
 
-  <g font-family="JetBrains Mono, SFMono-Regular, Menlo, monospace">
-    <text x="632" y="248" fill="#F8FAFC" font-size="114" font-weight="800" letter-spacing="-10">ARC</text>
-    <text x="632" y="310" fill="#93C5FD" font-size="28" font-weight="700" letter-spacing="6">AGENT RUNTIME CONTROL</text>
-    <text x="632" y="382" fill="#CBD5E1" font-size="32">
-      Profile-aware native terminal runtime
-    </text>
-    <text x="632" y="426" fill="#94A3B8" font-size="28">
-      for serious agent workflows.
-    </text>
-  </g>
-
-  <g font-family="JetBrains Mono, SFMono-Regular, Menlo, monospace" font-size="24" font-weight="700">
-    <rect x="632" y="478" width="164" height="44" rx="22" fill="#0B1220" stroke="#2563EB"/>
-    <text x="714" y="506" fill="#BFDBFE" text-anchor="middle">profiles</text>
-    <rect x="816" y="478" width="154" height="44" rx="22" fill="#0B1220" stroke="#334155"/>
-    <text x="893" y="506" fill="#CBD5E1" text-anchor="middle">context</text>
-    <rect x="990" y="478" width="160" height="44" rx="22" fill="#0B1220" stroke="#334155"/>
-    <text x="1070" y="506" fill="#CBD5E1" text-anchor="middle">sessions</text>
-    <rect x="1170" y="478" width="148" height="44" rx="22" fill="#0B1220" stroke="#334155"/>
-    <text x="1244" y="506" fill="#CBD5E1" text-anchor="middle">memory</text>
-  </g>
-
-  <g opacity=".9" font-family="JetBrains Mono, SFMono-Regular, Menlo, monospace" font-size="22">
-    <text x="140" y="164" fill="#64748B">runtime identity</text>
-    <text x="632" y="164" fill="#64748B">native terminal welcome</text>
-    <text x="1380" y="164" fill="#334155" text-anchor="end">arc</text>
-  </g>
+  <!-- URL -->
+  <text x="240" y="376" fill="#334155" font-family="'Space Mono', monospace" font-size="11" text-anchor="middle">arc-cli.dev</text>
 </svg>
