@@ -5,6 +5,17 @@ import path from "node:path";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { deriveKey, generateSalt, VaultEngine, SecretStore } from "@axiom-labs/arc-core";
 
+// Skip all tests if Argon2id is unavailable (Node <22 without argon2 npm package)
+let argon2Available = false;
+try {
+  const salt = crypto.randomBytes(16);
+  await deriveKey("test", salt);
+  argon2Available = true;
+} catch {
+  argon2Available = false;
+}
+const describeIfArgon2 = argon2Available ? describe : describe.skip;
+
 // ─── Helpers ─────────────────────────────────────────────────────────
 
 const TEST_PASSWORD = "correct-horse-battery-staple";
@@ -33,7 +44,7 @@ afterEach(() => {
 
 // ─── KDF Tests ───────────────────────────────────────────────────────
 
-describe("deriveKey (Argon2id KDF)", () => {
+describeIfArgon2("deriveKey (Argon2id KDF)", () => {
   it("produces a 32-byte key", async () => {
     const salt = generateSalt();
     const key = await deriveKey(TEST_PASSWORD, salt);
@@ -66,7 +77,7 @@ describe("deriveKey (Argon2id KDF)", () => {
 
 // ─── VaultEngine Tests ──────────────────────────────────────────────
 
-describe("VaultEngine", () => {
+describeIfArgon2("VaultEngine", () => {
   it("round-trips encrypt + decrypt for a single secret", async () => {
     const engine = await VaultEngine.create(TEST_PASSWORD);
     engine.encrypt("api-key", "sk-secret-12345");
@@ -240,7 +251,7 @@ describe("VaultEngine", () => {
 
 // ─── SecretStore Tests ──────────────────────────────────────────────
 
-describe("SecretStore", () => {
+describeIfArgon2("SecretStore", () => {
   it("set + get round-trips through the store", async () => {
     const store = new SecretStore({
       getPassword: async () => TEST_PASSWORD,
