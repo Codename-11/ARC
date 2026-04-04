@@ -1,8 +1,10 @@
 /* ==========================================================================
-   ARC — Brand Theme
-   Fonts: Space Grotesk (body) + Space Mono (code)
-   Brand: #2563EB (blue) — matches logo and hero SVG
-   Dark: OLED black (#000000 bg, #0A0F1A surface)
+   ARC — Nothing-Inspired Documentation Theme
+   Fonts: Space Grotesk (body/UI) + Space Mono (code/labels)
+   Brand: #2563EB (blue) — used as the ONE accent per screen
+   Dark: OLED black (#000000), surfaces #0A0F1A
+   Light: Off-white (#F5F5F5), surfaces #FFFFFF
+   No gradients. No shadows. No blur. Flat + border separation.
    ========================================================================== */
 
 :root {
@@ -15,7 +17,9 @@
   --vp-font-family-mono: 'Space Mono', 'SF Mono', 'Consolas', monospace;
 }
 
-/* ---------- Dark mode: OLED black ---------- */
+/* ══════════════════════════════════════════════════
+   DARK MODE — OLED black, instrument panel feel
+   ══════════════════════════════════════════════════ */
 
 .dark {
   --vp-c-bg: #000000;
@@ -24,17 +28,28 @@
   --vp-c-bg-soft: #0A0F1A;
 }
 
-/* ---------- Hero section ---------- */
+/* ══════════════════════════════════════════════════
+   LIGHT MODE — warm off-white, printed manual feel
+   ══════════════════════════════════════════════════ */
 
-.VPHero .name {
-  background: linear-gradient(135deg, #93C5FD 0%, #2563EB 50%, #3B82F6 100%) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
+html:not(.dark) {
+  --vp-c-bg: #F5F5F5;
+  --vp-c-bg-alt: #FFFFFF;
+  --vp-c-bg-elv: #FFFFFF;
+  --vp-c-bg-soft: #F0F0F0;
 }
 
-.VPHero .tagline {
-  color: var(--vp-c-text-2);
-  max-width: 520px;
+/* ══════════════════════════════════════════════════
+   HERO — the ONE moment of surprise
+   ══════════════════════════════════════════════════ */
+
+/* Brand name: solid color, not gradient. Type does the work. */
+.VPHero .name {
+  color: var(--vp-c-brand-1) !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: var(--vp-c-brand-1) !important;
 }
 
 .VPHero .text {
@@ -42,7 +57,13 @@
   letter-spacing: -0.02em;
 }
 
-/* Hero image — full-width card below text on all screens */
+.VPHero .tagline {
+  color: var(--vp-c-text-2);
+  max-width: 520px;
+  line-height: 1.6;
+}
+
+/* Hero image — no shadow, border separation only */
 .VPHero .image-container {
   max-width: 640px !important;
   width: 100% !important;
@@ -57,47 +78,116 @@
   max-width: 640px !important;
   width: 100% !important;
   height: auto !important;
-  border-radius: 12px;
-  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.6));
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* ---------- Feature cards ---------- */
+html:not(.dark) .VPHero .image-container img,
+html:not(.dark) .VPHero .image-container .VPImage {
+  border-color: #E0E0E0;
+}
+
+/* ══════════════════════════════════════════════════
+   FEATURE CARDS — subtle border, no fill change
+   ══════════════════════════════════════════════════ */
 
 .VPFeature {
   border: 1px solid rgba(255, 255, 255, 0.06) !important;
   background: var(--vp-c-bg-alt) !important;
-  transition: border-color 0.2s ease !important;
+  border-radius: 8px !important;
+  transition: border-color 0.15s ease-out !important;
+}
+
+html:not(.dark) .VPFeature {
+  border-color: #E8E8E8 !important;
 }
 
 .VPFeature:hover {
-  border-color: rgba(37, 99, 235, 0.35) !important;
+  border-color: var(--vp-c-brand-1) !important;
 }
 
-/* ---------- Brand button ---------- */
+/* Feature title — secondary weight, not bold */
+.VPFeature .title {
+  font-weight: 500 !important;
+  letter-spacing: -0.01em;
+}
+
+/* Feature details — tertiary: smaller, dimmer */
+.VPFeature .details {
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  color: var(--vp-c-text-2) !important;
+}
+
+/* ══════════════════════════════════════════════════
+   BUTTONS — pill shape, mechanical feel
+   ══════════════════════════════════════════════════ */
 
 .VPButton.brand {
-  background-color: #2563EB !important;
-  border-color: #2563EB !important;
+  background-color: var(--vp-c-brand-2) !important;
+  border-color: var(--vp-c-brand-2) !important;
   color: #ffffff !important;
   font-weight: 500 !important;
+  font-family: var(--vp-font-family-mono) !important;
+  font-size: 13px !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  transition: opacity 0.15s ease-out !important;
 }
 
 .VPButton.brand:hover {
-  background-color: #1D4ED8 !important;
-  border-color: #1D4ED8 !important;
+  opacity: 0.85 !important;
+  background-color: var(--vp-c-brand-2) !important;
+  border-color: var(--vp-c-brand-2) !important;
 }
-
-/* ---------- Alt button ---------- */
 
 .VPButton.alt {
   border-color: rgba(255, 255, 255, 0.12) !important;
+  font-family: var(--vp-font-family-mono) !important;
+  font-size: 13px !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  transition: border-color 0.15s ease-out !important;
 }
 
-.dark .VPButton.alt:hover {
-  border-color: rgba(37, 99, 235, 0.4) !important;
+html:not(.dark) .VPButton.alt {
+  border-color: #CCCCCC !important;
 }
 
-/* ---------- Sidebar ---------- */
+.VPButton.alt:hover {
+  border-color: var(--vp-c-brand-1) !important;
+}
+
+/* ══════════════════════════════════════════════════
+   NAVIGATION — solid bg, no blur. Label-like feel.
+   ══════════════════════════════════════════════════ */
+
+.VPNavBar {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.dark .VPNavBar {
+  background: #000000 !important;
+  backdrop-filter: none !important;
+}
+
+html:not(.dark) .VPNavBar {
+  background: #F5F5F5 !important;
+  border-bottom-color: #E8E8E8 !important;
+  backdrop-filter: none !important;
+}
+
+/* Nav links: mono, uppercase — instrument panel labels */
+.VPNavBarMenuLink .text {
+  font-family: var(--vp-font-family-mono) !important;
+  font-size: 12px !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+}
+
+/* ══════════════════════════════════════════════════
+   SIDEBAR — clean, no competing with content
+   ══════════════════════════════════════════════════ */
 
 .VPSidebar {
   background: var(--vp-c-bg) !important;
@@ -107,70 +197,67 @@
   color: var(--vp-c-brand-1) !important;
 }
 
-/* ---------- Nav ---------- */
-
-.VPNavBar {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+/* Sidebar group titles: label treatment */
+.VPSidebarItem.is-group > .item .text {
+  font-family: var(--vp-font-family-mono) !important;
+  font-size: 11px !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: var(--vp-c-text-3) !important;
 }
 
-.dark .VPNavBar {
-  background: rgba(0, 0, 0, 0.85) !important;
-  backdrop-filter: blur(12px) !important;
-}
-
-/* ---------- Code blocks ---------- */
+/* ══════════════════════════════════════════════════
+   CODE BLOCKS — near-black, border separation
+   ══════════════════════════════════════════════════ */
 
 .vp-code-group .tabs label.active {
-  color: #3B82F6 !important;
+  color: var(--vp-c-brand-1) !important;
 }
 
 .dark .vp-doc div[class*='language-'] {
   background: #050A13 !important;
   border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
 }
 
-/* ---------- Badge ---------- */
+html:not(.dark) .vp-doc div[class*='language-'] {
+  background: #FFFFFF !important;
+  border: 1px solid #E8E8E8;
+  border-radius: 4px;
+}
+
+/* ══════════════════════════════════════════════════
+   BADGE / TIP / WARNING — restrained color use
+   ══════════════════════════════════════════════════ */
 
 .VPBadge.tip {
-  background-color: rgba(37, 99, 235, 0.14) !important;
+  background-color: var(--vp-c-brand-soft) !important;
   color: #93C5FD !important;
+  font-family: var(--vp-font-family-mono) !important;
+  font-size: 11px !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
 }
 
-/* ---------- Tip / Warning / Danger containers ---------- */
-
 .dark .vp-doc .custom-block.tip {
-  border-color: rgba(37, 99, 235, 0.4);
-  background: rgba(37, 99, 235, 0.06);
+  border-color: rgba(37, 99, 235, 0.3);
+  background: rgba(37, 99, 235, 0.04);
 }
 
 .dark .vp-doc .custom-block.warning {
-  background: rgba(234, 179, 8, 0.06);
+  background: rgba(234, 179, 8, 0.04);
 }
 
-/* ---------- Footer ---------- */
-
-.VPFooter {
-  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+html:not(.dark) .vp-doc .custom-block.tip {
+  border-color: rgba(37, 99, 235, 0.3);
+  background: rgba(37, 99, 235, 0.04);
 }
 
-/* ---------- Scrollbar (dark mode) ---------- */
+/* ══════════════════════════════════════════════════
+   TABLES — instrument-panel data presentation
+   ══════════════════════════════════════════════════ */
 
-.dark ::-webkit-scrollbar {
-  width: 6px;
-}
-
-.dark ::-webkit-scrollbar-track {
-  background: #000000;
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: #1E293B;
-  border-radius: 3px;
-}
-
-/* ---------- Table styling ---------- */
-
-.dark .vp-doc table {
+.vp-doc table {
   border-collapse: collapse;
 }
 
@@ -178,26 +265,92 @@
   border-color: rgba(255, 255, 255, 0.06);
 }
 
-.dark .vp-doc th {
-  background: #0A0F1A;
+html:not(.dark) .vp-doc tr {
+  border-color: #E8E8E8;
 }
 
-/* ---------- Inline code ---------- */
+.dark .vp-doc th {
+  background: #0A0F1A;
+  font-family: var(--vp-font-family-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-2);
+  font-weight: 400;
+}
+
+html:not(.dark) .vp-doc th {
+  background: #F0F0F0;
+  font-family: var(--vp-font-family-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-2);
+  font-weight: 400;
+}
+
+.vp-doc td {
+  font-size: 14px;
+}
+
+/* ══════════════════════════════════════════════════
+   INLINE CODE
+   ══════════════════════════════════════════════════ */
 
 .dark .vp-doc :not(pre) > code {
   background: rgba(255, 255, 255, 0.06);
   color: #CBD5E1;
 }
 
-/* ---------- Content typography ---------- */
-
-.vp-doc h1,
-.vp-doc h2,
-.vp-doc h3 {
-  letter-spacing: -0.01em;
+html:not(.dark) .vp-doc :not(pre) > code {
+  background: rgba(0, 0, 0, 0.04);
+  color: #334155;
 }
+
+/* ══════════════════════════════════════════════════
+   FOOTER
+   ══════════════════════════════════════════════════ */
+
+.VPFooter {
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+html:not(.dark) .VPFooter {
+  border-top-color: #E8E8E8 !important;
+}
+
+/* ══════════════════════════════════════════════════
+   SCROLLBAR — thin, mechanical
+   ══════════════════════════════════════════════════ */
+
+::-webkit-scrollbar { width: 4px; }
+.dark ::-webkit-scrollbar-track { background: #000000; }
+.dark ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 2px; }
+html:not(.dark) ::-webkit-scrollbar-track { background: #F5F5F5; }
+html:not(.dark) ::-webkit-scrollbar-thumb { background: #CCCCCC; border-radius: 2px; }
+
+/* ══════════════════════════════════════════════════
+   CONTENT TYPOGRAPHY — precision spacing
+   ══════════════════════════════════════════════════ */
+
+.vp-doc h1 { letter-spacing: -0.02em; }
+.vp-doc h2 { letter-spacing: -0.01em; }
+.vp-doc h3 { letter-spacing: -0.005em; }
 
 .vp-doc p,
 .vp-doc li {
   line-height: 1.7;
+}
+
+/* H2 section borders — clean divider */
+.vp-doc h2 {
+  padding-bottom: 8px;
+}
+
+/* ══════════════════════════════════════════════════
+   MOTION — subtle ease-out only, no spring/bounce
+   ══════════════════════════════════════════════════ */
+
+* {
+  transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1) !important;
 }
