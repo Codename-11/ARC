@@ -69,17 +69,38 @@ export default defineConfig({
       ],
       '/features/': [
         {
-          text: 'Features',
+          text: 'Core Features',
           items: [
             { text: 'Overview', link: '/features/' },
+            { text: 'Hooks & Supervision', link: '/features/hooks' },
+            { text: 'Secrets & Credentials', link: '/features/secrets' },
+            { text: 'Permission Model', link: '/features/permissions' },
+          ],
+        },
+        {
+          text: 'Data & Automation',
+          items: [
             { text: 'Tasks', link: '/features/tasks' },
             { text: 'Memory', link: '/features/memory' },
             { text: 'Skills', link: '/features/skills' },
             { text: 'Sessions', link: '/features/sessions' },
+          ],
+        },
+        {
+          text: 'Infrastructure',
+          items: [
             { text: 'Web Dashboard', link: '/features/dashboard' },
             { text: 'Cloud Sync', link: '/features/sync' },
-            { text: 'Dark Factory', link: '/features/factory' },
             { text: 'Telemetry', link: '/features/telemetry' },
+            { text: 'Plugins', link: '/features/plugins' },
+            { text: 'Remote Agents', link: '/features/remote' },
+          ],
+        },
+        {
+          text: 'Advanced',
+          items: [
+            { text: 'Credential Hot-Swap', link: '/features/swap' },
+            { text: 'Dark Factory', link: '/features/factory' },
           ],
         },
       ],
