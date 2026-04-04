@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-04-03
+
 All 25 phases of the [v2.0 spec](./docs/spec/SPEC.md) are now implemented. ARC has evolved from a profile manager into a unified agent runtime control plane, absorbing the [Axiom-Supervisor](https://github.com/Codename-11/axiom-supervisor) project.
 
 ### Added
@@ -184,5 +186,6 @@ All 25 phases of the [v2.0 spec](./docs/spec/SPEC.md) are now implemented. ARC h
 - **Light mode contrast** — WCAG AA compliant dimmed/border colors, explicit `colors.text` on import hint
 - **React hooks violation** — `useScreenSize()` moved above conditional returns in DashView
 
-[Unreleased]: https://github.com/Codename-11/ARC/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Codename-11/ARC/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Codename-11/ARC/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Codename-11/ARC/releases/tag/v0.1.0

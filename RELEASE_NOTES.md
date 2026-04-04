@@ -1,13 +1,26 @@
-# ARC v0.1.0
+# ARC v0.2.0
 
-First public release of ARC — Agent Runtime Control.
+Major release — ARC evolves from a profile manager into a **unified agent runtime control plane**, implementing all 25 phases of the v2.0 spec.
 
 ## Highlights
 
-- **Multi-account profiles** — manage multiple Claude, Gemini, and Codex configurations from one CLI
-- **Shared layer** — sync MCP servers, commands, memory, and CLAUDE.md across all profiles
-- **TUI dashboard** — interactive terminal UI for browsing, launching, and switching profiles
-- **Cross-platform** — Windows-first with full macOS/Linux support; bash, zsh, fish, and PowerShell shell integration
+- **Monorepo architecture** — 6 packages: core, cli, mcp, adapter-claude, adapter-openclaw, dashboard
+- **Adapter interface** — pluggable runtime adapters for Claude Code, Codex CLI, Gemini CLI, OpenClaw, and generic agents
+- **Hook pipeline** — 4-mode enforcement (off/log/advise/enforce), risk classification, circuit breaker
+- **MCP dual-role** — ARC as MCP host (connect to servers) and MCP server (5 supervision tools)
+- **Multi-account auth** — `arc auth` command group: login/status/refresh/whoami per profile
+- **Credential hot-swap** — swap OAuth accounts for desktop apps (Claude Desktop, Codex Desktop) with profile bridge
+- **Web dashboard** — Nothing-designed UI at `arc web`, 9 views, live WebSocket updates, REST API
+- **TUI views** — Tasks, Memory, Skills, Sessions views with Nothing design system
+- **Memory system** — session/persistent scopes, relevance search, auto-extraction from session logs
+- **Skill system** — registry, directory loader, MCP-to-skill adapter, skillify, stuck detector
+- **Task management** — CRUD, cron scheduling, agent-to-agent messaging
+- **Session continuity** — create/suspend/resume/complete lifecycle, auto-resume detection
+- **Cloud sync** — filesystem provider, SyncManager with cursor tracking
+- **Telemetry** — OpenTelemetry-compatible spans, JSON/console/OTLP exporters
+- **Dark Factory** — state machine controller for autonomous wave-based execution
+- **194 new unit tests** covering all Phase 11-25 modules
+- **VitePress docs site** — 23 content pages with Nothing design theme
 
 ## Install
 
@@ -28,24 +41,27 @@ irm https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/bootstrap.p
 curl -fsSL https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/bootstrap.sh | bash
 ```
 
-## What's Included
+## New Commands
 
-- Profile creation, import, switching, deletion
-- OAuth, API key, Bedrock, Vertex, Foundry authentication
-- OS keyring storage with plaintext fallback
-- Shell integration (auto-wraps agent commands with active profile)
-- Environment isolation between profiles
-- TUI dashboard with keyboard navigation
-- Shared MCP servers, commands, CLAUDE.md, memory, and projects across profiles
-- Per-profile launch args and env overrides
-- Doctor diagnostics and onboarding wizard
-- Setup/update/uninstall lifecycle management
+```
+arc auth status/login/refresh/whoami    Multi-account management
+arc tasks list/create/update/stop       Task management
+arc memory list/search/prune/stats      Memory system
+arc skills list/load/info               Skill registry
+arc sessions list/resume/complete       Session continuity
+arc web [--port]                        Web dashboard
+arc telemetry traces/status             Trace inspection
+arc factory status/abort                Dark Factory control
+arc remote list/add/remove/check        Remote agents
+arc plugins list/install/uninstall      Plugin registry
+arc sync status/push/pull/configure     Cloud sync
+arc swap from-profile <name>            Bridge profile → desktop app
+arc launch --dashboard                  Launch with web dashboard
+```
 
-## Known Limitations
+## Breaking Changes
 
-- TUI setup/import/doctor flows are CLI-only for now
-- Workspace-aware profile selection is not yet implemented
-- Profile inheritance is planned but not available in this release
+None — v0.1 profiles and config are fully compatible.
 
 ## Feedback
 
