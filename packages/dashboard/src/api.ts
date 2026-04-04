@@ -3,6 +3,9 @@
 // ---------------------------------------------------------------------------
 
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import {
   queryLogEvents,
   type RiskTier,
@@ -45,6 +48,41 @@ const RISK_TIERS: RiskTier[] = [
 
 export function createApiHandlers(ctx: DashboardContext) {
   return {
+    // -------------------------------------------------------------------
+    // GET /api/profiles
+    // -------------------------------------------------------------------
+    profiles(_req: IncomingMessage, res: ServerResponse): void {
+      try {
+        const arcDir = process.env["ARC_DIR"] ?? join(homedir(), ".arc");
+        const configPath = join(arcDir, "config.json");
+        const raw = readFileSync(configPath, "utf-8");
+        const config = JSON.parse(raw) as {
+          activeProfile?: string;
+          profiles?: Record<string, Record<string, unknown>>;
+        };
+
+        const activeProfile = config.activeProfile ?? "";
+        const profiles = config.profiles ?? {};
+
+        const entries = Object.entries(profiles).map(([name, profile]) => ({
+          name,
+          tool: (profile["tool"] as string) ?? "claude",
+          authType: (profile["authType"] as string) ?? "unknown",
+          configDir: (profile["configDir"] as string) ?? "",
+          description: (profile["description"] as string) ?? "",
+          createdAt: (profile["createdAt"] as string) ?? "",
+          active: name === activeProfile,
+          useShared: (profile["useShared"] as boolean) ?? false,
+          inherits: (profile["inherits"] as string) ?? null,
+        }));
+
+        json(res, entries);
+      } catch {
+        // Config not found or unreadable — return empty array
+        json(res, []);
+      }
+    },
+
     // -------------------------------------------------------------------
     // GET /api/health
     // -------------------------------------------------------------------

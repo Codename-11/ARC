@@ -138,6 +138,7 @@ export function DashView({ profiles, onTriggerUpdate }: Props) {
   const readyCount = profiles.filter((p) => p.credential?.authenticated).length;
   const expiredCount = profiles.filter((p) => p.credential?.expired).length;
   const showQuickStart = screenHeight >= 28;
+  const showPipelineStats = screenHeight >= 24;
 
   const activeToolLabel = activeProfile
     ? (activeProfile.tool === "claude" ? "Claude Code"
@@ -186,6 +187,52 @@ export function DashView({ profiles, onTriggerUpdate }: Props) {
           <StatusRow label="account" value={activeProfile.credential.accountTier} />
         )}
       </Box>
+
+      {/* Hook pipeline + capability stats — hidden when terminal is short */}
+      {showPipelineStats && (
+        <>
+          {/* Hook Pipeline Section */}
+          {/* TODO: Wire to live hook execution state once the hook runner emits stage events */}
+          <Box flexDirection="column" marginBottom={1} paddingLeft={1}>
+            <Box gap={1} marginBottom={1}>
+              <Text color={colors.dimmed}>hook pipeline</Text>
+              <Text color={colors.border}>{"─".repeat(12)}</Text>
+            </Box>
+            <Box gap={1} paddingLeft={1}>
+              <Text color={colors.success}>{"█".repeat(5)}</Text>
+              <Text color={colors.success}>{"█".repeat(5)}</Text>
+              <Text color={colors.success}>{"█".repeat(5)}</Text>
+              <Text color={colors.border}>{"░".repeat(5)}</Text>
+            </Box>
+            <Box gap={1} paddingLeft={1}>
+              <Box width={6}><Text color={colors.dimmed}> PRE</Text></Box>
+              <Box width={6}><Text color={colors.dimmed}> VAL</Text></Box>
+              <Box width={6}><Text color={colors.dimmed}> POST</Text></Box>
+              <Box width={6}><Text color={colors.dimmed}> DONE</Text></Box>
+            </Box>
+            <Box flexDirection="column" marginTop={1} paddingLeft={1}>
+              <StatusRow label="mode" value="ENFORCE" />
+              <StatusRow label="circuit" value="CLOSED" />
+            </Box>
+          </Box>
+
+          {/* Capability Stats Section */}
+          {/* TODO: Wire to real data from config, log, shared layer, and session store */}
+          <Box flexDirection="column" marginBottom={1} paddingLeft={1}>
+            <Box gap={1} marginBottom={1}>
+              <Text color={colors.dimmed}>status</Text>
+              <Text color={colors.border}>{"─".repeat(19)}</Text>
+            </Box>
+            <Box flexDirection="column" paddingLeft={1}>
+              <StatusRow label="HOOKS" value="3" />
+              <StatusRow label="TASKS" value="2" />
+              <StatusRow label="MEMORY" value="847" />
+              <StatusRow label="SESSIONS" value="1" />
+              <StatusRow label="SYNC" value="UP TO DATE" color={colors.success} />
+            </Box>
+          </Box>
+        </>
+      )}
 
       {/* Import hint (if unimported tools detected) */}
       <ImportHint profiles={profiles} />

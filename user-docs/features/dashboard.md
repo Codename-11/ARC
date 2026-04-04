@@ -55,7 +55,7 @@ The SPA frontend auto-reconnects on WebSocket disconnection.
 
 ## Frontend Views
 
-The SPA includes 9 modular view components:
+The SPA includes 13 modular view components:
 
 | View | Description |
 |------|-------------|
@@ -68,6 +68,14 @@ The SPA includes 9 modular view components:
 | **Memory** | Memory browser with search and scope filtering |
 | **Agents** | Remote agent registry with health status |
 | **Factory** | Dark Factory wave progression and consensus gates |
+| **Profiles** | Profile list with auth status and active indicator |
+| **Diagnostics** | System health checks and environment info |
+| **Sync** | Shared layer sync status and conflict resolution |
+| **Plugins** | Plugin registry with install/enable/disable controls |
+
+::: info TUI Sidebar
+The TUI dashboard has 12 sidebar views: Dash, Work, Profiles, Doctor, Tasks, Memory, Skills, Settings, Guide, Sync, Traces, and Agents.
+:::
 
 ## Design
 

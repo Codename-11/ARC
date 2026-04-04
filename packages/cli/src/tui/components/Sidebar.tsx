@@ -2,15 +2,21 @@ import { Box, Text, useInput } from "ink";
 import { useTheme } from "../theme.js";
 import type { ProfileEntry } from "../useProfiles.js";
 
-export type ViewName = "dash" | "workspace" | "profiles" | "about" | "doctor" | "settings";
+export type ViewName = "dash" | "workspace" | "profiles" | "about" | "doctor" | "settings" | "tasks" | "memory" | "skills" | "sync" | "telemetry" | "agents";
 
 const NAV_ITEMS: { view: ViewName; label: string }[] = [
   { view: "dash", label: "Dash" },
   { view: "workspace", label: "Work" },
   { view: "profiles", label: "Profiles" },
   { view: "doctor", label: "Doctor" },
+  { view: "tasks", label: "Tasks" },
+  { view: "memory", label: "Memory" },
+  { view: "skills", label: "Skills" },
   { view: "settings", label: "Settings" },
   { view: "about", label: "Guide" },
+  { view: "sync", label: "Sync" },
+  { view: "telemetry", label: "Traces" },
+  { view: "agents", label: "Agents" },
 ];
 
 interface SidebarProps {

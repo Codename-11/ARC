@@ -11,6 +11,7 @@ async function fetchJson(path) {
 export const api = {
   overview:     () => fetchJson('/api/overview'),
   health:       () => fetchJson('/api/health'),
+  profiles:     () => fetchJson('/api/profiles'),
   sessions:     (profile) => fetchJson(`/api/sessions${profile ? `?profile=${profile}` : ''}`),
   traces:       (session, limit = 50) => fetchJson(`/api/traces?session=${session || ''}&limit=${limit}`),
   risk:         () => fetchJson('/api/risk/distribution'),
@@ -29,4 +30,6 @@ export const api = {
   },
   agents:       () => fetchJson('/api/agents'),
   factory:      (runId) => fetchJson(`/api/factory/${runId || 'latest'}`),
+  sync:         () => fetchJson('/api/sync'),
+  plugins:      () => fetchJson('/api/plugins'),
 };

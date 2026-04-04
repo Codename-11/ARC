@@ -10,6 +10,12 @@ import { SettingsView } from "./views/SettingsView.js";
 import { DoctorView } from "./views/DoctorView.js";
 import { AboutView } from "./views/AboutView.js";
 import { DashView } from "./views/DashView.js";
+import { TasksView } from "./views/TasksView.js";
+import { MemoryView } from "./views/MemoryView.js";
+import { SkillsView } from "./views/SkillsView.js";
+import { SyncView } from "./views/SyncView.js";
+import { TelemetryView } from "./views/TelemetryView.js";
+import { AgentsView } from "./views/AgentsView.js";
 import { CommandPalette, type PaletteItem } from "./views/CommandPalette.js";
 import { HelpOverlay } from "./views/HelpOverlay.js";
 import { CreateProfileOverlay } from "./views/CreateProfileOverlay.js";
@@ -48,6 +54,12 @@ export function Dashboard() {
     { id: "about", label: "Guide", description: "Profiles, shared layer, hot-swap docs" },
     { id: "doctor", label: "Doctor", description: "Run diagnostics" },
     { id: "settings", label: "Settings", description: "Inspect shell config" },
+    { id: "tasks", label: "Tasks", description: "View and manage agent tasks" },
+    { id: "memory", label: "Memory", description: "Browse persistent memory entries" },
+    { id: "skills", label: "Skills", description: "View registered skills and status" },
+    { id: "sync", label: "Sync", description: "Shared layer sync status and items" },
+    { id: "telemetry", label: "Traces", description: "Recent telemetry traces and sessions" },
+    { id: "agents", label: "Agents", description: "Remote agent connections and status" },
     { id: "theme", label: "Toggle Theme", description: "Switch light and dark mode" },
     { id: "create", label: "Create Profile", description: "Import or create a new profile" },
     { id: "swap", label: "Swap Credentials", description: "[experimental] Switch accounts, keep config" },
@@ -217,6 +229,18 @@ export function Dashboard() {
         return <AboutView focusedPane={focusedPane} inputEnabled={overlay === null} />;
       case "doctor":
         return <DoctorView profiles={profiles} />;
+      case "tasks":
+        return <TasksView profiles={profiles} />;
+      case "memory":
+        return <MemoryView profiles={profiles} />;
+      case "skills":
+        return <SkillsView profiles={profiles} />;
+      case "sync":
+        return <SyncView profiles={profiles} />;
+      case "telemetry":
+        return <TelemetryView profiles={profiles} />;
+      case "agents":
+        return <AgentsView profiles={profiles} />;
       default:
         return (
           <SessionView

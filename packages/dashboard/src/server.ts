@@ -179,6 +179,7 @@ export function createDashboardServer(
 
   const router = new Router();
 
+  router.add("GET", "/api/profiles", api.profiles);
   router.add("GET", "/api/health", api.health);
   router.add("GET", "/api/overview", api.overview);
   router.add("GET", "/api/sessions", api.sessions);

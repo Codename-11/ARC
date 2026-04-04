@@ -31,6 +31,30 @@ function statRow(label, value, status) {
     </div>`;
 }
 
+// ── Hook Pipeline (static placeholder) ──
+// TODO: Replace with real hook telemetry from /api/overview when available
+
+// TODO: Wire to real hook runner state via /api/hooks endpoint
+// Idle state — all stages pending until a hook actually runs
+const hookPipelineStages = [
+  { label: 'PREFLIGHT',  status: 'pending', color: 'var(--text-disabled)' },
+  { label: 'VALIDATE',   status: 'pending', color: 'var(--text-disabled)' },
+  { label: 'POSTFLIGHT', status: 'pending', color: 'var(--text-disabled)' },
+  { label: 'COMPLETE',   status: 'pending', color: 'var(--text-disabled)' },
+];
+
+function pipelineBar(stages) {
+  const segments = stages.map(stage => {
+    const cls = stage.status === 'success'
+      ? 'progress-bar__segment--success'
+      : stage.status === 'warning'
+        ? 'progress-bar__segment--warning'
+        : '';
+    return `<div class="progress-bar__segment ${cls}"></div>`;
+  });
+  return `<div class="progress-bar progress-bar--hero">${segments.join('')}</div>`;
+}
+
 // ── Phase detection from trace action fields ──
 
 /**
@@ -136,6 +160,24 @@ async function render() {
       ${heroCard('TASKS', t.working || 0, 'WORKING', '')}
       ${heroCard('SKILLS', sk.total || 0, 'LOADED', '')}
       ${heroCard('AGENTS', a.online || 0, 'ONLINE', a.online > 0 ? 'ok' : '')}
+    </div>
+
+    <!-- TODO: Wire hook pipeline to real data from /api/overview once hook telemetry is available -->
+    <div style="margin-bottom: var(--space-xl)">
+      <div class="card">
+        <div class="card__label">HOOK PIPELINE</div>
+        <div style="margin: var(--space-md) 0">
+          ${pipelineBar(hookPipelineStages)}
+        </div>
+        <div style="display: flex; gap: 2px; margin-bottom: var(--space-md)">
+          ${hookPipelineStages.map(stage => `
+            <div style="flex: 1; text-align: center">
+              <span class="stat-row__label" style="font-size: var(--caption); color: ${stage.color}">${stage.label}</span>
+            </div>`).join('')}
+        </div>
+        ${statRow('Mode', 'ENFORCE', 'success')}
+        ${statRow('Circuit', 'CLOSED', 'success')}
+      </div>
     </div>
 
     <div class="grid-2">
