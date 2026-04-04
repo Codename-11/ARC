@@ -19,7 +19,7 @@ ARC implements all 25 phases of the v2.0 specification. This section covers the 
 | [Permissions](/features/permissions) | Stable | per-launch | -- | -- |
 | [Plugins](/features/plugins) | Stable | `arc plugins` | -- | -- |
 | [Remote Agents](/features/remote) | Stable | `arc remote` | -- | API |
-| Shared Layer | Stable | `arc shared` | Settings | -- |
+| [Shared Layer](/features/sync#shared-layer) | Stable | `arc shared` | Settings | -- |
 | [Credential Swap](/features/swap) | Experimental | `arc swap` | Overlay | -- |
 
 ## Architecture Layers
@@ -36,7 +36,7 @@ Features → Orchestration → Adapters → Protocols → Storage
 - **Telemetry** wraps OpenTelemetry with ARC-specific span helpers
 - **Factory** is a state machine controller that orchestrates adapters
 
-## Shared Layer {#shared}
+## [Shared Layer](/features/sync#shared-layer) {#shared}
 
 The shared layer syncs configuration across profiles — MCP servers, commands, CLAUDE.md content, memory, and projects. It lives in `~/.arc/shared/` and can be enabled per-profile.
 
