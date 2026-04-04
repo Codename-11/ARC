@@ -5,7 +5,28 @@ export default defineConfig({
   description: 'Agent Runtime Control — unified control plane for AI coding agents',
 
   head: [
+    // Favicon
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
+    ['link', { rel: 'apple-touch-icon', href: '/logo.svg' }],
+
+    // Open Graph
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:title', content: 'ARC — Agent Runtime Control' }],
+    ['meta', { property: 'og:description', content: 'Unified control plane for AI coding agents. Profiles, supervision, hooks, memory, tasks, telemetry, and a web dashboard.' }],
+    ['meta', { property: 'og:image', content: '/og-image.svg' }],
+    ['meta', { property: 'og:image:width', content: '1200' }],
+    ['meta', { property: 'og:image:height', content: '630' }],
+
+    // Twitter Card
+    ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+    ['meta', { name: 'twitter:title', content: 'ARC — Agent Runtime Control' }],
+    ['meta', { name: 'twitter:description', content: 'Unified control plane for AI coding agents. Profiles, supervision, hooks, memory, tasks, and a web dashboard.' }],
+    ['meta', { name: 'twitter:image', content: '/og-image.svg' }],
+
+    // Theme
+    ['meta', { name: 'theme-color', content: '#000000' }],
+
+    // Fonts
     ['link', { rel: 'preconnect', href: 'https://fonts.googleapis.com' }],
     ['link', { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }],
     ['link', { href: 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap', rel: 'stylesheet' }],
