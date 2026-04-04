@@ -40,6 +40,7 @@ export default defineConfig({
       { text: 'Features', link: '/features/' },
       { text: 'Architecture', link: '/architecture/' },
       { text: 'Reference', link: '/reference/cli' },
+      { text: 'FAQ', link: '/guide/faq' },
       { text: 'GitHub', link: 'https://github.com/Codename-11/ARC' },
     ],
 
@@ -64,6 +65,14 @@ export default defineConfig({
           text: 'Integration',
           items: [
             { text: 'Shell Integration', link: '/guide/shell-integration' },
+          ],
+        },
+        {
+          text: 'Help',
+          items: [
+            { text: 'Troubleshooting', link: '/guide/troubleshooting' },
+            { text: 'FAQ', link: '/guide/faq' },
+            { text: 'Contributing', link: '/guide/contributing' },
           ],
         },
       ],
@@ -132,7 +141,7 @@ export default defineConfig({
     ],
 
     footer: {
-      message: 'Built by <a href="https://github.com/Codename-11">Axiom-Labs</a>',
+      message: 'Built with ❤️ by <a href="https://axiom-labs.cloud">Axiom-Labs</a>',
       copyright: '<a href="https://arc-cli.dev">arc-cli.dev</a> · MIT License',
     },
 

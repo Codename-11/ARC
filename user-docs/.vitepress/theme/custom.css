@@ -330,6 +330,33 @@ html:not(.dark) ::-webkit-scrollbar-track { background: #F5F5F5; }
 html:not(.dark) ::-webkit-scrollbar-thumb { background: #CCCCCC; border-radius: 2px; }
 
 /* ══════════════════════════════════════════════════
+   DOC FOOTER CTA — per-page links
+   ══════════════════════════════════════════════════ */
+
+.doc-footer-cta {
+  margin-top: 48px;
+  padding-top: 24px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--vp-c-text-3);
+}
+
+.doc-footer-cta hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 16px;
+}
+
+.doc-footer-cta a {
+  color: var(--vp-c-brand-1);
+}
+
+html:not(.dark) .doc-footer-cta hr {
+  border-top-color: #E8E8E8;
+}
+
+/* ══════════════════════════════════════════════════
    CONTENT TYPOGRAPHY — precision spacing
    ══════════════════════════════════════════════════ */
 
