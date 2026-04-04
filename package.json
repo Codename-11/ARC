@@ -39,7 +39,10 @@
     "tag": "node scripts/tag.js",
     "tag:repush": "node scripts/tag.js --repush",
     "teardown": "node scripts/uninstall.js",
-    "teardown:force": "node scripts/uninstall.js --force"
+    "teardown:force": "node scripts/uninstall.js --force",
+    "dev:docs": "vitepress dev user-docs",
+    "build:docs": "vitepress build user-docs",
+    "preview:docs": "vitepress preview user-docs"
   },
   "keywords": [
     "cli",
@@ -88,6 +91,7 @@
     "tsup": "^8",
     "tsx": "^4",
     "typescript": "^6.0",
+    "vitepress": "^1.6.4",
     "vitest": "^4.1.2"
   },
   "optionalDependencies": {

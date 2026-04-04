@@ -1,0 +1,101 @@
+import { defineConfig } from 'vitepress';
+
+export default defineConfig({
+  title: 'ARC',
+  description: 'Agent Runtime Control — unified control plane for AI coding agents',
+
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
+    ['link', { rel: 'preconnect', href: 'https://fonts.googleapis.com' }],
+    ['link', { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }],
+    ['link', { href: 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap', rel: 'stylesheet' }],
+  ],
+
+  themeConfig: {
+    logo: '/logo.svg',
+
+    nav: [
+      { text: 'Guide', link: '/guide/' },
+      { text: 'Features', link: '/features/' },
+      { text: 'Architecture', link: '/architecture/' },
+      { text: 'Reference', link: '/reference/cli' },
+      { text: 'GitHub', link: 'https://github.com/Codename-11/ARC' },
+    ],
+
+    sidebar: {
+      '/guide/': [
+        {
+          text: 'Introduction',
+          items: [
+            { text: 'What is ARC?', link: '/guide/' },
+            { text: 'Getting Started', link: '/guide/getting-started' },
+          ],
+        },
+        {
+          text: 'Profiles & Auth',
+          items: [
+            { text: 'Profiles', link: '/guide/profiles' },
+            { text: 'Authentication', link: '/guide/authentication' },
+            { text: 'Multi-Account', link: '/guide/multi-account' },
+          ],
+        },
+        {
+          text: 'Integration',
+          items: [
+            { text: 'Shell Integration', link: '/guide/shell-integration' },
+          ],
+        },
+      ],
+      '/features/': [
+        {
+          text: 'Features',
+          items: [
+            { text: 'Overview', link: '/features/' },
+            { text: 'Tasks', link: '/features/tasks' },
+            { text: 'Memory', link: '/features/memory' },
+            { text: 'Skills', link: '/features/skills' },
+            { text: 'Sessions', link: '/features/sessions' },
+            { text: 'Web Dashboard', link: '/features/dashboard' },
+            { text: 'Cloud Sync', link: '/features/sync' },
+            { text: 'Dark Factory', link: '/features/factory' },
+            { text: 'Telemetry', link: '/features/telemetry' },
+          ],
+        },
+      ],
+      '/architecture/': [
+        {
+          text: 'Architecture',
+          items: [
+            { text: 'Overview', link: '/architecture/' },
+            { text: 'Adapters', link: '/architecture/adapters' },
+            { text: 'Hook Pipeline', link: '/architecture/hooks' },
+            { text: 'MCP Protocol', link: '/architecture/mcp' },
+            { text: 'Packages', link: '/architecture/packages' },
+          ],
+        },
+      ],
+      '/reference/': [
+        {
+          text: 'Reference',
+          items: [
+            { text: 'CLI Commands', link: '/reference/cli' },
+            { text: 'Configuration', link: '/reference/configuration' },
+          ],
+        },
+      ],
+    },
+
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/Codename-11/ARC' },
+    ],
+
+    footer: {
+      message: 'Built by Axiom-Labs',
+      copyright: 'MIT License',
+    },
+
+    search: {
+      provider: 'local',
+    },
+  },
+});
