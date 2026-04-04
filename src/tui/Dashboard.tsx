@@ -10,6 +10,10 @@ import { SettingsView } from "./views/SettingsView.js";
 import { DoctorView } from "./views/DoctorView.js";
 import { AboutView } from "./views/AboutView.js";
 import { DashView } from "./views/DashView.js";
+import { TasksView } from "./views/TasksView.js";
+import { MemoryView } from "./views/MemoryView.js";
+import { SkillsView } from "./views/SkillsView.js";
+import { SessionHistoryView } from "./views/SessionHistoryView.js";
 import { CommandPalette, type PaletteItem } from "./views/CommandPalette.js";
 import { HelpOverlay } from "./views/HelpOverlay.js";
 import { CreateProfileOverlay } from "./views/CreateProfileOverlay.js";
@@ -48,6 +52,10 @@ export function Dashboard() {
     { id: "about", label: "Guide", description: "Profiles, shared layer, hot-swap docs" },
     { id: "doctor", label: "Doctor", description: "Run diagnostics" },
     { id: "settings", label: "Settings", description: "Inspect shell config" },
+    { id: "tasks", label: "Tasks", description: "View and manage task queue" },
+    { id: "memory", label: "Memory", description: "Browse persistent memory entries" },
+    { id: "skills", label: "Skills", description: "View loaded skills and success rates" },
+    { id: "sessions", label: "Sessions", description: "Session history and continuity" },
     { id: "theme", label: "Toggle Theme", description: "Switch light and dark mode" },
     { id: "create", label: "Create Profile", description: "Import or create a new profile" },
     { id: "swap", label: "Swap Credentials", description: "[experimental] Switch accounts, keep config" },
@@ -217,6 +225,14 @@ export function Dashboard() {
         return <AboutView focusedPane={focusedPane} inputEnabled={overlay === null} />;
       case "doctor":
         return <DoctorView profiles={profiles} />;
+      case "tasks":
+        return <TasksView focusedPane={focusedPane} inputEnabled={overlay === null} />;
+      case "memory":
+        return <MemoryView focusedPane={focusedPane} inputEnabled={overlay === null} />;
+      case "skills":
+        return <SkillsView focusedPane={focusedPane} inputEnabled={overlay === null} />;
+      case "sessions":
+        return <SessionHistoryView focusedPane={focusedPane} inputEnabled={overlay === null} />;
       default:
         return (
           <SessionView

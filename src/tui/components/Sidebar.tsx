@@ -2,16 +2,36 @@ import { Box, Text, useInput } from "ink";
 import { useTheme } from "../theme.js";
 import type { ProfileEntry } from "../useProfiles.js";
 
-export type ViewName = "dash" | "workspace" | "profiles" | "about" | "doctor" | "settings";
+export type ViewName = "dash" | "workspace" | "profiles" | "about" | "doctor" | "settings" | "tasks" | "memory" | "skills" | "sessions";
 
-const NAV_ITEMS: { view: ViewName; label: string }[] = [
-  { view: "dash", label: "Dash" },
-  { view: "workspace", label: "Work" },
-  { view: "profiles", label: "Profiles" },
-  { view: "doctor", label: "Doctor" },
-  { view: "settings", label: "Settings" },
-  { view: "about", label: "Guide" },
+interface NavSection {
+  label?: string;
+  items: { view: ViewName; label: string }[];
+}
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    items: [
+      { view: "dash", label: "Dash" },
+      { view: "workspace", label: "Work" },
+      { view: "profiles", label: "Profiles" },
+      { view: "doctor", label: "Doctor" },
+      { view: "settings", label: "Settings" },
+      { view: "about", label: "Guide" },
+    ],
+  },
+  {
+    label: "SYSTEM",
+    items: [
+      { view: "tasks", label: "Tasks" },
+      { view: "memory", label: "Memory" },
+      { view: "skills", label: "Skills" },
+      { view: "sessions", label: "Sessions" },
+    ],
+  },
 ];
+
+const NAV_ITEMS = NAV_SECTIONS.flatMap((s) => s.items);
 
 interface SidebarProps {
   activeView: ViewName;
@@ -69,26 +89,49 @@ export function Sidebar({
 
       {/* Navigation */}
       <Box flexDirection="column">
-        {NAV_ITEMS.map((item, index) => {
-          const isActive = item.view === activeView;
-          const isHighlighted = isFocused && index === navIndex;
-
-          let textColor = colors.dimmed;
-          if (isActive) textColor = colors.primary;
-          else if (isHighlighted) textColor = colors.text;
+        {NAV_SECTIONS.map((section, sectionIdx) => {
+          // Calculate the flat index offset for this section
+          const offset = NAV_SECTIONS.slice(0, sectionIdx).reduce(
+            (sum, s) => sum + s.items.length,
+            0,
+          );
 
           return (
-            <Box
-              key={item.view}
-              paddingX={1}
-              backgroundColor={isHighlighted && !isActive ? colors.bgSelected : undefined}
-            >
-              <Text color={isActive ? colors.primary : colors.border} bold={isActive}>
-                {isActive ? "▸ " : "  "}
-              </Text>
-              <Text color={textColor} bold={isActive}>
-                {item.label}
-              </Text>
+            <Box key={sectionIdx} flexDirection="column">
+              {section.label && (
+                <Box paddingX={1} marginTop={1}>
+                  <Text color={colors.border}>{"\u2500".repeat(14)}</Text>
+                </Box>
+              )}
+              {section.label && (
+                <Box paddingX={1}>
+                  <Text color={colors.dimmed}>{section.label}</Text>
+                </Box>
+              )}
+              {section.items.map((item, itemIdx) => {
+                const flatIndex = offset + itemIdx;
+                const isActiveItem = item.view === activeView;
+                const isHighlighted = isFocused && flatIndex === navIndex;
+
+                let textColor = colors.dimmed;
+                if (isActiveItem) textColor = colors.primary;
+                else if (isHighlighted) textColor = colors.text;
+
+                return (
+                  <Box
+                    key={item.view}
+                    paddingX={1}
+                    backgroundColor={isHighlighted && !isActiveItem ? colors.bgSelected : undefined}
+                  >
+                    <Text color={isActiveItem ? colors.primary : colors.border} bold={isActiveItem}>
+                      {isActiveItem ? "\u25B8 " : "  "}
+                    </Text>
+                    <Text color={textColor} bold={isActiveItem}>
+                      {item.label}
+                    </Text>
+                  </Box>
+                );
+              })}
             </Box>
           );
         })}
