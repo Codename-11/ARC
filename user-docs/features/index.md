@@ -14,11 +14,13 @@ ARC implements all 25 phases of the v2.0 specification. This section covers the 
 | [Cloud Sync](/features/sync) | Stable | `arc sync` | Settings | -- |
 | [Dark Factory](/features/factory) | Stable | `arc factory` | -- | API |
 | [Telemetry](/features/telemetry) | Stable | `arc telemetry` | -- | API |
-| Secrets | Stable | `arc secret` | -- | -- |
-| Plugins | Stable | `arc plugins` | -- | -- |
-| Remote Agents | Stable | `arc remote` | -- | API |
+| [Secrets](/features/secrets) | Stable | `arc secret` | -- | -- |
+| [Hooks & Supervision](/features/hooks) | Stable | per-profile | -- | Traces |
+| [Permissions](/features/permissions) | Stable | per-launch | -- | -- |
+| [Plugins](/features/plugins) | Stable | `arc plugins` | -- | -- |
+| [Remote Agents](/features/remote) | Stable | `arc remote` | -- | API |
 | Shared Layer | Stable | `arc shared` | Settings | -- |
-| Credential Swap | Experimental | `arc swap` | Overlay | -- |
+| [Credential Swap](/features/swap) | Experimental | `arc swap` | Overlay | -- |
 
 ## Architecture Layers
 
@@ -34,7 +36,7 @@ Features → Orchestration → Adapters → Protocols → Storage
 - **Telemetry** wraps OpenTelemetry with ARC-specific span helpers
 - **Factory** is a state machine controller that orchestrates adapters
 
-## Shared Layer
+## Shared Layer {#shared}
 
 The shared layer syncs configuration across profiles — MCP servers, commands, CLAUDE.md content, memory, and projects. It lives in `~/.arc/shared/` and can be enabled per-profile.
 
@@ -46,7 +48,7 @@ arc shared status
 
 See [Cloud Sync](/features/sync) for cross-machine synchronization.
 
-## Secrets
+## [Secrets](/features/secrets)
 
 An encrypted secret store using Argon2id KDF and AES-256-GCM per-entry encryption.
 
@@ -57,7 +59,7 @@ arc secret list
 arc secret delete DB_TOKEN
 ```
 
-## Plugins
+## [Plugins](/features/plugins)
 
 JSON-backed plugin registry with semver compatibility checking.
 
@@ -75,7 +77,7 @@ Plugins are loaded from `~/.arc/plugins/` and can add commands, views, and integ
 Plugins run in the same process as ARC. Only install plugins you trust.
 :::
 
-## Remote Agents
+## [Remote Agents](/features/remote)
 
 Register and health-check remote agent endpoints accessible over HTTP, SSH, or MCP transports.
 
