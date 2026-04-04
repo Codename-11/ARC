@@ -42,10 +42,10 @@
   letter-spacing: -0.02em;
 }
 
-/* Hero image — scale up and remove VitePress constraints */
+/* Hero image — full-width card below text on all screens */
 .VPHero .image-container {
-  max-width: 560px !important;
-  width: 560px !important;
+  max-width: 640px !important;
+  width: 100% !important;
 }
 
 .VPHero .image-container .image-bg {
@@ -54,11 +54,11 @@
 
 .VPHero .image-container img,
 .VPHero .image-container .VPImage {
-  max-width: 560px !important;
-  width: 560px !important;
+  max-width: 640px !important;
+  width: 100% !important;
   height: auto !important;
-  border-radius: 16px;
-  filter: drop-shadow(0 24px 48px rgba(0, 0, 0, 0.5));
+  border-radius: 12px;
+  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.6));
 }
 
 /* ---------- Feature cards ---------- */

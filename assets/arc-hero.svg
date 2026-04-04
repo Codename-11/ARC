@@ -36,24 +36,32 @@
     <path d="M134 500H562" stroke="#1E293B"/>
   </g>
 
-  <g transform="translate(222 224)">
-    <rect x="-38" y="-38" width="280" height="280" rx="24" fill="#0F172A" stroke="#334155"/>
-    <polyline points="38 26 6 26 6 178 38 178" stroke="#94A3B8" stroke-width="22" stroke-linecap="square" stroke-linejoin="miter"/>
-    <polyline points="100 74 164 102 100 130" stroke="#3B82F6" stroke-width="22" stroke-linecap="square" stroke-linejoin="miter"/>
-    <polyline points="226 26 258 26 258 178 226 178" stroke="#94A3B8" stroke-width="22" stroke-linecap="square" stroke-linejoin="miter"/>
-    <rect x="-10" y="268" width="116" height="34" rx="17" fill="#0F172A" stroke="#334155"/>
-    <text x="48" y="290" fill="#93C5FD" font-family="JetBrains Mono, SFMono-Regular, Menlo, monospace" font-size="18" text-anchor="middle">[&gt;]</text>
+  <!-- Logo icon — centered in left panel -->
+  <!-- Panel inner: x=136 w=424 → center=348, y=136 h=448 → center=360 -->
+  <!-- Icon box: 240x240, placed so center aligns with panel center -->
+  <g transform="translate(228, 240)">
+    <rect x="0" y="0" width="240" height="240" rx="24" fill="#0F172A" stroke="#334155"/>
+    <!-- Brackets + chevron centered in 240x240 box -->
+    <!-- Visual center of icon = 120,120 -->
+    <!-- Left bracket: x=24..48, y=36..204 -->
+    <polyline points="48 36 24 36 24 204 48 204" stroke="#94A3B8" stroke-width="20" stroke-linecap="square" stroke-linejoin="miter"/>
+    <!-- Chevron: centered at x=120, y=120 -->
+    <polyline points="92 80 148 120 92 160" stroke="#3B82F6" stroke-width="20" stroke-linecap="square" stroke-linejoin="miter"/>
+    <!-- Right bracket: x=192..216, y=36..204 -->
+    <polyline points="192 36 216 36 216 204 192 204" stroke="#94A3B8" stroke-width="20" stroke-linecap="square" stroke-linejoin="miter"/>
+  </g>
+
+  <!-- [>] badge below icon -->
+  <g transform="translate(228, 240)">
+    <rect x="62" y="256" width="116" height="34" rx="17" fill="#0F172A" stroke="#334155"/>
+    <text x="120" y="278" fill="#93C5FD" font-family="JetBrains Mono, SFMono-Regular, Menlo, monospace" font-size="18" text-anchor="middle">[&gt;]</text>
   </g>
 
   <g font-family="JetBrains Mono, SFMono-Regular, Menlo, monospace">
     <text x="632" y="248" fill="#F8FAFC" font-size="114" font-weight="800" letter-spacing="-10">ARC</text>
     <text x="632" y="310" fill="#93C5FD" font-size="28" font-weight="700" letter-spacing="6">AGENT RUNTIME CONTROL</text>
-    <text x="632" y="382" fill="#CBD5E1" font-size="32">
-      Profile-aware native terminal runtime
-    </text>
-    <text x="632" y="426" fill="#94A3B8" font-size="28">
-      for serious agent workflows.
-    </text>
+    <text x="632" y="382" fill="#CBD5E1" font-size="32">Profile-aware native terminal runtime</text>
+    <text x="632" y="426" fill="#94A3B8" font-size="28">for serious agent workflows.</text>
   </g>
 
   <g font-family="JetBrains Mono, SFMono-Regular, Menlo, monospace" font-size="24" font-weight="700">
