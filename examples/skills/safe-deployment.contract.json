@@ -1,0 +1,28 @@
+{
+  "$comment": [
+    "Example contract skill — safety boundaries for deployments.",
+    "",
+    "Contract skills define negative boundaries: things the agent must",
+    "NEVER do. They are enforced automatically when the current operation",
+    "matches one of the 'requiredFor' risk tiers.",
+    "",
+    "Unlike regular skills, contracts have no steps or triggers —",
+    "they are constraints, not workflows."
+  ],
+
+  "name": "safe-deployment",
+  "type": "contract",
+  "description": "Safety boundaries for deployment operations",
+
+  "constraints": [
+    "NEVER auto-apply review fixes without explicit user approval",
+    "NEVER run destructive operations (drop, delete, force-push) without confirmation",
+    "NEVER bypass the consensus gate for build-affecting or higher changes",
+    "Always verify a rollback path exists before proceeding with deploy"
+  ],
+
+  "requiredFor": [
+    { "riskTier": "deploy-affecting" },
+    { "riskTier": "destructive" }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "$comment": [
+    "Example Dark Factory spec — autonomous multi-wave execution plan.",
+    "",
+    "The Dark Factory controller processes waves sequentially. Each wave",
+    "contains tasks that can run in parallel within the wave. Tasks declare",
+    "the files they touch and their risk tier so the hook pipeline can",
+    "enforce appropriate safeguards.",
+    "",
+    "A 'verifier' wave runs read-only checks (tests, type-checking) after",
+    "implementation waves. The optional 'consensusGate' pauses execution",
+    "at the configured risk threshold for human or reviewer-agent approval.",
+    "",
+    "Risk tiers (lowest to highest):",
+    "  read-only < file-modification < build-affecting < deploy-affecting < destructive"
+  ],
+
+  "name": "Feature Implementation",
+  "repo": ".",
+  "profile": "work-claude",
+
+  "waves": [
+    {
+      "name": "Foundation",
+      "tasks": [
+        {
+          "description": "Create database schema",
+          "files": ["src/db/schema.ts"],
+          "risk": "file-modification"
+        },
+        {
+          "description": "Create API types",
+          "files": ["src/types/api.ts"],
+          "risk": "file-modification"
+        }
+      ]
+    },
+    {
+      "name": "Implementation",
+      "tasks": [
+        {
+          "description": "Implement API endpoints",
+          "files": ["src/routes/*.ts"],
+          "risk": "build-affecting",
+          "dependsOn": ["Foundation"]
+        }
+      ]
+    },
+    {
+      "name": "Verification",
+      "verifier": true,
+      "tasks": [
+        {
+          "description": "Run tests and verify types",
+          "files": [],
+          "risk": "read-only",
+          "readOnly": true
+        }
+      ]
+    }
+  ],
+
+  "consensusGate": {
+    "enabled": true,
+    "reviewerProfile": "review-claude",
+    "threshold": "build-affecting"
+  }
+}

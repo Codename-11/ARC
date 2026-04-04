@@ -43,6 +43,10 @@ CLAUDE.md
 # Tooling state
 .subframe/
 
+# VitePress
+user-docs/.vitepress/cache/
+user-docs/.vitepress/dist/
+
 # Build / misc
 *.code-workspace
 .next/

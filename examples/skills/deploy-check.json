@@ -1,0 +1,51 @@
+{
+  "$comment": [
+    "Example skill definition — pre-deployment safety check.",
+    "",
+    "This skill runs a multi-step verification pipeline before any",
+    "deployment operation. It checks build health, test results, and",
+    "environment configuration to catch issues early.",
+    "",
+    "The 'conditional' field on a step makes it run only when the",
+    "condition string matches the current context."
+  ],
+
+  "name": "deploy-check",
+  "description": "Pre-deployment safety check — verify build, tests, and env before shipping",
+  "trigger": ["deploy check", "pre-deploy", "ready to deploy", "deployment check"],
+
+  "steps": [
+    {
+      "action": "Verify build",
+      "description": "Run the project build and confirm zero errors",
+      "onError": "abort"
+    },
+    {
+      "action": "Run test suite",
+      "description": "Execute all tests and verify pass rate meets threshold",
+      "onError": "abort"
+    },
+    {
+      "action": "Check environment config",
+      "description": "Validate that required env vars and secrets are set for the target environment",
+      "onError": "abort"
+    },
+    {
+      "action": "Verify rollback path",
+      "description": "Confirm a rollback strategy exists (previous deploy tag, revert commit, etc.)",
+      "conditional": "riskTier >= deploy-affecting",
+      "onError": "skip"
+    },
+    {
+      "action": "Generate readiness report",
+      "description": "Summarize check results and surface any warnings",
+      "onError": "abort"
+    }
+  ],
+
+  "tools": ["Read", "Grep", "Glob", "Bash"],
+  "adapters": [],
+  "source": "user",
+  "created": "2026-04-03T00:00:00.000Z",
+  "successRate": 1.0
+}

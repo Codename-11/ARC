@@ -1,0 +1,36 @@
+{
+  "$comment": [
+    "Example arc.json — workspace-level ARC configuration.",
+    "",
+    "Place this file in your project root. ARC walks up the directory tree",
+    "to find the nearest arc.json, so it works from any subdirectory.",
+    "",
+    "Every field except 'version' is optional. Values here override the",
+    "resolved profile for commands run inside this workspace."
+  ],
+
+  "version": 1,
+
+  "profile": "work-claude",
+
+  "adapter": "claude-code",
+
+  "enforcement": "advise",
+
+  "hooks": {
+    "risk-detection": {
+      "enabled": true,
+      "options": {
+        "blockTier": "deploy-affecting"
+      }
+    }
+  },
+
+  "mcpServers": {
+    "project-tools": {
+      "command": "npx",
+      "args": ["my-project-mcp"],
+      "env": {}
+    }
+  }
+}

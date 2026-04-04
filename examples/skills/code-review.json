@@ -1,0 +1,40 @@
+{
+  "$comment": [
+    "Example skill definition — code review.",
+    "",
+    "Skills are activated when the user's message matches one of the",
+    "'trigger' patterns. Steps run in order; 'onError' controls whether",
+    "a failing step retries, is skipped, or aborts the whole skill.",
+    "",
+    "Place custom skills in ~/.arc/skills/ or register them via the",
+    "skill registry API."
+  ],
+
+  "name": "code-review",
+  "description": "Review code changes for quality, security, and correctness",
+  "trigger": ["review", "check code", "code review", "audit"],
+
+  "steps": [
+    {
+      "action": "Read changed files",
+      "description": "Identify modified files from git diff or working tree",
+      "onError": "abort"
+    },
+    {
+      "action": "Analyze patterns",
+      "description": "Check for anti-patterns, security issues, and style violations",
+      "onError": "skip"
+    },
+    {
+      "action": "Generate report",
+      "description": "Produce structured review output with findings and verdict",
+      "onError": "abort"
+    }
+  ],
+
+  "tools": ["Read", "Grep", "Glob"],
+  "adapters": [],
+  "source": "user",
+  "created": "2026-04-03T00:00:00.000Z",
+  "successRate": 1.0
+}
