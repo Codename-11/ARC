@@ -132,8 +132,8 @@ export default defineConfig({
     ],
 
     footer: {
-      message: 'Built by Axiom-Labs',
-      copyright: 'MIT License',
+      message: 'Built by <a href="https://github.com/Codename-11">Axiom-Labs</a>',
+      copyright: '<a href="https://arc-cli.dev">arc-cli.dev</a> · MIT License',
     },
 
     search: {

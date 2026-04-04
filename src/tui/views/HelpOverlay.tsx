@@ -87,7 +87,7 @@ export function HelpOverlay() {
           </Section>
 
           <Box>
-            <Text color={colors.dimmed}>github.com/Codename-11/ARC</Text>
+            <Text color={colors.dimmed}>arc-cli.dev</Text>
           </Box>
         </Box>
       </Box>

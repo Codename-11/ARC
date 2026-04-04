@@ -40,7 +40,7 @@ export function AboutView({ focusedPane, inputEnabled }: Props) {
 
   push(<Text color={colors.text} bold>ARC v{VERSION} — Agent Runtime Control</Text>);
   body("Unified profile manager for agent CLIs (Claude, Gemini, Codex, and more).");
-  body(`Package: ${PACKAGE_NAME}  ·  github.com/Codename-11/ARC`);
+  body(`Package: ${PACKAGE_NAME}  ·  arc-cli.dev`);
   blank();
 
   // ── What are Profiles? ──────────────────────────────────
@@ -164,7 +164,7 @@ export function AboutView({ focusedPane, inputEnabled }: Props) {
 
   // ── Footer ──────────────────────────────────────────────
 
-  body("Full documentation: docs/ in the repo or github.com/Codename-11/ARC");
+  body("Full documentation: docs/ in the repo or arc-cli.dev");
 
   const contentHeight = Math.max(8, screenHeight - 6);
 

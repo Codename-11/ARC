@@ -65,4 +65,5 @@ None — v0.1 profiles and config are fully compatible.
 
 ## Feedback
 
-Please report issues at https://github.com/Codename-11/ARC/issues
+- Documentation: https://arc-cli.dev
+- Issues: https://github.com/Codename-11/ARC/issues

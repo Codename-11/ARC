@@ -2,7 +2,7 @@
 
 > ARC runtime adapter and plugin for OpenClaw -- lifecycle hooks and agent tools via the plugin API.
 
-Part of the [ARC](https://github.com/Codename-11/ARC) monorepo -- Agent Runtime Control.
+Part of the [ARC](https://arc-cli.dev) monorepo ([GitHub](https://github.com/Codename-11/ARC)) -- Agent Runtime Control.
 
 ## What This Package Does
 

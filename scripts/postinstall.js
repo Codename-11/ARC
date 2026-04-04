@@ -30,5 +30,5 @@ console.error(`  ${CY}arc${R}          Open the TUI (onboarding wizard on first 
 console.error(`  ${CY}arc setup${R}    Set up PATH and shell integration`);
 console.error(`  ${CY}arc --help${R}   View all commands`);
 console.error();
-console.error(`  ${D}github.com/Codename-11/ARC${R}`);
+console.error(`  ${D}arc-cli.dev${R}`);
 console.error();

@@ -17,13 +17,12 @@
 </p>
 
 <p align="center">
-  <a href="./docs/getting-started.md">Install</a> ·
-  <a href="./docs/profiles.md">Profiles</a> ·
-  <a href="./docs/authentication.md">Auth</a> ·
-  <a href="./docs/advanced.md#shared-layer">Shared Layer</a> ·
-  <a href="./docs/shell-integration.md">Shell</a> ·
-  <a href="./docs/spec/SPEC.md">Spec</a> ·
-  <a href="./docs/index.md">Docs</a>
+  <a href="https://arc-cli.dev">Documentation</a> ·
+  <a href="https://arc-cli.dev/guide/getting-started">Install</a> ·
+  <a href="https://arc-cli.dev/features/">Features</a> ·
+  <a href="https://arc-cli.dev/architecture/">Architecture</a> ·
+  <a href="https://arc-cli.dev/reference/cli">CLI Reference</a> ·
+  <a href="./docs/spec/SPEC.md">Spec</a>
 </p>
 
 ---

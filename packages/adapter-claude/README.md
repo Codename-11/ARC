@@ -2,7 +2,7 @@
 
 > ARC runtime adapter for Claude Code -- auth detection, config sync, and shared artifact management.
 
-Part of the [ARC](https://github.com/Codename-11/ARC) monorepo -- Agent Runtime Control.
+Part of the [ARC](https://arc-cli.dev) monorepo ([GitHub](https://github.com/Codename-11/ARC)) -- Agent Runtime Control.
 
 ## What This Package Does
 

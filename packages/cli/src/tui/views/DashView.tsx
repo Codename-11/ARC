@@ -112,7 +112,7 @@ function WelcomeView() {
       </Box>
 
       <Box marginTop={1}>
-        <Text color={colors.dimmed}>github.com/Codename-11/ARC</Text>
+        <Text color={colors.dimmed}>arc-cli.dev</Text>
       </Box>
     </Box>
   );
@@ -233,7 +233,7 @@ export function DashView({ profiles, onTriggerUpdate }: Props) {
       )}
 
       <Box marginTop={showQuickStart ? 1 : 0}>
-        <Text color={colors.dimmed}>github.com/Codename-11/ARC</Text>
+        <Text color={colors.dimmed}>arc-cli.dev</Text>
       </Box>
     </Box>
   );

@@ -2,7 +2,7 @@
 
 > Internal CLI package that wires arc-core, adapters, and MCP into the `arc` command.
 
-Part of the [ARC](https://github.com/Codename-11/ARC) monorepo -- Agent Runtime Control.
+Part of the [ARC](https://arc-cli.dev) monorepo ([GitHub](https://github.com/Codename-11/ARC)) -- Agent Runtime Control.
 
 ## What This Package Does
 
