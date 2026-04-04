@@ -52,7 +52,7 @@ One binary. One config directory (`~/.arc/`). Every agent runtime — Claude Cod
 | **Sessions** | Create/suspend/resume/complete lifecycle, resume-intent detection |
 | **Permissions** | Three-tier model (coordinator/interactive/worker) with deny > ask > allow precedence |
 | **Telemetry** | OpenTelemetry spans, JSONL + console + OTLP exporters, `arc.*` attribute namespace |
-| **Web Dashboard** | REST API (10 endpoints), WebSocket real-time push, SPA with 9 view components |
+| **Web Dashboard** | REST API (10 endpoints), WebSocket real-time push, SPA with 13 view components (+ Profiles, Diagnostics, Sync, Plugins) |
 | **Dark Factory** | Autonomous operation mode: spec in, software out — state machine with wave progression |
 | **Secrets** | Encrypted secret store (Argon2id KDF, AES-256-GCM per-entry), `arc secret` CLI |
 | **Sync** | Shared config layer, cloud sync provider interface, filesystem sync with atomic writes |
@@ -110,6 +110,7 @@ packages/
   adapter-claude/    # Claude Code adapter (SDK bridge, auth, detect, import, shared)
   adapter-openclaw/  # OpenClaw adapter (plugin manifest, hooks, tools)
   dashboard/         # Web dashboard: REST API, WebSocket, SPA frontend
+site/                # React landing site (Vite + Tailwind v4)
 ```
 
 ## Installation
@@ -331,6 +332,8 @@ pnpm uninstall:local       # Remove shims (keeps ~/.arc/ config)
 pnpm dev:tui               # Run TUI from source
 pnpm dev:tui:watch         # TUI with hot-reload
 pnpm dev:dashboard         # Run web dashboard from source
+pnpm web                   # Run landing site dev server
+pnpm web:preview           # Preview landing site production build
 pnpm typecheck             # TypeScript strict-mode check
 pnpm build                 # Production bundle
 pnpm test                  # Run all tests (E2E + integration)

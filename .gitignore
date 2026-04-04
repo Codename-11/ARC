@@ -47,6 +47,10 @@ CLAUDE.md
 user-docs/.vitepress/cache/
 user-docs/.vitepress/dist/
 
+# Landing site
+_site/
+site/dist/
+
 # Build / misc
 *.code-workspace
 .next/

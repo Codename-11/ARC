@@ -27,5 +27,5 @@ features:
   - title: Tasks & Sessions
     details: Task CRUD with cron scheduling and agent-to-agent messaging. Session suspend/resume lifecycle with automatic resume-intent detection.
   - title: Web Dashboard
-    details: REST API, WebSocket real-time push, and a Nothing-designed SPA with 9 view components for deep observability into agent operations.
+    details: REST API, WebSocket real-time push, and a Nothing-designed SPA with 13 view components for deep agent observability.
 ---

@@ -3,6 +3,7 @@ import { defineConfig } from 'vitepress';
 export default defineConfig({
   title: 'ARC',
   description: 'Agent Runtime Control — unified control plane for AI coding agents',
+  base: '/docs/',
 
   head: [
     // Favicon

@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+/* ─── Nothing Design System — Theme Tokens ───────────────────────── */
+
+@theme {
+  --font-display: "Doto", "Space Mono", monospace;
+  --font-body: "Space Grotesk", "DM Sans", system-ui, sans-serif;
+  --font-mono: "Space Mono", "JetBrains Mono", "SF Mono", monospace;
+
+  --color-black: #000000;
+  --color-surface: #111111;
+  --color-surface-raised: #1A1A1A;
+  --color-border: #222222;
+  --color-border-visible: #333333;
+  --color-text-disabled: #666666;
+  --color-text-secondary: #999999;
+  --color-text-primary: #E8E8E8;
+  --color-text-display: #FFFFFF;
+  --color-accent: #2563EB;
+  --color-accent-subtle: rgba(37, 99, 235, 0.14);
+  --color-accent-dim: #1D4ED8;
+}
+
+/* ─── Base Layer (works WITH Tailwind preflight, not against it) ─── */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--color-black);
+    color: var(--color-text-primary);
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: var(--color-accent-subtle);
+    color: var(--color-text-display);
+  }
+}
+
+/* ─── Component Layer ────────────────────────────────────────────── */
+
+@layer components {
+  .dot-grid {
+    background-image: radial-gradient(circle, var(--color-border-visible) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+
+  .dot-grid-subtle {
+    background-image: radial-gradient(circle, var(--color-border) 0.5px, transparent 0.5px);
+    background-size: 12px 12px;
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-mono-label {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+}
+
+/* ─── Utility Layer ──────────────────────────────────────────────── */
+
+@layer utilities {
+  .animate-fade-up {
+    animation: fade-up 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+  }
+
+  .animate-fade-up-delay-1 {
+    animation: fade-up 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) 0.1s both;
+  }
+
+  .animate-fade-up-delay-2 {
+    animation: fade-up 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) 0.2s both;
+  }
+
+  .animate-fade-up-delay-3 {
+    animation: fade-up 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) 0.3s both;
+  }
+
+  .animate-fade-up-delay-4 {
+    animation: fade-up 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) 0.4s both;
+  }
+
+  .cursor-blink {
+    animation: cursor-blink 1s step-end infinite;
+  }
+}
+
+/* ─── Keyframes (outside layers — they don't participate in cascade) */
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Scrollbar (outside layers — pseudo-elements) ───────────────── */
+
+@layer base {
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-black);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-visible);
+    border-radius: 2px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-disabled);
+  }
+}
