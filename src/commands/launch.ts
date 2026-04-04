@@ -49,7 +49,7 @@ function getInstallHint(tool: string): string {
 export async function handleLaunch(
   name: string | undefined,
   rawArgs: string[],
-  opts?: { beforeSpawn?: () => void | Promise<void> }
+  opts?: { beforeSpawn?: () => void | Promise<void>; dashboard?: boolean }
 ): Promise<void> {
   const config = loadConfig();
   let profileName: string;
@@ -245,6 +245,55 @@ export async function handleLaunch(
   logAction("launch", `${profileName} (${tool})`);
   const flagStr = allArgs.length > 0 ? ` [${allArgs.join(" ")}]` : "";
   info(`Launching ${tool} with profile: ${profileName}${flagStr}`);
+
+  // ─── Optional web dashboard ────────────────────────────────────────
+  // When --dashboard is passed, spin up the dashboard server in the
+  // background using the SAME store instances so it shows real-time data.
+  if (opts?.dashboard) {
+    try {
+      const { createDashboardServer } = await import("../../packages/dashboard/src/server.js");
+      const { TaskStore } = await import("../../packages/core/src/tasks/index.js");
+      const { SkillRegistry } = await import("../../packages/core/src/skills/index.js");
+      const { PersistentMemory } = await import("../../packages/core/src/memory/index.js");
+      const { RemoteAgentRegistry } = await import("../../packages/core/src/remote.js");
+
+      const dashSessions = sessionStore ?? new SessionStore();
+      const dashTasks = new TaskStore();
+      const dashSkills = new SkillRegistry();
+      const dashMemory = new PersistentMemory("persistent");
+      const dashRemote = new RemoteAgentRegistry();
+
+      const dashboard = createDashboardServer(
+        { port: 3700, host: "localhost" },
+        {
+          sessions: dashSessions,
+          tasks: dashTasks,
+          skills: dashSkills,
+          memory: dashMemory,
+          remoteAgents: dashRemote,
+        },
+      );
+
+      await dashboard.start();
+      dashboard.startPolling();
+
+      writeLogEvent({
+        level: "info",
+        component: "launch",
+        action: "dashboard:started",
+        message: "http://localhost:3700/",
+      });
+      info("Dashboard: http://localhost:3700/");
+    } catch {
+      // Non-fatal if dashboard fails to start
+      writeLogEvent({
+        level: "warn",
+        component: "launch",
+        action: "dashboard:error",
+        message: "Failed to start dashboard (non-fatal)",
+      });
+    }
+  }
 
   // Try the adapter's real lifecycle first. If the adapter still has stubs
   // (throws "not implemented"), fall back to the legacy spawnSync path.

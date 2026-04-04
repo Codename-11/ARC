@@ -207,6 +207,7 @@ export function createProgram(): Command {
   program
     .command("launch [name]")
     .description("Launch agent tool with a profile")
+    .option("-d, --dashboard", "Start web dashboard alongside agent")
     .passThroughOptions()
     .allowUnknownOption()
     .allowExcessArguments()
@@ -218,6 +219,7 @@ All flags after the profile name are forwarded to the agent tool.
 Examples:
   $ arc launch work
   $ arc launch work --model sonnet
+  $ arc launch work --dashboard
   $ arc launch work --dangerously-skip-permissions
   $ arc launch work -p "explain this code"
   $ arc launch -- --model sonnet      (use -- when omitting profile name)
@@ -226,11 +228,11 @@ Examples:
     .action(
       async (
         name: string | undefined,
-        _opts: Record<string, never>,
+        opts: { dashboard?: boolean },
         cmd: Command
       ) => {
         const mod = await import("./commands/launch.js");
-        await mod.handleLaunch(name, cmd.args);
+        await mod.handleLaunch(name, cmd.args, { dashboard: opts.dashboard });
       }
     );
 
