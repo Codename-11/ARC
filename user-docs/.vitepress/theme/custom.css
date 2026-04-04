@@ -1,15 +1,15 @@
 /* ==========================================================================
-   ARC — Nothing-Inspired Theme
+   ARC — Brand Theme
    Fonts: Space Grotesk (body) + Space Mono (code)
-   Accent: #D71921 (red)
-   Dark: OLED black (#000000 bg, #111111 surface)
+   Brand: #2563EB (blue) — matches logo and hero SVG
+   Dark: OLED black (#000000 bg, #0A0F1A surface)
    ========================================================================== */
 
 :root {
-  --vp-c-brand-1: #D71921;
-  --vp-c-brand-2: #b5151c;
-  --vp-c-brand-3: #9e1218;
-  --vp-c-brand-soft: rgba(215, 25, 33, 0.12);
+  --vp-c-brand-1: #3B82F6;
+  --vp-c-brand-2: #2563EB;
+  --vp-c-brand-3: #1D4ED8;
+  --vp-c-brand-soft: rgba(37, 99, 235, 0.14);
 
   --vp-font-family-base: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
   --vp-font-family-mono: 'Space Mono', 'SF Mono', 'Consolas', monospace;
@@ -19,15 +19,15 @@
 
 .dark {
   --vp-c-bg: #000000;
-  --vp-c-bg-alt: #111111;
-  --vp-c-bg-elv: #161616;
-  --vp-c-bg-soft: #111111;
+  --vp-c-bg-alt: #0A0F1A;
+  --vp-c-bg-elv: #0F172A;
+  --vp-c-bg-soft: #0A0F1A;
 }
 
 /* ---------- Hero section ---------- */
 
 .VPHero .name {
-  background: linear-gradient(135deg, #D71921 0%, #ff4d4d 50%, #D71921 100%) !important;
+  background: linear-gradient(135deg, #93C5FD 0%, #2563EB 50%, #3B82F6 100%) !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
 }
@@ -51,21 +51,21 @@
 }
 
 .VPFeature:hover {
-  border-color: rgba(215, 25, 33, 0.35) !important;
+  border-color: rgba(37, 99, 235, 0.35) !important;
 }
 
 /* ---------- Brand button ---------- */
 
 .VPButton.brand {
-  background-color: #D71921 !important;
-  border-color: #D71921 !important;
+  background-color: #2563EB !important;
+  border-color: #2563EB !important;
   color: #ffffff !important;
   font-weight: 500 !important;
 }
 
 .VPButton.brand:hover {
-  background-color: #b5151c !important;
-  border-color: #b5151c !important;
+  background-color: #1D4ED8 !important;
+  border-color: #1D4ED8 !important;
 }
 
 /* ---------- Alt button ---------- */
@@ -75,7 +75,7 @@
 }
 
 .dark .VPButton.alt:hover {
-  border-color: rgba(215, 25, 33, 0.4) !important;
+  border-color: rgba(37, 99, 235, 0.4) !important;
 }
 
 /* ---------- Sidebar ---------- */
@@ -102,26 +102,26 @@
 /* ---------- Code blocks ---------- */
 
 .vp-code-group .tabs label.active {
-  color: #D71921 !important;
+  color: #3B82F6 !important;
 }
 
 .dark .vp-doc div[class*='language-'] {
-  background: #0a0a0a !important;
+  background: #050A13 !important;
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 /* ---------- Badge ---------- */
 
 .VPBadge.tip {
-  background-color: rgba(215, 25, 33, 0.12) !important;
-  color: #D71921 !important;
+  background-color: rgba(37, 99, 235, 0.14) !important;
+  color: #93C5FD !important;
 }
 
 /* ---------- Tip / Warning / Danger containers ---------- */
 
 .dark .vp-doc .custom-block.tip {
-  border-color: rgba(215, 25, 33, 0.4);
-  background: rgba(215, 25, 33, 0.06);
+  border-color: rgba(37, 99, 235, 0.4);
+  background: rgba(37, 99, 235, 0.06);
 }
 
 .dark .vp-doc .custom-block.warning {
@@ -145,7 +145,7 @@
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #222222;
+  background: #1E293B;
   border-radius: 3px;
 }
 
@@ -160,14 +160,14 @@
 }
 
 .dark .vp-doc th {
-  background: #111111;
+  background: #0A0F1A;
 }
 
 /* ---------- Inline code ---------- */
 
 .dark .vp-doc :not(pre) > code {
   background: rgba(255, 255, 255, 0.06);
-  color: #e0e0e0;
+  color: #CBD5E1;
 }
 
 /* ---------- Content typography ---------- */

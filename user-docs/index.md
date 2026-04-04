@@ -5,8 +5,8 @@ hero:
   text: Agent Runtime Control
   tagline: One binary. One config directory. Every AI coding agent — profiles, supervision, hooks, memory, tasks, telemetry, and a web dashboard.
   image:
-    src: /logo.svg
-    alt: ARC
+    src: /arc-hero.svg
+    alt: ARC — Agent Runtime Control
   actions:
     - theme: brand
       text: Get Started

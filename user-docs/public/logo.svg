@@ -1,6 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60">
-  <rect width="200" height="60" rx="10" fill="#000000"/>
-  <rect x="1" y="1" width="198" height="58" rx="9" fill="none" stroke="#222" stroke-width="1"/>
-  <text x="28" y="42" font-family="'Space Mono', monospace" font-size="32" font-weight="700" fill="#ffffff" letter-spacing="6">ARC</text>
-  <circle cx="168" cy="30" r="7" fill="#D71921"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter">
+  <polyline points="6 4 3 4 3 20 6 20" stroke="#6B7280" />
+  <polyline points="10 8 15 12 10 16" stroke="#2563EB" />
+  <polyline points="18 4 21 4 21 20 18 20" stroke="#6B7280" />
 </svg>
