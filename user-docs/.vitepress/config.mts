@@ -160,6 +160,15 @@ export default withMermaid(defineConfig({
     },
   },
 
+  vite: {
+    optimizeDeps: {
+      include: ['mermaid', 'dayjs'],
+    },
+    ssr: {
+      noExternal: ['vitepress-plugin-mermaid', 'mermaid'],
+    },
+  },
+
   mermaid: {
     theme: 'dark',
     themeVariables: {
