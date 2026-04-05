@@ -374,7 +374,7 @@ describe("createDefaultPipeline()", () => {
     expect(pipeline.stateStore).toBeInstanceOf(HookStateStore);
   });
 
-  it("registers all 5 default hooks in correct priority order", () => {
+  it("registers all 8 default hooks in correct priority order", () => {
     const pipeline = createDefaultPipeline();
     const hooks = pipeline.bus.list();
     const names = hooks.map((h) => h.name);
@@ -383,10 +383,11 @@ describe("createDefaultPipeline()", () => {
     expect(names).toContain("interagent-routing");
     expect(names).toContain("risk-detection");
     expect(names).toContain("attempt-tracker");
+    expect(names).toContain("roundtable");
     expect(names).toContain("audit-score");
     expect(names).toContain("supervision-gate");
     expect(names).toContain("post-verify");
-    expect(hooks.length).toBe(7);
+    expect(hooks.length).toBe(8);
 
     // Priority ordering
     const priorities = hooks.map((h) => h.priority);
@@ -399,7 +400,7 @@ describe("createDefaultPipeline()", () => {
       "audit-score": { enabled: false, timeout: 1000 },
     });
     const hooks = pipeline.bus.list();
-    expect(hooks.length).toBe(7); // still registered, just config'd
+    expect(hooks.length).toBe(8); // still registered, just config'd
   });
 
   it("stateStore is shared between attempt-tracker and audit-score hooks", async () => {

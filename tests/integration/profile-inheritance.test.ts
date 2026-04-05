@@ -220,6 +220,9 @@ describe("Profile Inheritance – Launch Pipeline", () => {
         throw new Error("not implemented");
       },
       terminate: async () => {},
+      buildProfileEnv: async (profile: Profile) => ({
+        CLAUDE_CONFIG_DIR: profile.configDir,
+      }),
     } as any);
 
     // Mock process.exit to prevent test from exiting

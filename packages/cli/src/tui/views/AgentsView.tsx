@@ -42,7 +42,7 @@ export function AgentsView({ profiles, focusedPane, inputEnabled }: Props) {
   const [message, setMessage] = useState<string | null>(null);
 
   // --- Fix #3: Safe message timeout ---
-  const messageTimer = useRef<ReturnType<typeof setTimeout>>();
+  const messageTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const showMessage = useCallback((text: string) => {
     if (messageTimer.current) clearTimeout(messageTimer.current);
     setMessage(text);

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Box, Text, useInput } from "ink";
 import { Spinner } from "@inkjs/ui";
-import { useTheme } from "../theme.js";
+import { useTheme, type ThemeColors } from "../theme.js";
 import { useSkills } from "../useSkills.js";
 import type { SkillSource } from "@axiom-labs/arc-core";
 
@@ -12,7 +12,7 @@ interface Props {
 
 const BAR_SEGMENTS = 10;
 
-function successBar(rate: number, colors: Record<string, string>): { filled: string; empty: string; color: string } {
+function successBar(rate: number, colors: ThemeColors): { filled: string; empty: string; color: string } {
   const pct = Math.round(rate * 100);
   const segments = Math.round((pct / 100) * BAR_SEGMENTS);
   const filled = "\u2588".repeat(segments);
@@ -30,7 +30,7 @@ function successBar(rate: number, colors: Record<string, string>): { filled: str
   return { filled, empty, color };
 }
 
-function sourceColor(source: SkillSource, colors: Record<string, string>): string {
+function sourceColor(source: SkillSource, colors: ThemeColors): string {
   switch (source) {
     case "user":
       return colors.text;
@@ -53,7 +53,7 @@ export function SkillsView({ focusedPane, inputEnabled }: Props) {
   const [message, setMessage] = useState<string | null>(null);
 
   // --- Fix #3: Safe message timeout ---
-  const messageTimer = useRef<ReturnType<typeof setTimeout>>();
+  const messageTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const showMessage = useCallback((text: string) => {
     if (messageTimer.current) clearTimeout(messageTimer.current);
     setMessage(text);

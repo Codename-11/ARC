@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Box, Text, useInput } from "ink";
-import { useTheme } from "../theme.js";
+import { useTheme, type ThemeColors } from "../theme.js";
 import { useTasks } from "../useTasks.js";
 import type { TaskStatus, TaskPriority } from "@axiom-labs/arc-core";
 
@@ -11,7 +11,7 @@ interface Props {
 
 function statusIndicator(
   status: TaskStatus,
-  colors: Record<string, string>,
+  colors: ThemeColors,
 ): { icon: string; label: string; color: string } {
   switch (status) {
     case "working":
@@ -34,7 +34,7 @@ function statusIndicator(
 
 function priorityColor(
   priority: TaskPriority,
-  colors: Record<string, string>,
+  colors: ThemeColors,
 ): string {
   switch (priority) {
     case "critical":
@@ -59,7 +59,7 @@ export function TasksView({ focusedPane, inputEnabled }: Props) {
   const [confirmCancel, setConfirmCancel] = useState(false);
 
   // --- Fix #3: Safe message timeout ---
-  const messageTimer = useRef<ReturnType<typeof setTimeout>>();
+  const messageTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const showMessage = useCallback((text: string) => {
     if (messageTimer.current) clearTimeout(messageTimer.current);
     setMessage(text);

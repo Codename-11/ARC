@@ -32,21 +32,22 @@ describe("OpenClaw Integration", () => {
   // ── createDefaultPipeline with 7 hooks ───────────────────────────
 
   describe("createDefaultPipeline", () => {
-    it("returns 7 hooks in correct priority order", () => {
+    it("returns 8 hooks in correct priority order", () => {
       const { bus } = createDefaultPipeline();
       const hooks = bus.list();
 
-      expect(hooks).toHaveLength(7);
+      expect(hooks).toHaveLength(8);
       expect(hooks.map((h) => h.name)).toEqual([
         "source-classify",
         "interagent-routing",
         "risk-detection",
         "attempt-tracker",
+        "roundtable",
         "audit-score",
         "supervision-gate",
         "post-verify",
       ]);
-      expect(hooks.map((h) => h.priority)).toEqual([1, 2, 10, 20, 90, 92, 95]);
+      expect(hooks.map((h) => h.priority)).toEqual([1, 2, 10, 20, 50, 90, 92, 95]);
     });
 
     it("returns shared stateStore instance", () => {

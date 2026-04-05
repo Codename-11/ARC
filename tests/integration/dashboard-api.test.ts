@@ -300,7 +300,7 @@ describe("Dashboard REST API", () => {
   });
 
   it("GET /api/memory returns added entries", async () => {
-    memory.add("Remember this fact", "observation", { tags: ["test"] });
+    memory.add("Remember this fact", "fact", { tags: ["test"] });
 
     const res = await api("/api/memory");
     expect(res.status).toBe(200);
@@ -310,7 +310,7 @@ describe("Dashboard REST API", () => {
 
     const found = body.find((m) => m.content === "Remember this fact");
     expect(found).toBeDefined();
-    expect(found!.type).toBe("observation");
+    expect(found!.type).toBe("fact");
   });
 
   // ---- Agents -------------------------------------------------------------
@@ -378,13 +378,13 @@ describe("Dashboard REST API", () => {
   it("OPTIONS request returns CORS headers", async () => {
     const res = await fetch(`${baseUrl}/api/health`, { method: "OPTIONS" });
     expect(res.status).toBe(204);
-    expect(res.headers.get("access-control-allow-origin")).toBe("*");
+    expect(res.headers.get("access-control-allow-origin")).toBe(`http://localhost:${port}`);
     expect(res.headers.get("access-control-allow-methods")).toContain("GET");
   });
 
   it("GET responses include CORS allow-origin header", async () => {
     const res = await api("/api/health");
-    expect(res.headers.get("access-control-allow-origin")).toBe("*");
+    expect(res.headers.get("access-control-allow-origin")).toBe(`http://localhost:${port}`);
   });
 
   // ---- Overview with data -------------------------------------------------

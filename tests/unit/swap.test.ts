@@ -87,14 +87,12 @@ const hoistedHome = vi.hoisted(() => {
 });
 
 vi.mock("node:os", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("node:os")>();
+  const actual = (await importOriginal()) as any;
+  const homedirFn = () => hoistedHome.value || actual.homedir();
   return {
     ...actual,
-    default: {
-      ...actual.default,
-      homedir: () => hoistedHome.value || actual.default.homedir(),
-    },
-    homedir: () => hoistedHome.value || actual.default.homedir(),
+    homedir: homedirFn,
+    default: { ...(actual.default ?? actual), homedir: homedirFn },
   };
 });
 
@@ -119,12 +117,11 @@ const staticHome = vi.hoisted(() => {
   const fsMod = require("node:fs");
   const pathMod = require("node:path");
   const dir = fsMod.mkdtempSync(pathMod.join(tmpdir, "arc-swap-static-"));
+  // Must set hoistedHome.value HERE (inside vi.hoisted) so it's ready
+  // before imports are resolved — module-level statements run AFTER imports.
+  hoistedHome.value = dir;
   return dir as string;
 });
-
-// Set hoistedHome to the static dir so the os.homedir mock uses it
-// when TOOL_CONFIG_DIRS is computed at module load.
-hoistedHome.value = staticHome;
 
 import {
   captureAccount,
