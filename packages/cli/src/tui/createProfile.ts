@@ -27,6 +27,8 @@ export const TOOL_OPTIONS: OptionItem[] = [
   { value: "claude", label: "Claude Code", description: "Anthropic CLI agent" },
   { value: "gemini", label: "Gemini CLI", description: "Google AI CLI agent" },
   { value: "codex", label: "Codex CLI", description: "OpenAI CLI agent" },
+  { value: "openclaw", label: "OpenClaw", description: "OpenClaw Gateway (plugin)" },
+  { value: "hermes", label: "Hermes Agent", description: "Nous Research agent" },
 ];
 
 export const AUTH_OPTIONS: Record<string, AuthOptionItem[]> = {
@@ -42,6 +44,8 @@ export const AUTH_OPTIONS: Record<string, AuthOptionItem[]> = {
     { value: "vertex", label: "Google Vertex", description: "GCP credentials" },
   ],
   codex: [{ value: "api-key", label: "API Key", description: "OpenAI API key" }],
+  openclaw: [{ value: "api-key", label: "API Key", description: "Provider API key (Anthropic, OpenAI, etc.)" }],
+  hermes: [{ value: "api-key", label: "API Key", description: "Provider API key (OpenRouter, Anthropic, etc.)" }],
 };
 
 export function validateName(name: string, existingNames: string[]): string | null {

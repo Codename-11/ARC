@@ -432,7 +432,119 @@ const geminiLifecycle: LifecycleOverrides = {
   },
 };
 
+// ─── Hermes adapter lifecycle ───────────────────────────────────────
+
+/** Map from AgentProcess pid → ManagedProcessHandle for output streaming and cleanup. */
+const hermesProcessHandles = new Map<number, ManagedProcessHandle>();
+
+function buildHermesArgs(profile: Profile, userArgs: string[]): string[] {
+  const args: string[] = [];
+
+  // Forward model from profile settings if present
+  const model = profile.envOverrides?.["HERMES_MODEL"];
+  if (model) {
+    args.push("--model", model);
+  }
+
+  args.push(...userArgs);
+  return args;
+}
+
+const hermesLifecycle: LifecycleOverrides = {
+  async launch(profile: Profile, options: LaunchOptions): Promise<AgentProcess> {
+    const binary = "hermes";
+    const args = buildHermesArgs(profile, options.args);
+
+    if (options.beforeSpawn) {
+      await options.beforeSpawn();
+    }
+
+    const env: NodeJS.ProcessEnv = { ...process.env, ...options.env };
+    const handle = spawnManagedProcess({
+      command: binary,
+      args,
+      env,
+      cwd: options.cwd,
+      component: "hermes",
+    });
+
+    hermesProcessHandles.set(handle.pid, handle);
+
+    handle.child.once("exit", () => {
+      hermesProcessHandles.delete(handle.pid);
+    });
+
+    return {
+      pid: handle.pid,
+      tool: "hermes",
+      profile: "default",
+      startedAt: new Date(),
+    };
+  },
+
+  async terminate(agentProcess: AgentProcess): Promise<void> {
+    hermesProcessHandles.delete(agentProcess.pid);
+    await terminateProcess(agentProcess.pid, "hermes");
+  },
+
+  isRunning(agentProcess: AgentProcess): boolean {
+    const alive = isProcessRunning(agentProcess.pid);
+    writeLogEvent({
+      level: "debug",
+      component: "hermes",
+      action: alive ? "process:alive" : "process:dead",
+      message: `pid=${agentProcess.pid}`,
+      data: { pid: agentProcess.pid },
+    });
+    return alive;
+  },
+
+  onOutput(agentProcess: AgentProcess, handler: (event: OutputEvent) => void): void {
+    const handle = hermesProcessHandles.get(agentProcess.pid);
+    if (!handle?.child.stdout) {
+      writeLogEvent({
+        level: "warn",
+        component: "hermes",
+        action: "process:output",
+        message: `no stdout stream for pid=${agentProcess.pid}`,
+      });
+      return;
+    }
+
+    const rl = createInterface({ input: handle.child.stdout });
+    rl.on("line", (line) => {
+      const parsed = parseJsonlLine(line);
+      handler({
+        type: parsed.type,
+        content: parsed.content,
+        timestamp: new Date(),
+      });
+    });
+  },
+};
+
 // ─── Adapter definitions ─────────────────────────────────────────────
+
+const hermesAdapter = createBasicAdapter({
+  id: "hermes",
+  displayName: "Hermes Agent",
+  dirName: ".hermes",
+  markerFiles: ["config.yaml", ".env", "auth.json", "SOUL.md"],
+  installHint: "Install with: uv tool install hermes-agent\nOr: pip install hermes-agent",
+  configEnvVar: "HERMES_HOME",
+  capabilities: {
+    hooks: false,
+    sdkControl: false,
+    pluginSystem: false,
+    mcpSupport: true,
+    jsonOutput: false,
+    sandboxing: false,
+    processWrap: true,
+    remoteSupport: true,
+    permissionTier: "interactive",
+  },
+  lifecycle: hermesLifecycle,
+});
 
 const geminiAdapter = createBasicAdapter({
   id: "gemini",
@@ -483,6 +595,7 @@ const adapters = new Map<string, RuntimeAdapter>([
   [geminiAdapter.id, geminiAdapter],
   [codexAdapter.id, codexAdapter],
   [openclawAdapter.id, openclawAdapter],
+  [hermesAdapter.id, hermesAdapter],
 ]);
 
 export function listAdapters(): RuntimeAdapter[] {

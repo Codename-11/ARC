@@ -9,7 +9,7 @@ import type { Hook, HookContext, HookResult, HookMetadata, MessageSource } from 
  * 1. sessionId contains "cron" or "scheduled" → cron
  * 2. sessionId contains "agent" or "auto" → agent
  * 3. adapter name is "system" or sessionId starts with "system-" → system
- * 4. adapter is a known interactive tool (claude, codex, openclaw, generic) → user
+ * 4. adapter is a known interactive tool (claude, codex, gemini, openclaw, hermes, generic) → user
  * 5. Otherwise → unknown
  */
 export const sourceClassifyHook: Hook = {
@@ -69,7 +69,7 @@ function classifySource(ctx: HookContext): MessageSource {
   }
 
   // Known interactive adapters → user
-  const interactiveAdapters = ["claude", "codex", "openclaw", "generic"];
+  const interactiveAdapters = ["claude", "codex", "gemini", "openclaw", "hermes", "generic"];
   if (interactiveAdapters.includes(adapter)) {
     return "user";
   }

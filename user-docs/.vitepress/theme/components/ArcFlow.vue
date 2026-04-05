@@ -40,15 +40,15 @@ const diagrams: Record<string, DiagramDef> = {
   'hook-pipeline': {
     nodes: [
       { id: '1', type: 'arc', position: { x: 0, y: 0 }, data: { label: 'Message In' }, sourcePosition: Position.Right },
-      { id: '2', type: 'arc', position: { x: 160, y: 0 }, data: { label: 'Source Classify' }, sourcePosition: Position.Right, targetPosition: Position.Left },
-      { id: '3', type: 'arc', position: { x: 340, y: 0 }, data: { label: 'Interagent Routing' }, sourcePosition: Position.Right, targetPosition: Position.Left },
-      { id: '4', type: 'arc', position: { x: 540, y: 0 }, data: { label: 'Risk Detection' }, sourcePosition: Position.Right, targetPosition: Position.Left },
-      { id: '5', type: 'arc', position: { x: 700, y: 0 }, data: { label: 'Attempt Tracker' }, sourcePosition: Position.Bottom, targetPosition: Position.Left },
-      { id: '6', type: 'arc', position: { x: 700, y: 80 }, data: { label: 'Roundtable', accent: true }, sourcePosition: Position.Bottom, targetPosition: Position.Top },
-      { id: '7', type: 'arc', position: { x: 700, y: 160 }, data: { label: 'Agent Executes', accent: true }, sourcePosition: Position.Left, targetPosition: Position.Top },
-      { id: '8', type: 'arc', position: { x: 500, y: 160 }, data: { label: 'Audit Score' }, sourcePosition: Position.Left, targetPosition: Position.Right },
-      { id: '9', type: 'arc', position: { x: 300, y: 160 }, data: { label: 'Supervision Gate' }, sourcePosition: Position.Left, targetPosition: Position.Right },
-      { id: '10', type: 'arc', position: { x: 100, y: 160 }, data: { label: 'Post Verify' }, sourcePosition: Position.Left, targetPosition: Position.Right },
+      { id: '2', type: 'arc', position: { x: 150, y: 0 }, data: { label: 'Source Classify' }, sourcePosition: Position.Right, targetPosition: Position.Left },
+      { id: '3', type: 'arc', position: { x: 310, y: 0 }, data: { label: 'Interagent Routing' }, sourcePosition: Position.Right, targetPosition: Position.Left },
+      { id: '4', type: 'arc', position: { x: 500, y: 0 }, data: { label: 'Risk Detection' }, sourcePosition: Position.Right, targetPosition: Position.Left },
+      { id: '5', type: 'arc', position: { x: 660, y: 0 }, data: { label: 'Attempt Tracker' }, sourcePosition: Position.Bottom, targetPosition: Position.Left },
+      { id: '6', type: 'arc', position: { x: 660, y: 80 }, data: { label: 'Roundtable', accent: true }, sourcePosition: Position.Bottom, targetPosition: Position.Top },
+      { id: '7', type: 'arc', position: { x: 660, y: 160 }, data: { label: 'Agent Executes', accent: true }, sourcePosition: Position.Left, targetPosition: Position.Top },
+      { id: '8', type: 'arc', position: { x: 480, y: 160 }, data: { label: 'Audit Score' }, sourcePosition: Position.Left, targetPosition: Position.Right },
+      { id: '9', type: 'arc', position: { x: 290, y: 160 }, data: { label: 'Supervision Gate' }, sourcePosition: Position.Left, targetPosition: Position.Right },
+      { id: '10', type: 'arc', position: { x: 110, y: 160 }, data: { label: 'Post Verify' }, sourcePosition: Position.Left, targetPosition: Position.Right },
       { id: '11', type: 'arc', position: { x: 0, y: 80 }, data: { label: 'Trace Written' }, targetPosition: Position.Right },
     ],
     edges: [
@@ -67,16 +67,16 @@ const diagrams: Record<string, DiagramDef> = {
 
   'data-flow': {
     nodes: [
-      { id: '1', type: 'arc', position: { x: 0, y: 0 }, data: { label: 'Profile Resolution' }, sourcePosition: Position.Right },
-      { id: '2', type: 'arc', position: { x: 220, y: 0 }, data: { label: 'arc.json?' }, sourcePosition: Position.Right, targetPosition: Position.Left },
-      { id: '3', type: 'arc', position: { x: 420, y: -40 }, data: { label: 'Workspace Override' }, sourcePosition: Position.Right, targetPosition: Position.Left },
-      { id: '4', type: 'arc', position: { x: 420, y: 40 }, data: { label: 'Profile Inheritance' }, sourcePosition: Position.Right, targetPosition: Position.Left },
-      { id: '5', type: 'arc', position: { x: 640, y: 0 }, data: { label: 'Adapter.launch()' }, sourcePosition: Position.Bottom, targetPosition: Position.Left },
-      { id: '6', type: 'arc', position: { x: 640, y: 90 }, data: { label: 'Hook Pipeline', accent: true }, sourcePosition: Position.Bottom, targetPosition: Position.Top },
-      { id: '7', type: 'arc', position: { x: 520, y: 180 }, data: { label: 'Agent Executes' }, sourcePosition: Position.Left, targetPosition: Position.Top },
-      { id: '8', type: 'arc', position: { x: 760, y: 180 }, data: { label: 'Block + Log' }, targetPosition: Position.Top },
-      { id: '9', type: 'arc', position: { x: 300, y: 180 }, data: { label: 'Post-Process' }, sourcePosition: Position.Left, targetPosition: Position.Right },
-      { id: '10', type: 'arc', position: { x: 100, y: 180 }, data: { label: 'Trace Written' }, targetPosition: Position.Right },
+      { id: '1', type: 'arc', position: { x: 0, y: 60 }, data: { label: 'Profile Resolution' }, sourcePosition: Position.Right },
+      { id: '2', type: 'arc', position: { x: 190, y: 60 }, data: { label: 'arc.json?' }, sourcePosition: Position.Right, targetPosition: Position.Left },
+      { id: '3', type: 'arc', position: { x: 350, y: 10 }, data: { label: 'Workspace Override' }, sourcePosition: Position.Right, targetPosition: Position.Left },
+      { id: '4', type: 'arc', position: { x: 350, y: 110 }, data: { label: 'Profile Inheritance' }, sourcePosition: Position.Right, targetPosition: Position.Left },
+      { id: '5', type: 'arc', position: { x: 550, y: 60 }, data: { label: 'Adapter.launch()' }, sourcePosition: Position.Bottom, targetPosition: Position.Left },
+      { id: '6', type: 'arc', position: { x: 550, y: 150 }, data: { label: 'Hook Pipeline', accent: true }, sourcePosition: Position.Bottom, targetPosition: Position.Top },
+      { id: '7', type: 'arc', position: { x: 440, y: 240 }, data: { label: 'Agent Executes' }, sourcePosition: Position.Left, targetPosition: Position.Top },
+      { id: '8', type: 'arc', position: { x: 640, y: 240 }, data: { label: 'Block + Log' }, targetPosition: Position.Top },
+      { id: '9', type: 'arc', position: { x: 230, y: 240 }, data: { label: 'Post-Process' }, sourcePosition: Position.Left, targetPosition: Position.Right },
+      { id: '10', type: 'arc', position: { x: 50, y: 240 }, data: { label: 'Trace Written' }, targetPosition: Position.Right },
     ],
     edges: [
       { id: 'e1', source: '1', target: '2', animated: edgeAnimated, style: edgeStyle },
@@ -97,13 +97,13 @@ const diagrams: Record<string, DiagramDef> = {
       { id: 'cli', type: 'arc', position: { x: 0, y: 0 }, data: { label: 'CLI Commands' }, sourcePosition: Position.Right },
       { id: 'tui', type: 'arc', position: { x: 0, y: 70 }, data: { label: 'TUI Dashboard' }, sourcePosition: Position.Right },
       { id: 'web', type: 'arc', position: { x: 0, y: 140 }, data: { label: 'Web Dashboard' }, sourcePosition: Position.Right },
-      { id: 'core', type: 'arc', position: { x: 250, y: 60 }, data: { label: 'ARC Core', accent: true }, sourcePosition: Position.Right, targetPosition: Position.Left },
-      { id: 'profiles', type: 'arc', position: { x: 480, y: -20 }, data: { label: 'Profiles' }, targetPosition: Position.Left },
-      { id: 'hooks', type: 'arc', position: { x: 480, y: 40 }, data: { label: 'Hook Bus' }, targetPosition: Position.Left },
-      { id: 'tasks', type: 'arc', position: { x: 480, y: 100 }, data: { label: 'Task Store' }, targetPosition: Position.Left },
-      { id: 'memory', type: 'arc', position: { x: 620, y: -20 }, data: { label: 'Memory' }, targetPosition: Position.Left },
-      { id: 'skills', type: 'arc', position: { x: 620, y: 40 }, data: { label: 'Skills' }, targetPosition: Position.Left },
-      { id: 'sessions', type: 'arc', position: { x: 620, y: 100 }, data: { label: 'Sessions' }, targetPosition: Position.Left },
+      { id: 'core', type: 'arc', position: { x: 220, y: 60 }, data: { label: 'ARC Core', accent: true }, sourcePosition: Position.Right, targetPosition: Position.Left },
+      { id: 'profiles', type: 'arc', position: { x: 420, y: -20 }, data: { label: 'Profiles' }, targetPosition: Position.Left },
+      { id: 'hooks', type: 'arc', position: { x: 420, y: 40 }, data: { label: 'Hook Bus' }, targetPosition: Position.Left },
+      { id: 'tasks', type: 'arc', position: { x: 420, y: 100 }, data: { label: 'Task Store' }, targetPosition: Position.Left },
+      { id: 'memory', type: 'arc', position: { x: 560, y: -20 }, data: { label: 'Memory' }, targetPosition: Position.Left },
+      { id: 'skills', type: 'arc', position: { x: 560, y: 40 }, data: { label: 'Skills' }, targetPosition: Position.Left },
+      { id: 'sessions', type: 'arc', position: { x: 560, y: 100 }, data: { label: 'Sessions' }, targetPosition: Position.Left },
     ],
     edges: [
       { id: 'e1', source: 'cli', target: 'core', animated: edgeAnimated, style: edgeStyle },
@@ -121,9 +121,9 @@ const diagrams: Record<string, DiagramDef> = {
   'roundtable': {
     nodes: [
       { id: '1', type: 'arc', position: { x: 0, y: 50 }, data: { label: 'Trigger' }, sourcePosition: Position.Right },
-      { id: '2', type: 'arc', position: { x: 170, y: 50 }, data: { label: 'Active', accent: true }, sourcePosition: Position.Right, targetPosition: Position.Left },
-      { id: '3', type: 'arc', position: { x: 370, y: 50 }, data: { label: 'Synthesizing' }, sourcePosition: Position.Right, targetPosition: Position.Left },
-      { id: '4', type: 'arc', position: { x: 560, y: 50 }, data: { label: 'Complete' }, targetPosition: Position.Left },
+      { id: '2', type: 'arc', position: { x: 160, y: 50 }, data: { label: 'Active', accent: true }, sourcePosition: Position.Right, targetPosition: Position.Left },
+      { id: '3', type: 'arc', position: { x: 350, y: 50 }, data: { label: 'Synthesizing' }, sourcePosition: Position.Right, targetPosition: Position.Left },
+      { id: '4', type: 'arc', position: { x: 530, y: 50 }, data: { label: 'Complete' }, targetPosition: Position.Left },
     ],
     edges: [
       { id: 'e1', source: '1', target: '2', animated: edgeAnimated, style: edgeStyle },
@@ -136,13 +136,13 @@ const diagrams: Record<string, DiagramDef> = {
   'delegation': {
     nodes: [
       { id: '1', type: 'arc', position: { x: 0, y: 0 }, data: { label: 'Delegator' }, sourcePosition: Position.Right },
-      { id: '2', type: 'arc', position: { x: 200, y: 0 }, data: { label: 'Create Task' }, sourcePosition: Position.Right, targetPosition: Position.Left },
-      { id: '3', type: 'arc', position: { x: 400, y: 0 }, data: { label: 'Assign', accent: true }, sourcePosition: Position.Bottom, targetPosition: Position.Left },
-      { id: '4', type: 'arc', position: { x: 400, y: 90 }, data: { label: 'Handoff Message' }, sourcePosition: Position.Bottom, targetPosition: Position.Top },
-      { id: '5', type: 'arc', position: { x: 400, y: 180 }, data: { label: 'Assignee Accepts' }, sourcePosition: Position.Left, targetPosition: Position.Top },
-      { id: '6', type: 'arc', position: { x: 200, y: 180 }, data: { label: 'Working' }, sourcePosition: Position.Left, targetPosition: Position.Right },
-      { id: '7', type: 'arc', position: { x: 0, y: 180 }, data: { label: 'Complete' }, sourcePosition: Position.Top, targetPosition: Position.Right },
-      { id: '8', type: 'arc', position: { x: 0, y: 90 }, data: { label: 'Notified' }, targetPosition: Position.Bottom },
+      { id: '2', type: 'arc', position: { x: 180, y: 0 }, data: { label: 'Create Task' }, sourcePosition: Position.Right, targetPosition: Position.Left },
+      { id: '3', type: 'arc', position: { x: 360, y: 0 }, data: { label: 'Assign', accent: true }, sourcePosition: Position.Bottom, targetPosition: Position.Left },
+      { id: '4', type: 'arc', position: { x: 360, y: 80 }, data: { label: 'Handoff Message' }, sourcePosition: Position.Bottom, targetPosition: Position.Top },
+      { id: '5', type: 'arc', position: { x: 360, y: 160 }, data: { label: 'Assignee Accepts' }, sourcePosition: Position.Left, targetPosition: Position.Top },
+      { id: '6', type: 'arc', position: { x: 180, y: 160 }, data: { label: 'Working' }, sourcePosition: Position.Left, targetPosition: Position.Right },
+      { id: '7', type: 'arc', position: { x: 0, y: 160 }, data: { label: 'Complete' }, sourcePosition: Position.Top, targetPosition: Position.Right },
+      { id: '8', type: 'arc', position: { x: 0, y: 80 }, data: { label: 'Notified' }, targetPosition: Position.Bottom },
     ],
     edges: [
       { id: 'e1', source: '1', target: '2', animated: edgeAnimated, style: edgeStyle },
@@ -157,14 +157,14 @@ const diagrams: Record<string, DiagramDef> = {
 
   'factory': {
     nodes: [
-      { id: '1', type: 'arc', position: { x: 0, y: 60 }, data: { label: 'Idle' }, sourcePosition: Position.Right },
-      { id: '2', type: 'arc', position: { x: 160, y: 60 }, data: { label: 'Planning' }, sourcePosition: Position.Right, targetPosition: Position.Left },
-      { id: '3', type: 'arc', position: { x: 320, y: 60 }, data: { label: 'Executing', accent: true }, sourcePosition: Position.Right, targetPosition: Position.Left },
-      { id: '4', type: 'arc', position: { x: 490, y: 60 }, data: { label: 'Verifying' }, sourcePosition: Position.Right, targetPosition: Position.Left },
-      { id: '5', type: 'arc', position: { x: 650, y: 60 }, data: { label: 'Gating' }, sourcePosition: Position.Right, targetPosition: Position.Left },
-      { id: '6', type: 'arc', position: { x: 650, y: 150 }, data: { label: 'Completed' }, targetPosition: Position.Top },
-      { id: '7', type: 'arc', position: { x: 320, y: 150 }, data: { label: 'Failed' }, targetPosition: Position.Top },
-      { id: '8', type: 'arc', position: { x: 160, y: 150 }, data: { label: 'Aborted' }, targetPosition: Position.Top },
+      { id: '1', type: 'arc', position: { x: 0, y: 50 }, data: { label: 'Idle' }, sourcePosition: Position.Right },
+      { id: '2', type: 'arc', position: { x: 140, y: 50 }, data: { label: 'Planning' }, sourcePosition: Position.Right, targetPosition: Position.Left },
+      { id: '3', type: 'arc', position: { x: 280, y: 50 }, data: { label: 'Executing', accent: true }, sourcePosition: Position.Right, targetPosition: Position.Left },
+      { id: '4', type: 'arc', position: { x: 430, y: 50 }, data: { label: 'Verifying' }, sourcePosition: Position.Right, targetPosition: Position.Left },
+      { id: '5', type: 'arc', position: { x: 570, y: 50 }, data: { label: 'Gating' }, sourcePosition: Position.Right, targetPosition: Position.Left },
+      { id: '6', type: 'arc', position: { x: 570, y: 140 }, data: { label: 'Completed' }, targetPosition: Position.Top },
+      { id: '7', type: 'arc', position: { x: 280, y: 140 }, data: { label: 'Failed' }, targetPosition: Position.Top },
+      { id: '8', type: 'arc', position: { x: 140, y: 140 }, data: { label: 'Aborted' }, targetPosition: Position.Top },
     ],
     edges: [
       { id: 'e1', source: '1', target: '2', animated: edgeAnimated, style: edgeStyle },
@@ -181,29 +181,51 @@ const diagrams: Record<string, DiagramDef> = {
 
 const diagramData = computed(() => diagrams[props.diagram])
 const isClient = ref(false)
+const vueFlowRef = ref<InstanceType<typeof VueFlow> | null>(null)
+
 onMounted(() => { isClient.value = true })
+
+function handleFitView() {
+  // Access the Vue Flow instance and call fitView after a tick
+  const instance = vueFlowRef.value
+  if (instance) {
+    (instance as any).fitView({ padding: 0.15 })
+  }
+}
 </script>
 
 <template>
   <div v-if="isClient && diagramData" class="arc-flow-wrapper" :style="{ height: flowHeight }">
     <VueFlow
+      ref="vueFlowRef"
       :nodes="diagramData.nodes"
       :edges="diagramData.edges"
-      :default-viewport="{ zoom: 0.85, x: 30, y: 20 }"
       :nodes-draggable="false"
       :nodes-connectable="false"
       :elements-selectable="false"
-      :zoom-on-scroll="false"
-      :pan-on-scroll="false"
-      :pan-on-drag="false"
+      :zoom-on-scroll="true"
+      :pan-on-scroll="true"
+      :pan-on-drag="true"
       :zoom-on-double-click="false"
       :prevent-scrolling="false"
-      fit-view
+      :min-zoom="0.3"
+      :max-zoom="2"
+      :fit-view-on-init="true"
+      :fit-view-on-init-padding="0.2"
     >
       <template #node-arc="nodeProps">
         <ArcFlowNode v-bind="nodeProps" />
       </template>
     </VueFlow>
+
+    <!-- Minimal custom controls -->
+    <div class="arc-flow-controls">
+      <button class="arc-flow-btn" title="Fit to view" @click="handleFitView">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+        </svg>
+      </button>
+    </div>
   </div>
   <div v-else-if="!diagramData" class="arc-flow-fallback">
     Unknown diagram: {{ diagram }}
@@ -214,6 +236,7 @@ onMounted(() => { isClient.value = true })
 @import '@vue-flow/core/dist/style.css';
 
 .arc-flow-wrapper {
+  position: relative;
   border: 1px solid #222;
   border-radius: 8px;
   background: #0A0A0A;
@@ -247,11 +270,47 @@ onMounted(() => { isClient.value = true })
   to { stroke-dashoffset: -10; }
 }
 
-/* Hide controls and attribution */
-.arc-flow-wrapper .vue-flow__controls,
-.arc-flow-wrapper .vue-flow__attribution,
-.arc-flow-wrapper .vue-flow__panel {
+/* Hide default attribution */
+.arc-flow-wrapper .vue-flow__attribution {
   display: none !important;
+}
+
+/* Custom controls */
+.arc-flow-controls {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  z-index: 10;
+}
+
+.arc-flow-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: #1A1A1A;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #999;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.arc-flow-btn:hover {
+  border-color: #2563EB;
+  color: #E8E8E8;
+}
+
+/* Pan cursor */
+.arc-flow-wrapper .vue-flow__pane {
+  cursor: grab;
+}
+
+.arc-flow-wrapper .vue-flow__pane:active {
+  cursor: grabbing;
 }
 
 .arc-flow-fallback {

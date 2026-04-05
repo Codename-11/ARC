@@ -74,6 +74,10 @@ function getLoginCommand(tool: string): { cmd: string; args: string[] } | null {
       return { cmd: "gemini", args: ["auth", "login"] };
     case "codex":
       return { cmd: "codex", args: ["auth", "login"] };
+    case "hermes":
+      return { cmd: "hermes", args: ["auth", "login"] };
+    case "openclaw":
+      return { cmd: "openclaw", args: ["auth", "login"] };
     default:
       return null;
   }
