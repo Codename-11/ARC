@@ -1,6 +1,7 @@
 // ARC Dashboard — Diagnostics View
 import { api } from '../scripts/api.js';
 import { registerView } from '../scripts/router.js';
+import { escapeHtml } from '../scripts/utils.js';
 
 function statusIcon(status) {
   if (status === 'pass' || status === 'ok') {
@@ -28,9 +29,9 @@ function checkRow(check) {
     <div class="stat-row">
       <span class="stat-row__label" style="display: inline-flex; align-items: center; gap: var(--space-sm)">
         ${statusIcon(check.status)}
-        <span>${check.label || check.id || 'Check'}</span>
+        <span>${escapeHtml(check.label || check.id || 'Check')}</span>
       </span>
-      <span class="stat-row__value" style="font-size: var(--caption); color: var(--text-secondary)">${check.detail || check.summary || '—'}</span>
+      <span class="stat-row__value" style="font-size: var(--caption); color: var(--text-secondary)">${escapeHtml(check.detail || check.summary || '—')}</span>
     </div>`;
 }
 
@@ -88,16 +89,16 @@ async function render() {
         <div class="card__label">STATUS</div>
         <div class="card__value" style="display: flex; align-items: center; gap: var(--space-sm)">
           ${statusDot(overallStatus)}
-          <span>${overallStatus.toUpperCase()}</span>
+          <span>${escapeHtml(overallStatus.toUpperCase())}</span>
         </div>
       </div>
       <div class="card">
         <div class="card__label">UPTIME</div>
-        <div class="card__value card__value--sm">${uptimeDisplay}</div>
+        <div class="card__value card__value--sm">${escapeHtml(uptimeDisplay)}</div>
       </div>
       <div class="card">
         <div class="card__label">PLATFORM</div>
-        <div class="card__value card__value--sm">${platformInfo}</div>
+        <div class="card__value card__value--sm">${escapeHtml(platformInfo)}</div>
       </div>
     </div>
 
@@ -113,22 +114,22 @@ async function render() {
         <div class="card__label">SERVER INFO</div>
         <div class="stat-row">
           <span class="stat-row__label">TIMESTAMP</span>
-          <span class="stat-row__value" style="font-size: var(--caption)">${health.timestamp ? new Date(health.timestamp).toLocaleString() : '—'}</span>
+          <span class="stat-row__value" style="font-size: var(--caption)">${health.timestamp ? escapeHtml(new Date(health.timestamp).toLocaleString()) : '—'}</span>
         </div>
         <div class="stat-row">
           <span class="stat-row__label">ENDPOINT</span>
-          <span class="stat-row__value" style="font-size: var(--caption); color: var(--text-secondary)">${window.location.origin}/api/health</span>
+          <span class="stat-row__value" style="font-size: var(--caption); color: var(--text-secondary)">${escapeHtml(window.location.origin)}/api/health</span>
         </div>
       </div>
       <div class="card">
         <div class="card__label">CLIENT INFO</div>
         <div class="stat-row">
           <span class="stat-row__label">BROWSER</span>
-          <span class="stat-row__value" style="font-size: var(--caption); color: var(--text-secondary)">${typeof navigator !== 'undefined' ? navigator.userAgent.split(' ').slice(-1)[0] : '—'}</span>
+          <span class="stat-row__value" style="font-size: var(--caption); color: var(--text-secondary)">${escapeHtml(typeof navigator !== 'undefined' ? navigator.userAgent.split(' ').slice(-1)[0] : '—')}</span>
         </div>
         <div class="stat-row">
           <span class="stat-row__label">PLATFORM</span>
-          <span class="stat-row__value" style="font-size: var(--caption); color: var(--text-secondary)">${platformInfo}</span>
+          <span class="stat-row__value" style="font-size: var(--caption); color: var(--text-secondary)">${escapeHtml(platformInfo)}</span>
         </div>
       </div>
     </div>`;

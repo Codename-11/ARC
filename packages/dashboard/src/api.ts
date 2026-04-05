@@ -3,14 +3,46 @@
 // ---------------------------------------------------------------------------
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { readFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
 import {
+  loadConfig,
+  saveConfig,
   queryLogEvents,
   type RiskTier,
 } from "@axiom-labs/arc-core";
 import type { DashboardContext } from "./types.js";
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+/** Maximum request body size in bytes (1 MB). */
+const MAX_BODY_SIZE = 1_048_576;
+
+// ---------------------------------------------------------------------------
+// Enum validation sets
+// ---------------------------------------------------------------------------
+
+const TASK_STATUSES = ["created", "assigned", "working", "input-required", "completed", "failed", "cancelled"] as const;
+const TASK_PRIORITIES = ["low", "medium", "high", "critical"] as const;
+const AGENT_TRANSPORTS = ["http", "ssh", "mcp"] as const;
+const MEMORY_TYPES = ["fact", "preference", "correction", "pattern", "decision"] as const;
+
+function isValidEnum(value: unknown, allowed: readonly string[]): boolean {
+  return typeof value === "string" && allowed.includes(value);
+}
+
+// ---------------------------------------------------------------------------
+// Config lock — prevents concurrent read-modify-write races
+// ---------------------------------------------------------------------------
+
+let configLock: Promise<void> = Promise.resolve();
+
+function withConfigLock<T>(fn: () => Promise<T>): Promise<T> {
+  const prev = configLock;
+  let resolve: () => void;
+  configLock = new Promise<void>((r) => { resolve = r; });
+  return prev.then(fn).finally(() => resolve!());
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -28,6 +60,45 @@ function errorJson(res: ServerResponse, message: string, status = 400): void {
 function parseQuery(req: IncomingMessage): URLSearchParams {
   const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
   return url.searchParams;
+}
+
+/**
+ * Read and parse a JSON request body.
+ * Returns null if the body exceeds MAX_BODY_SIZE or is not valid JSON.
+ */
+function parseJsonBody(req: IncomingMessage): Promise<Record<string, unknown> | null> {
+  return new Promise((resolve) => {
+    const chunks: Buffer[] = [];
+    let totalSize = 0;
+
+    req.on("data", (chunk: Buffer) => {
+      totalSize += chunk.length;
+      if (totalSize > MAX_BODY_SIZE) {
+        req.destroy();
+        resolve(null);
+        return;
+      }
+      chunks.push(chunk);
+    });
+
+    req.on("end", () => {
+      try {
+        const raw = Buffer.concat(chunks).toString("utf-8");
+        const parsed = JSON.parse(raw);
+        if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+          resolve(parsed as Record<string, unknown>);
+        } else {
+          resolve(null);
+        }
+      } catch {
+        resolve(null);
+      }
+    });
+
+    req.on("error", () => {
+      resolve(null);
+    });
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -53,27 +124,20 @@ export function createApiHandlers(ctx: DashboardContext) {
     // -------------------------------------------------------------------
     profiles(_req: IncomingMessage, res: ServerResponse): void {
       try {
-        const arcDir = process.env["ARC_DIR"] ?? join(homedir(), ".arc");
-        const configPath = join(arcDir, "config.json");
-        const raw = readFileSync(configPath, "utf-8");
-        const config = JSON.parse(raw) as {
-          activeProfile?: string;
-          profiles?: Record<string, Record<string, unknown>>;
-        };
-
+        const config = loadConfig();
         const activeProfile = config.activeProfile ?? "";
         const profiles = config.profiles ?? {};
 
         const entries = Object.entries(profiles).map(([name, profile]) => ({
           name,
-          tool: (profile["tool"] as string) ?? "claude",
-          authType: (profile["authType"] as string) ?? "unknown",
-          configDir: (profile["configDir"] as string) ?? "",
-          description: (profile["description"] as string) ?? "",
-          createdAt: (profile["createdAt"] as string) ?? "",
+          tool: profile.tool ?? "claude",
+          authType: profile.authType ?? "unknown",
+          configDir: profile.configDir ?? "",
+          description: profile.description ?? "",
+          createdAt: profile.createdAt ?? "",
           active: name === activeProfile,
-          useShared: (profile["useShared"] as boolean) ?? false,
-          inherits: (profile["inherits"] as string) ?? null,
+          useShared: profile.useShared ?? false,
+          inherits: profile.inherits ?? null,
         }));
 
         json(res, entries);
@@ -81,6 +145,52 @@ export function createApiHandlers(ctx: DashboardContext) {
         // Config not found or unreadable — return empty array
         json(res, []);
       }
+    },
+
+    // -------------------------------------------------------------------
+    // POST /api/profiles/:name/switch
+    // -------------------------------------------------------------------
+    async switchProfile(req: IncomingMessage, res: ServerResponse, params: Record<string, string>): Promise<void> {
+      const name = params["name"];
+      if (!name) {
+        return errorJson(res, "Profile name is required");
+      }
+
+      await withConfigLock(async () => {
+        const config = loadConfig();
+        if (!config.profiles[name]) {
+          return errorJson(res, `Profile '${name}' not found`, 404);
+        }
+
+        config.activeProfile = name;
+        saveConfig(config);
+        json(res, { ok: true, activeProfile: name });
+      });
+    },
+
+    // -------------------------------------------------------------------
+    // DELETE /api/profiles/:name
+    // -------------------------------------------------------------------
+    async deleteProfile(_req: IncomingMessage, res: ServerResponse, params: Record<string, string>): Promise<void> {
+      const name = params["name"];
+      if (!name) {
+        return errorJson(res, "Profile name is required");
+      }
+
+      await withConfigLock(async () => {
+        const config = loadConfig();
+        if (!config.profiles[name]) {
+          return errorJson(res, `Profile '${name}' not found`, 404);
+        }
+
+        if (config.activeProfile === name) {
+          return errorJson(res, "Cannot delete the active profile", 400);
+        }
+
+        delete config.profiles[name];
+        saveConfig(config);
+        json(res, { ok: true });
+      });
     },
 
     // -------------------------------------------------------------------
@@ -213,6 +323,102 @@ export function createApiHandlers(ctx: DashboardContext) {
     },
 
     // -------------------------------------------------------------------
+    // POST /api/tasks
+    // -------------------------------------------------------------------
+    async createTask(req: IncomingMessage, res: ServerResponse): Promise<void> {
+      if (!ctx.tasks) {
+        return errorJson(res, "Task store not available", 503);
+      }
+
+      const body = await parseJsonBody(req);
+      if (!body) {
+        return errorJson(res, "Invalid or missing JSON body (max 1 MB)", 413);
+      }
+
+      const description = body["description"];
+      if (typeof description !== "string" || !description.trim()) {
+        return errorJson(res, "Field 'description' (string) is required");
+      }
+
+      const priority = body["priority"];
+      if (priority !== undefined && !isValidEnum(priority, TASK_PRIORITIES)) {
+        return errorJson(res, `Invalid priority. Must be one of: ${TASK_PRIORITIES.join(", ")}`);
+      }
+
+      const assignee = body["assignee"];
+      if (assignee !== undefined && typeof assignee !== "string") {
+        return errorJson(res, "Field 'assignee' must be a string");
+      }
+
+      const task = ctx.tasks.create(description, {
+        assignee: assignee as string | undefined,
+        priority: (priority as import("@axiom-labs/arc-core").TaskPriority) ?? undefined,
+      });
+
+      ctx.ws?.broadcast("task", { action: "create", task });
+      json(res, task, 201);
+    },
+
+    // -------------------------------------------------------------------
+    // PATCH /api/tasks/:id
+    // -------------------------------------------------------------------
+    async updateTask(req: IncomingMessage, res: ServerResponse, params: Record<string, string>): Promise<void> {
+      if (!ctx.tasks) {
+        return errorJson(res, "Task store not available", 503);
+      }
+
+      const id = params["id"];
+      const body = await parseJsonBody(req);
+      if (!body) {
+        return errorJson(res, "Invalid or missing JSON body (max 1 MB)", 413);
+      }
+
+      const status = body["status"];
+      if (status !== undefined && !isValidEnum(status, TASK_STATUSES)) {
+        return errorJson(res, `Invalid status. Must be one of: ${TASK_STATUSES.join(", ")}`);
+      }
+
+      const priority = body["priority"];
+      if (priority !== undefined && !isValidEnum(priority, TASK_PRIORITIES)) {
+        return errorJson(res, `Invalid priority. Must be one of: ${TASK_PRIORITIES.join(", ")}`);
+      }
+
+      const fields: Record<string, unknown> = {};
+      if (status !== undefined) fields["status"] = status;
+      if (priority !== undefined) fields["priority"] = priority;
+      if (body["assignee"] !== undefined) fields["assignee"] = body["assignee"];
+      if (body["output"] !== undefined) fields["output"] = body["output"];
+
+      const updated = ctx.tasks.update(id, fields);
+      if (!updated) {
+        return errorJson(res, `Task '${id}' not found`, 404);
+      }
+
+      ctx.ws?.broadcast("task", { action: "update", task: updated });
+      json(res, updated);
+    },
+
+    // -------------------------------------------------------------------
+    // POST /api/tasks/:id/cancel
+    // -------------------------------------------------------------------
+    // NOTE: TaskStore has no hard-delete method. This endpoint cancels a
+    // task by setting its status to "cancelled" via stop().
+    cancelTask(_req: IncomingMessage, res: ServerResponse, params: Record<string, string>): void {
+      if (!ctx.tasks) {
+        return errorJson(res, "Task store not available", 503);
+      }
+
+      const id = params["id"];
+      const cancelled = ctx.tasks.stop(id);
+      if (!cancelled) {
+        return errorJson(res, `Task '${id}' not found`, 404);
+      }
+
+      ctx.ws?.broadcast("task", { action: "cancel", task: cancelled });
+      json(res, cancelled);
+    },
+
+    // -------------------------------------------------------------------
     // GET /api/skills
     // -------------------------------------------------------------------
     skills(_req: IncomingMessage, res: ServerResponse): void {
@@ -245,11 +451,88 @@ export function createApiHandlers(ctx: DashboardContext) {
     },
 
     // -------------------------------------------------------------------
+    // POST /api/memory
+    // -------------------------------------------------------------------
+    // The memory entry's scope is determined by the PersistentMemory
+    // instance — callers do not provide a scope.
+    async addMemory(req: IncomingMessage, res: ServerResponse): Promise<void> {
+      if (!ctx.memory) {
+        return errorJson(res, "Memory store not available", 503);
+      }
+
+      const body = await parseJsonBody(req);
+      if (!body) {
+        return errorJson(res, "Invalid or missing JSON body (max 1 MB)", 413);
+      }
+
+      const content = body["content"];
+      if (typeof content !== "string" || !content.trim()) {
+        return errorJson(res, "Field 'content' (string) is required");
+      }
+
+      const type = body["type"];
+      if (typeof type !== "string" || !isValidEnum(type, MEMORY_TYPES)) {
+        return errorJson(res, `Field 'type' is required and must be one of: ${MEMORY_TYPES.join(", ")}`);
+      }
+
+      const tags = body["tags"];
+      if (tags !== undefined && !Array.isArray(tags)) {
+        return errorJson(res, "Field 'tags' must be an array of strings");
+      }
+
+      const entry = ctx.memory.add(content, type as import("@axiom-labs/arc-core").MemoryType, {
+        tags: tags as string[] | undefined,
+      });
+
+      ctx.ws?.broadcast("memory", { action: "add", entry });
+      json(res, entry, 201);
+    },
+
+    // -------------------------------------------------------------------
     // GET /api/agents
     // -------------------------------------------------------------------
     agents(_req: IncomingMessage, res: ServerResponse): void {
       const agents = ctx.remoteAgents?.list() ?? [];
       json(res, agents);
+    },
+
+    // -------------------------------------------------------------------
+    // POST /api/agents
+    // -------------------------------------------------------------------
+    async addAgent(req: IncomingMessage, res: ServerResponse): Promise<void> {
+      if (!ctx.remoteAgents) {
+        return errorJson(res, "Remote agent registry not available", 503);
+      }
+
+      const body = await parseJsonBody(req);
+      if (!body) {
+        return errorJson(res, "Invalid or missing JSON body (max 1 MB)", 413);
+      }
+
+      const name = body["name"];
+      if (typeof name !== "string" || !name.trim()) {
+        return errorJson(res, "Field 'name' (string) is required");
+      }
+
+      const endpoint = body["endpoint"];
+      if (typeof endpoint !== "string" || !endpoint.trim()) {
+        return errorJson(res, "Field 'endpoint' (string) is required");
+      }
+
+      const transport = body["transport"];
+      if (typeof transport !== "string" || !isValidEnum(transport, AGENT_TRANSPORTS)) {
+        return errorJson(res, `Field 'transport' is required and must be one of: ${AGENT_TRANSPORTS.join(", ")}`);
+      }
+
+      const agent = ctx.remoteAgents.register({
+        name: name as string,
+        endpoint: endpoint as string,
+        transport: transport as import("@axiom-labs/arc-core").RemoteAgentTransport,
+        status: "unknown",
+      });
+
+      ctx.ws?.broadcast("agent", { action: "add", agent });
+      json(res, agent, 201);
     },
 
     // -------------------------------------------------------------------
@@ -270,6 +553,16 @@ export function createApiHandlers(ctx: DashboardContext) {
       const _runId = params["runId"];
 
       json(res, state);
+    },
+
+    // -------------------------------------------------------------------
+    // GET /api/auth/token — returns the API token (localhost only)
+    // -------------------------------------------------------------------
+    authToken(_req: IncomingMessage, res: ServerResponse): void {
+      // Token is injected by createDashboardServer via closure.
+      // This handler is a placeholder — the real implementation is in
+      // server.ts where the token is available.
+      json(res, { token: null });
     },
   };
 }

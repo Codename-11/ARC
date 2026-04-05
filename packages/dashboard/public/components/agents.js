@@ -1,6 +1,7 @@
 // ARC Dashboard — Agents View
 import { api } from '../scripts/api.js';
-import { registerView } from '../scripts/router.js';
+import { registerView, navigateTo } from '../scripts/router.js';
+import { escapeHtml } from '../scripts/utils.js';
 
 function statusDot(status) {
   const color = status === 'online' ? 'var(--success)' :
@@ -12,26 +13,58 @@ function agentCard(agent) {
   return `
     <div class="card">
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md)">
-        <div class="card__label">${agent.name || agent.id?.slice(0, 8)}</div>
+        <div class="card__label">${escapeHtml(agent.name || agent.id?.slice(0, 8))}</div>
         <div class="phase">
           ${statusDot(agent.status)}
-          <span class="phase__text">${(agent.status || 'unknown').toUpperCase()}</span>
+          <span class="phase__text">${escapeHtml((agent.status || 'unknown').toUpperCase())}</span>
         </div>
       </div>
       <div class="stat-row">
         <span class="stat-row__label">TRANSPORT</span>
-        <span class="stat-row__value">${agent.transport || '—'}</span>
+        <span class="stat-row__value">${escapeHtml(agent.transport || '—')}</span>
       </div>
       <div class="stat-row">
         <span class="stat-row__label">ENDPOINT</span>
-        <span class="stat-row__value" style="font-size: var(--caption); color: var(--text-secondary)">${agent.endpoint || '—'}</span>
+        <span class="stat-row__value" style="font-size: var(--caption); color: var(--text-secondary)">${escapeHtml(agent.endpoint || '—')}</span>
       </div>
       <div class="stat-row">
         <span class="stat-row__label">PROFILE</span>
-        <span class="stat-row__value">${agent.profile || '—'}</span>
+        <span class="stat-row__value">${escapeHtml(agent.profile || '—')}</span>
       </div>
-      ${agent.lastSeen ? `<div class="card__meta">Last seen: ${new Date(agent.lastSeen).toLocaleString()}</div>` : ''}
+      ${agent.lastSeen ? `<div class="card__meta">Last seen: ${escapeHtml(new Date(agent.lastSeen).toLocaleString())}</div>` : ''}
+      <div style="margin-top: var(--space-sm); display: flex; gap: var(--space-xs)">
+        <button class="btn--ghost caption agent-health-btn" data-id="${escapeHtml(agent.id)}">CHECK</button>
+        <button class="btn--ghost caption agent-remove-btn" data-id="${escapeHtml(agent.id)}">REMOVE</button>
+      </div>
     </div>`;
+}
+
+function attachActionHandlers() {
+  document.querySelectorAll('.agent-health-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      btn.disabled = true;
+      try {
+        await api.checkAgentHealth(id);
+        navigateTo('agents');
+      } catch (err) {
+        btn.disabled = false;
+      }
+    });
+  });
+
+  document.querySelectorAll('.agent-remove-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      btn.disabled = true;
+      try {
+        await api.removeAgent(id);
+        navigateTo('agents');
+      } catch (err) {
+        btn.disabled = false;
+      }
+    });
+  });
 }
 
 async function render() {
@@ -55,6 +88,9 @@ async function render() {
   }
 
   const online = agents.filter(a => a.status === 'online').length;
+
+  // Attach action handlers after DOM update
+  setTimeout(attachActionHandlers, 0);
 
   return `
     <div class="main__header">

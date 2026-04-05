@@ -76,5 +76,9 @@
   --text-secondary: #666666;
   --text-primary: #1A1A1A;
   --text-display: #000000;
+  --success: #2D7A3E;
+  --warning: #9A7B2E;
+  --error: #B91C1C;
+  --accent: #B91C1C;
   --interactive: #007AFF;
 }

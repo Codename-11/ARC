@@ -1,13 +1,14 @@
 // ARC Dashboard — Overview View
 import { api } from '../scripts/api.js';
 import { registerView } from '../scripts/router.js';
+import { escapeHtml } from '../scripts/utils.js';
 
 function heroCard(label, value, unit, status) {
   const colorClass = status === 'ok' ? '' : status === 'warn' ? ' stat-row__value--warning' : status === 'error' ? ' stat-row__value--error' : '';
   return `
     <div class="card">
-      <div class="card__label">${label}</div>
-      <div class="card__value${colorClass}">${value}<span class="card__unit">${unit}</span></div>
+      <div class="card__label">${escapeHtml(label)}</div>
+      <div class="card__value${colorClass}">${escapeHtml(String(value))}<span class="card__unit">${escapeHtml(unit)}</span></div>
     </div>`;
 }
 
@@ -26,8 +27,8 @@ function statRow(label, value, status) {
   const cls = status ? ` stat-row__value--${status}` : '';
   return `
     <div class="stat-row">
-      <span class="stat-row__label">${label}</span>
-      <span class="stat-row__value${cls}">${value}</span>
+      <span class="stat-row__label">${escapeHtml(label)}</span>
+      <span class="stat-row__value${cls}">${escapeHtml(String(value))}</span>
     </div>`;
 }
 
@@ -113,30 +114,26 @@ function traceRow(trace) {
       <span class="stat-row__label" style="display: inline-flex; align-items: center; gap: var(--space-sm)">
         <span class="phase">
           <span class="phase__dot${dotClass}"></span>
-          <span class="phase__text">${verb}</span>
+          <span class="phase__text">${escapeHtml(verb)}</span>
         </span>
-        <span style="color: var(--text-disabled)">${time}</span>
+        <span style="color: var(--text-disabled)">${escapeHtml(time)}</span>
       </span>
-      <span class="stat-row__value" style="max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">${msg}</span>
+      <span class="stat-row__value" style="max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">${escapeHtml(msg)}</span>
     </div>`;
 }
 
 async function render() {
-  let data;
-  try {
-    data = await api.overview();
-  } catch {
-    data = { sessions: { active: 0, total: 0 }, tasks: { working: 0, completed: 0, total: 0 }, skills: { total: 0 }, agents: { online: 0, total: 0 }, factory: null, health: 'ok' };
-  }
+  // Fetch overview, traces, and hooks in parallel
+  const [overviewResult, tracesResult, hooksResult] = await Promise.allSettled([
+    api.overview(),
+    api.traces('', 5),
+    api.hooks()
+  ]);
 
-  // Fetch latest traces for Live Activity section
-  let traces = [];
-  try {
-    traces = await api.traces('', 5);
-    if (!Array.isArray(traces)) traces = [];
-  } catch {
-    traces = [];
-  }
+  const data = overviewResult.status === 'fulfilled' ? overviewResult.value : { sessions: { active: 0, total: 0 }, tasks: { working: 0, completed: 0, total: 0 }, skills: { total: 0 }, agents: { online: 0, total: 0 }, factory: null, health: 'ok' };
+  let traces = tracesResult.status === 'fulfilled' ? tracesResult.value : [];
+  if (!Array.isArray(traces)) traces = [];
+  const hooks = hooksResult.status === 'fulfilled' ? hooksResult.value : null;
 
   const s = data.sessions || {};
   const t = data.tasks || {};
@@ -144,6 +141,9 @@ async function render() {
   const a = data.agents || {};
   const healthStatus = data.health === 'fail' ? 'error' : data.health === 'warn' ? 'warn' : 'ok';
   const taskProgress = t.total > 0 ? Math.round((t.completed / t.total) * 10) : 0;
+
+  // Use hook data from API if available, otherwise show idle placeholder
+  const pipelineStages = hooks?.stages || hookPipelineStages;
 
   const liveActivityContent = traces.length > 0
     ? traces.map(traceRow).join('')
@@ -167,12 +167,12 @@ async function render() {
       <div class="card">
         <div class="card__label">HOOK PIPELINE</div>
         <div style="margin: var(--space-md) 0">
-          ${pipelineBar(hookPipelineStages)}
+          ${pipelineBar(pipelineStages)}
         </div>
         <div style="display: flex; gap: 2px; margin-bottom: var(--space-md)">
-          ${hookPipelineStages.map(stage => `
+          ${pipelineStages.map(stage => `
             <div style="flex: 1; text-align: center">
-              <span class="stat-row__label" style="font-size: var(--caption); color: ${stage.color}">${stage.label}</span>
+              <span class="stat-row__label" style="font-size: var(--caption); color: ${stage.color}">${escapeHtml(stage.label)}</span>
             </div>`).join('')}
         </div>
         ${statRow('Mode', 'ENFORCE', 'success')}

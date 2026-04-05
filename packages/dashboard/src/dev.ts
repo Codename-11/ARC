@@ -26,7 +26,7 @@ const memory = new PersistentMemory("persistent");
 const remoteAgents = new RemoteAgentRegistry();
 
 const dashboard = createDashboardServer(
-  { port, host: "localhost", publicDir, corsOrigin: "*" },
+  { port, host: "localhost", publicDir, corsOrigin: `http://localhost:${port}` },
   { sessions, tasks, skills, memory, remoteAgents },
 );
 
@@ -38,6 +38,7 @@ const stopPolling = dashboard.startPolling();
 console.log(`\n  ARC Dashboard`);
 console.log(`  ─────────────────────────────`);
 console.log(`  Local:   http://localhost:${port}/`);
+console.log(`  Token:   ${dashboard.token}`);
 console.log(`  Mode:    development`);
 console.log(`  Public:  ${publicDir}`);
 console.log(`\n  Watching for changes...\n`);

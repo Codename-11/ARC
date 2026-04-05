@@ -1,6 +1,7 @@
 // ARC Dashboard — Sync View
 import { api } from '../scripts/api.js';
-import { registerView } from '../scripts/router.js';
+import { registerView, navigateTo } from '../scripts/router.js';
+import { escapeHtml } from '../scripts/utils.js';
 
 // TODO: Replace placeholder data with live API call once /api/sync endpoint exists
 
@@ -15,17 +16,32 @@ function syncItemRow(label, status) {
                 status === 'pending' ? 'var(--warning)' : 'var(--text-disabled)';
   return `
     <div class="stat-row">
-      <span class="stat-row__label">${label}</span>
-      <span class="stat-row__value" style="color: ${color}">${status.toUpperCase()}</span>
+      <span class="stat-row__label">${escapeHtml(label)}</span>
+      <span class="stat-row__value" style="color: ${color}">${escapeHtml(status.toUpperCase())}</span>
     </div>`;
 }
 
 function logEntry(time, action, detail) {
   return `
     <div class="stat-row">
-      <span class="stat-row__label" style="color: var(--text-disabled)">${time}</span>
-      <span class="stat-row__value">${action} — ${detail}</span>
+      <span class="stat-row__label" style="color: var(--text-disabled)">${escapeHtml(time)}</span>
+      <span class="stat-row__value">${escapeHtml(action)} — ${escapeHtml(detail)}</span>
     </div>`;
+}
+
+function attachActionHandlers() {
+  const syncBtn = document.getElementById('sync-trigger-btn');
+  if (syncBtn) {
+    syncBtn.addEventListener('click', async () => {
+      syncBtn.disabled = true;
+      try {
+        await api.triggerSync();
+        navigateTo('sync');
+      } catch (err) {
+        syncBtn.disabled = false;
+      }
+    });
+  }
 }
 
 async function render() {
@@ -59,10 +75,14 @@ async function render() {
   const syncedCount = items.filter(i => i.status === 'synced').length;
   const pendingCount = items.filter(i => i.status === 'pending').length;
 
+  // Attach action handlers after DOM update
+  setTimeout(attachActionHandlers, 0);
+
   return `
     <div class="main__header">
       <h1 class="main__title">Sync</h1>
       <span class="main__subtitle">${syncedCount} SYNCED · ${pendingCount} PENDING</span>
+      <button id="sync-trigger-btn" class="btn--ghost caption" style="margin-left: var(--space-md)">SYNC NOW</button>
     </div>
 
     <div class="grid-3">
@@ -70,17 +90,17 @@ async function render() {
         <div class="card__label">SYNC STATUS</div>
         <div class="stat-row">
           <span class="stat-row__label">PROVIDER</span>
-          <span class="stat-row__value">${provider}</span>
+          <span class="stat-row__value">${escapeHtml(provider)}</span>
         </div>
         <div class="stat-row">
           <span class="stat-row__label">LAST SYNC</span>
-          <span class="stat-row__value" style="color: var(--text-secondary)">${lastSync}</span>
+          <span class="stat-row__value" style="color: var(--text-secondary)">${escapeHtml(lastSync)}</span>
         </div>
         <div class="stat-row">
           <span class="stat-row__label">STATE</span>
           <span class="stat-row__value">
             ${statusDot(state)}
-            ${state.toUpperCase()}
+            ${escapeHtml(state.toUpperCase())}
           </span>
         </div>
       </div>

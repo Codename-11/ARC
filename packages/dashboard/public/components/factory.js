@@ -1,6 +1,7 @@
 // ARC Dashboard — Dark Factory View
 import { api } from '../scripts/api.js';
 import { registerView } from '../scripts/router.js';
+import { escapeHtml } from '../scripts/utils.js';
 
 function statusColor(status) {
   if (status === 'completed') return 'var(--success)';
@@ -17,7 +18,7 @@ function waveCard(wave, index, isCurrent) {
         <span class="label">WAVE ${index + 1}</span>
         ${wave.verifier ? '<span class="tag tag--warning">VERIFIER</span>' : ''}
       </div>
-      <div class="heading" style="margin-bottom: var(--space-sm)">${wave.name}</div>
+      <div class="heading" style="margin-bottom: var(--space-sm)">${escapeHtml(wave.name)}</div>
       <div class="caption">${wave.tasks?.length || 0} task${wave.tasks?.length !== 1 ? 's' : ''}</div>
     </div>`;
 }
@@ -58,9 +59,9 @@ async function render() {
 
   return `
     <div class="main__header">
-      <h1 class="main__title">${data.spec.name || 'Dark Factory'}</h1>
+      <h1 class="main__title">${escapeHtml(data.spec.name || 'Dark Factory')}</h1>
       <span class="main__subtitle">
-        <span style="color: ${statusColor(data.status)}">${(data.status || 'idle').toUpperCase()}</span>
+        <span style="color: ${statusColor(data.status)}">${escapeHtml((data.status || 'idle').toUpperCase())}</span>
         · WAVE ${currentWave + 1} / ${waves.length}
       </span>
     </div>
@@ -82,11 +83,11 @@ async function render() {
       <div class="card__label">CONSENSUS GATE</div>
       <div class="stat-row">
         <span class="stat-row__label">REVIEWER</span>
-        <span class="stat-row__value">${data.spec.consensusGate.reviewerProfile}</span>
+        <span class="stat-row__value">${escapeHtml(data.spec.consensusGate.reviewerProfile)}</span>
       </div>
       <div class="stat-row">
         <span class="stat-row__label">THRESHOLD</span>
-        <span class="stat-row__value">${data.spec.consensusGate.threshold}</span>
+        <span class="stat-row__value">${escapeHtml(String(data.spec.consensusGate.threshold))}</span>
       </div>
     </div>` : ''}`;
 }

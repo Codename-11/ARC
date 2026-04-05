@@ -1,4 +1,5 @@
 // ARC Dashboard — View Router
+import { escapeHtml } from './utils.js';
 
 const views = new Map();
 let activeView = null;
@@ -27,6 +28,9 @@ export async function navigateTo(name) {
   const main = document.getElementById('main-content');
   if (!main) return;
 
+  // Clean up any open modals from the previous view
+  document.querySelectorAll('.modal-overlay').forEach(el => el.remove());
+
   // Update sidebar active state
   document.querySelectorAll('.sidebar__item').forEach(el => {
     el.classList.toggle('sidebar__item--active', el.dataset.view === name);
@@ -34,7 +38,7 @@ export async function navigateTo(name) {
 
   const renderFn = views.get(name);
   if (!renderFn) {
-    main.innerHTML = `<div class="empty"><div class="empty__title">View not found</div><div class="empty__desc">${name}</div></div>`;
+    main.innerHTML = `<div class="empty"><div class="empty__title">View not found</div><div class="empty__desc">${escapeHtml(name)}</div></div>`;
     return;
   }
 
@@ -46,7 +50,7 @@ export async function navigateTo(name) {
     if (activeView === name) main.innerHTML = html;
   } catch (err) {
     if (activeView === name) {
-      main.innerHTML = `<div class="empty"><div class="empty__title">[ERROR]</div><div class="empty__desc">${err.message}</div></div>`;
+      main.innerHTML = `<div class="empty"><div class="empty__title">[ERROR]</div><div class="empty__desc">${escapeHtml(err.message)}</div></div>`;
     }
   }
 }

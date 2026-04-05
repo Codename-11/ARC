@@ -8,6 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import http from "node:http";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -109,16 +110,14 @@ function serveStaticFile(
   publicDir: string,
   pathname: string,
 ): boolean {
-  // Prevent directory traversal.
-  const safePath = path.normalize(pathname).replace(/^(\.\.[/\\])+/, "");
-  let filePath = path.join(publicDir, safePath);
+  let filePath = path.join(publicDir, pathname);
 
   // Default to index.html for directory requests.
   if (filePath.endsWith(path.sep) || filePath === publicDir) {
     filePath = path.join(filePath, "index.html");
   }
 
-  // Ensure resolved path is still within publicDir.
+  // Ensure resolved path is still within publicDir (prevents directory traversal).
   const resolved = path.resolve(filePath);
   if (!resolved.startsWith(path.resolve(publicDir))) {
     return false;
@@ -140,6 +139,12 @@ function serveStaticFile(
 }
 
 // ---------------------------------------------------------------------------
+// Mutation methods that require auth
+// ---------------------------------------------------------------------------
+
+const MUTATION_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+
+// ---------------------------------------------------------------------------
 // Public factory
 // ---------------------------------------------------------------------------
 
@@ -152,6 +157,8 @@ export interface DashboardServer {
   server: http.Server;
   /** The WebSocket server for real-time push. */
   ws: WebSocketServer;
+  /** API bearer token required for mutation endpoints. */
+  token: string;
   /**
    * Start polling stores for changes and broadcasting updates via WebSocket.
    * Returns a cleanup function that stops the polling interval.
@@ -165,20 +172,32 @@ export function createDashboardServer(
 ): DashboardServer {
   const port = options?.port ?? 3700;
   const host = options?.host ?? "localhost";
-  const corsOrigin = options?.corsOrigin ?? "*";
+  const corsOrigin = options?.corsOrigin ?? `http://localhost:${port}`;
   const publicDir = options?.publicDir ?? path.join(
     path.dirname(fileURLToPath(import.meta.url)),
     "..",
     "public",
   );
 
+  // Generate a random API token for mutation endpoint authentication.
+  const token = crypto.randomBytes(32).toString("hex");
+
   const ctx: DashboardContext = context ?? {};
+
+  // ---- WebSocket server ---------------------------------------------------
+
+  const wsServer = new WebSocketServer();
+
+  // Inject ws reference into context so API handlers can broadcast.
+  ctx.ws = wsServer;
+
   const api = createApiHandlers(ctx);
 
   // ---- Router setup -------------------------------------------------------
 
   const router = new Router();
 
+  // GET routes
   router.add("GET", "/api/profiles", api.profiles);
   router.add("GET", "/api/health", api.health);
   router.add("GET", "/api/overview", api.overview);
@@ -191,9 +210,19 @@ export function createDashboardServer(
   router.add("GET", "/api/agents", api.agents);
   router.add("GET", "/api/factory/:runId", api.factory);
 
-  // ---- WebSocket server ---------------------------------------------------
+  // Auth token endpoint — only accessible from localhost (GET, no auth needed)
+  router.add("GET", "/api/auth/token", (_req, res) => {
+    json(res, { token });
+  });
 
-  const wsServer = new WebSocketServer();
+  // Mutation routes
+  router.add("POST", "/api/profiles/:name/switch", api.switchProfile);
+  router.add("DELETE", "/api/profiles/:name", api.deleteProfile);
+  router.add("POST", "/api/tasks", api.createTask);
+  router.add("PATCH", "/api/tasks/:id", api.updateTask);
+  router.add("POST", "/api/tasks/:id/cancel", api.cancelTask);
+  router.add("POST", "/api/memory", api.addMemory);
+  router.add("POST", "/api/agents", api.addAgent);
 
   // ---- HTTP server --------------------------------------------------------
 
@@ -213,6 +242,17 @@ export function createDashboardServer(
     const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
     const pathname = url.pathname;
     const method = (req.method ?? "GET").toUpperCase();
+
+    // Auth check: mutation endpoints require a valid Bearer token.
+    if (MUTATION_METHODS.has(method) && pathname.startsWith("/api/")) {
+      const authHeader = req.headers["authorization"] ?? "";
+      const expected = `Bearer ${token}`;
+      if (authHeader !== expected) {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Unauthorized — valid Bearer token required" }));
+        return;
+      }
+    }
 
     // Try API routes first.
     const match = router.match(method, pathname);
@@ -273,6 +313,7 @@ export function createDashboardServer(
   return {
     server,
     ws: wsServer,
+    token,
 
     start(): Promise<void> {
       return new Promise((resolve, reject) => {
@@ -321,4 +362,13 @@ export function createDashboardServer(
       return () => clearInterval(timer);
     },
   };
+}
+
+// ---------------------------------------------------------------------------
+// Internal helper — duplicated from api.ts to avoid circular imports.
+// ---------------------------------------------------------------------------
+
+function json(res: http.ServerResponse, data: unknown, status = 200): void {
+  res.writeHead(status, { "Content-Type": "application/json" });
+  res.end(JSON.stringify(data));
 }

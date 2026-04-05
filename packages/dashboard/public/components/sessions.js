@@ -1,12 +1,13 @@
 // ARC Dashboard — Sessions View
 import { api } from '../scripts/api.js';
 import { registerView, navigateTo, setViewParam } from '../scripts/router.js';
+import { escapeHtml } from '../scripts/utils.js';
 
 function statusTag(status) {
   const cls = status === 'active' ? 'tag--active' :
               status === 'completed' ? 'tag--success' :
               status === 'suspended' ? 'tag--warning' : '';
-  return `<span class="tag ${cls}">${status}</span>`;
+  return `<span class="tag ${cls}">${escapeHtml(status)}</span>`;
 }
 
 function timeAgo(iso) {
@@ -20,11 +21,42 @@ function timeAgo(iso) {
 
 function attachRowHandlers() {
   document.querySelectorAll('tr[data-session-id]').forEach(row => {
-    row.addEventListener('click', () => {
+    row.addEventListener('click', (e) => {
+      // Don't navigate when clicking action buttons
+      if (e.target.closest('button')) return;
       const sessionId = row.getAttribute('data-session-id');
       if (!sessionId) return;
       setViewParam('sessionFilter', sessionId);
       navigateTo('traces');
+    });
+  });
+
+  // Action buttons
+  document.querySelectorAll('.session-suspend-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      btn.disabled = true;
+      try {
+        await api.suspendSession(id);
+        navigateTo('sessions');
+      } catch (err) {
+        btn.disabled = false;
+      }
+    });
+  });
+
+  document.querySelectorAll('.session-complete-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      btn.disabled = true;
+      try {
+        await api.completeSession(id);
+        navigateTo('sessions');
+      } catch (err) {
+        btn.disabled = false;
+      }
     });
   });
 }
@@ -49,14 +81,21 @@ async function render() {
       </div>`;
   }
 
-  const rows = sessions.map(s => `
-    <tr data-session-id="${s.id || ''}" style="cursor: pointer">
-      <td>${s.name || s.id?.slice(0, 8) || '—'}</td>
-      <td class="data">${s.profile || '—'}</td>
-      <td>${s.adapter || '—'}</td>
+  const rows = sessions.map(s => {
+    const actions = s.status === 'active'
+      ? `<button class="btn--ghost caption session-suspend-btn" data-id="${escapeHtml(s.id)}">SUSPEND</button>
+         <button class="btn--ghost caption session-complete-btn" data-id="${escapeHtml(s.id)}">COMPLETE</button>`
+      : '';
+    return `
+    <tr data-session-id="${escapeHtml(s.id || '')}" style="cursor: pointer">
+      <td>${escapeHtml(s.name || s.id?.slice(0, 8) || '—')}</td>
+      <td class="data">${escapeHtml(s.profile || '—')}</td>
+      <td>${escapeHtml(s.adapter || '—')}</td>
       <td>${statusTag(s.status)}</td>
-      <td class="data numeric">${timeAgo(s.lastActive)}</td>
-    </tr>`).join('');
+      <td class="data numeric">${escapeHtml(timeAgo(s.lastActive))}</td>
+      <td>${actions}</td>
+    </tr>`;
+  }).join('');
 
   // Attach click handlers after the DOM is updated
   setTimeout(attachRowHandlers, 0);
@@ -68,7 +107,7 @@ async function render() {
     </div>
     <table class="table">
       <thead><tr>
-        <th>Name</th><th>Profile</th><th>Adapter</th><th>Status</th><th>Last Active</th>
+        <th>Name</th><th>Profile</th><th>Adapter</th><th>Status</th><th>Last Active</th><th>Actions</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>`;

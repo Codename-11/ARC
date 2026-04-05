@@ -1,6 +1,7 @@
 // ARC Dashboard — Traces View
 import { api } from '../scripts/api.js';
 import { registerView, navigateTo, getViewParam, clearViewParam } from '../scripts/router.js';
+import { escapeHtml } from '../scripts/utils.js';
 
 /** Module-level session filter — set when navigating from sessions view. */
 let sessionFilter = null;
@@ -8,7 +9,7 @@ let sessionFilter = null;
 function levelTag(level) {
   const cls = level === 'error' ? 'tag--error' :
               level === 'warn' ? 'tag--warning' : '';
-  return `<span class="tag ${cls}">${level}</span>`;
+  return `<span class="tag ${cls}">${escapeHtml(level)}</span>`;
 }
 
 function attachFilterHandlers() {
@@ -24,10 +25,9 @@ function attachFilterHandlers() {
 }
 
 async function render() {
-  // Pick up any session filter passed via router params
-  const paramFilter = getViewParam('sessionFilter');
-  if (paramFilter) {
-    sessionFilter = paramFilter;
+  // Reset sessionFilter to current view param on every render (fix #6)
+  sessionFilter = getViewParam('sessionFilter') || null;
+  if (sessionFilter) {
     clearViewParam('sessionFilter');
   }
 
@@ -40,7 +40,7 @@ async function render() {
 
   const filterBanner = sessionFilter
     ? `<div style="margin-bottom: 12px; color: var(--text-secondary)">
-         Filtered by session <span class="data" style="color: var(--text-primary)">${sessionFilter.slice(0, 8)}</span>
+         Filtered by session <span class="data" style="color: var(--text-primary)">${escapeHtml(sessionFilter.slice(0, 8))}</span>
          &nbsp;<a id="traces-clear-filter" href="#" style="color: var(--accent); text-decoration: underline; cursor: pointer">clear filter</a>
        </div>`
     : '';
@@ -63,12 +63,12 @@ async function render() {
 
   const rows = traces.map(t => `
     <tr>
-      <td class="data numeric" style="color: var(--text-disabled)">${new Date(t.timestamp).toLocaleTimeString()}</td>
+      <td class="data numeric" style="color: var(--text-disabled)">${escapeHtml(new Date(t.timestamp).toLocaleTimeString())}</td>
       <td>${levelTag(t.level)}</td>
-      <td class="data">${t.component || '—'}</td>
-      <td>${t.action || '—'}</td>
-      <td style="color: var(--text-secondary)">${t.detail || t.message || '—'}</td>
-      <td class="data">${t.profile || '—'}</td>
+      <td class="data">${escapeHtml(t.component || '—')}</td>
+      <td>${escapeHtml(t.action || '—')}</td>
+      <td style="color: var(--text-secondary)">${escapeHtml(t.detail || t.message || '—')}</td>
+      <td class="data">${escapeHtml(t.profile || '—')}</td>
     </tr>`).join('');
 
   return `

@@ -1,6 +1,7 @@
 // ARC Dashboard — Risk Distribution View
 import { api } from '../scripts/api.js';
 import { registerView } from '../scripts/router.js';
+import { escapeHtml } from '../scripts/utils.js';
 
 function riskBar(tier, count, max) {
   const pct = max > 0 ? (count / max) * 100 : 0;
@@ -12,7 +13,7 @@ function riskBar(tier, count, max) {
   return `
     <div style="margin-bottom: var(--space-md)">
       <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-xs)">
-        <span class="label">${tier}</span>
+        <span class="label">${escapeHtml(tier)}</span>
         <span class="data caption">${count}</span>
       </div>
       <div style="height: 8px; background: var(--border); width: 100%">
@@ -54,7 +55,7 @@ async function render() {
         <div style="margin-top: var(--space-lg)">
           <div class="stat-row">
             <span class="stat-row__label">HIGHEST TIER</span>
-            <span class="stat-row__value${counts.find(c => c.tier === 'destructive')?.count ? ' stat-row__value--error' : ''}">${counts.filter(c => c.count > 0).pop()?.tier?.toUpperCase() || 'NONE'}</span>
+            <span class="stat-row__value${counts.find(c => c.tier === 'destructive')?.count ? ' stat-row__value--error' : ''}">${escapeHtml(counts.filter(c => c.count > 0).pop()?.tier?.toUpperCase() || 'NONE')}</span>
           </div>
         </div>
       </div>

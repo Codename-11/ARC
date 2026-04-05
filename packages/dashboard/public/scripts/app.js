@@ -48,6 +48,7 @@ ws.on('disconnected', () => {
 
 // Refresh active view on real-time updates
 ws.on('update', () => {
+  if (document.querySelector('.modal-overlay')) return; // Don't destroy modal state
   const view = getActiveView();
   if (view) navigateTo(view);
 });

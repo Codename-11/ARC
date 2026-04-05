@@ -1,6 +1,7 @@
 // ARC Dashboard — Profiles View
 import { api } from '../scripts/api.js';
-import { registerView } from '../scripts/router.js';
+import { registerView, navigateTo } from '../scripts/router.js';
+import { escapeHtml } from '../scripts/utils.js';
 
 const TOOL_LABELS = {
   claude: 'Claude Code',
@@ -14,7 +15,7 @@ function toolLabel(tool) {
 
 function authTag(authType) {
   const label = (authType || 'unknown').toUpperCase();
-  return `<span class="tag">${label}</span>`;
+  return `<span class="tag">${escapeHtml(label)}</span>`;
 }
 
 function activeDot(isActive) {
@@ -30,7 +31,7 @@ function profileCard(profile) {
   return `
     <div class="card" style="${borderStyle}">
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md)">
-        <div class="card__label">${profile.name}</div>
+        <div class="card__label">${escapeHtml(profile.name)}</div>
         <div class="phase">
           ${activeDot(profile.active)}
           <span class="phase__text">${profile.active ? 'ACTIVE' : 'IDLE'}</span>
@@ -38,7 +39,7 @@ function profileCard(profile) {
       </div>
       <div class="stat-row">
         <span class="stat-row__label">TOOL</span>
-        <span class="stat-row__value">${toolLabel(profile.tool)}</span>
+        <span class="stat-row__value">${escapeHtml(toolLabel(profile.tool))}</span>
       </div>
       <div class="stat-row">
         <span class="stat-row__label">AUTH</span>
@@ -51,11 +52,43 @@ function profileCard(profile) {
       ${profile.inherits ? `
       <div class="stat-row">
         <span class="stat-row__label">INHERITS</span>
-        <span class="stat-row__value" style="color: var(--text-secondary)">${profile.inherits}</span>
+        <span class="stat-row__value" style="color: var(--text-secondary)">${escapeHtml(profile.inherits)}</span>
       </div>` : ''}
-      ${profile.description ? `<div class="card__meta">${profile.description}</div>` : ''}
-      ${profile.createdAt ? `<div class="card__meta">Created: ${new Date(profile.createdAt).toLocaleDateString()}</div>` : ''}
+      ${profile.description ? `<div class="card__meta">${escapeHtml(profile.description)}</div>` : ''}
+      ${profile.createdAt ? `<div class="card__meta">Created: ${escapeHtml(new Date(profile.createdAt).toLocaleDateString())}</div>` : ''}
+      <div style="margin-top: var(--space-sm); display: flex; gap: var(--space-xs)">
+        ${!profile.active ? `<button class="btn--ghost caption profile-switch-btn" data-name="${escapeHtml(profile.name)}">SWITCH</button>` : ''}
+        <button class="btn--ghost caption profile-delete-btn" data-name="${escapeHtml(profile.name)}">DELETE</button>
+      </div>
     </div>`;
+}
+
+function attachActionHandlers() {
+  document.querySelectorAll('.profile-switch-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const name = btn.dataset.name;
+      btn.disabled = true;
+      try {
+        await api.switchProfile(name);
+        navigateTo('profiles');
+      } catch (err) {
+        btn.disabled = false;
+      }
+    });
+  });
+
+  document.querySelectorAll('.profile-delete-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const name = btn.dataset.name;
+      btn.disabled = true;
+      try {
+        await api.deleteProfile(name);
+        navigateTo('profiles');
+      } catch (err) {
+        btn.disabled = false;
+      }
+    });
+  });
 }
 
 async function render() {
@@ -85,8 +118,11 @@ async function render() {
     return acc;
   }, {});
   const toolSummary = Object.entries(toolCounts)
-    .map(([tool, count]) => `${count} ${tool}`)
+    .map(([tool, count]) => `${count} ${escapeHtml(tool)}`)
     .join(' · ');
+
+  // Attach action handlers after DOM update
+  setTimeout(attachActionHandlers, 0);
 
   return `
     <div class="main__header">

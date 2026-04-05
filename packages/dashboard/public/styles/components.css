@@ -311,3 +311,213 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
 }
+
+/* ── Modal Overlay ── */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn var(--duration-micro) var(--ease);
+}
+
+.modal {
+  width: 90%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.modal__title {
+  font-family: var(--font-body);
+  font-size: var(--subheading);
+  font-weight: 400;
+  color: var(--text-display);
+  margin-bottom: var(--space-lg);
+}
+
+.modal__actions {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: flex-end;
+  margin-top: var(--space-lg);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── Form Controls ── */
+
+.form-group {
+  margin-bottom: var(--space-md);
+}
+
+.form-label {
+  display: block;
+  font-family: var(--font-data);
+  font-size: var(--label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xs);
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--black);
+  border: 1px solid var(--border-visible);
+  border-radius: var(--radius-technical);
+  font-family: var(--font-data);
+  font-size: var(--body-sm);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--duration-micro) var(--ease);
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  border-color: var(--text-display);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--text-disabled);
+}
+
+.form-select {
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-sm) center;
+  padding-right: var(--space-xl);
+}
+
+.form-select option {
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.form-textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* ── Inline Button (small, for table rows) ── */
+
+.btn--sm {
+  padding: var(--space-xs) var(--space-sm);
+  min-height: auto;
+  font-size: var(--caption);
+}
+
+.btn--inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xs) var(--space-sm);
+  min-height: auto;
+  font-family: var(--font-data);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: 1px solid var(--border-visible);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-secondary);
+  transition: all var(--duration-micro) var(--ease);
+}
+
+.btn--inline:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+.btn--inline-danger {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn--inline-danger:hover {
+  background: var(--accent-subtle);
+}
+
+.btn--inline-success {
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.btn--inline-success:hover {
+  background: rgba(74, 158, 92, 0.15);
+}
+
+/* ── Action Bar (toolbar above tables) ── */
+
+.action-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+.action-bar__spacer {
+  flex: 1;
+}
+
+/* ── Inline Message ── */
+
+.inline-msg {
+  font-family: var(--font-data);
+  font-size: var(--caption);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-technical);
+  margin-bottom: var(--space-md);
+}
+
+.inline-msg--error {
+  color: var(--accent);
+  background: var(--accent-subtle);
+  border: 1px solid var(--accent);
+}
+
+.inline-msg--success {
+  color: var(--success);
+  background: rgba(74, 158, 92, 0.15);
+  border: 1px solid var(--success);
+}
+
+/* ── Confirm Dialog ── */
+
+.confirm-text {
+  font-family: var(--font-body);
+  font-size: var(--body-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+}
+
+/* ── Filter Row ── */
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.filter-row .form-select,
+.filter-row .form-input {
+  width: auto;
+  min-width: 140px;
+}

@@ -1,11 +1,12 @@
 // ARC Dashboard — Skills View
 import { api } from '../scripts/api.js';
-import { registerView } from '../scripts/router.js';
+import { registerView, navigateTo } from '../scripts/router.js';
+import { escapeHtml } from '../scripts/utils.js';
 
 function sourceTag(src) {
   const cls = src === 'generated' ? 'tag--active' :
               src === 'mcp' ? 'tag--warning' : '';
-  return `<span class="tag ${cls}">${src}</span>`;
+  return `<span class="tag ${cls}">${escapeHtml(src)}</span>`;
 }
 
 function successBar(rate) {
@@ -17,6 +18,21 @@ function successBar(rate) {
     bars.push(`<div class="progress-bar__segment ${i < filled ? `progress-bar__segment--${status}` : ''}"></div>`);
   }
   return `<div class="progress-bar" style="width: 80px">${bars.join('')}</div>`;
+}
+
+function attachActionHandlers() {
+  document.querySelectorAll('.skill-remove-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const name = btn.dataset.name;
+      btn.disabled = true;
+      try {
+        await api.removeSkill(name);
+        navigateTo('skills');
+      } catch (err) {
+        btn.disabled = false;
+      }
+    });
+  });
 }
 
 async function render() {
@@ -41,12 +57,16 @@ async function render() {
 
   const rows = skills.map(s => `
     <tr>
-      <td class="data">${s.name}</td>
-      <td style="color: var(--text-secondary)">${s.description || '—'}</td>
+      <td class="data">${escapeHtml(s.name)}</td>
+      <td style="color: var(--text-secondary)">${escapeHtml(s.description || '—')}</td>
       <td>${sourceTag(s.source || 'user')}</td>
       <td>${s.tools?.length || 0}</td>
       <td>${successBar(s.successRate ?? 1)}</td>
+      <td><button class="btn--ghost caption skill-remove-btn" data-name="${escapeHtml(s.name)}">REMOVE</button></td>
     </tr>`).join('');
+
+  // Attach action handlers after DOM update
+  setTimeout(attachActionHandlers, 0);
 
   return `
     <div class="main__header">
@@ -55,7 +75,7 @@ async function render() {
     </div>
     <table class="table">
       <thead><tr>
-        <th>Name</th><th>Description</th><th>Source</th><th>Tools</th><th>Success Rate</th>
+        <th>Name</th><th>Description</th><th>Source</th><th>Tools</th><th>Success Rate</th><th>Actions</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>`;

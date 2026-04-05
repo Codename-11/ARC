@@ -10,6 +10,7 @@ import type {
   RemoteAgentRegistry,
   FactoryController,
 } from "@axiom-labs/arc-core";
+import type { WebSocketServer } from "./ws.js";
 
 // ---------------------------------------------------------------------------
 // Server options
@@ -22,7 +23,7 @@ export interface DashboardOptions {
   host: string;
   /** Directory for static file serving. */
   publicDir?: string;
-  /** CORS Access-Control-Allow-Origin value. Default: '*' (dev-friendly). */
+  /** CORS Access-Control-Allow-Origin value. Default: `http://localhost:<port>`. */
   corsOrigin?: string;
 }
 
@@ -37,6 +38,8 @@ export interface DashboardContext {
   memory?: PersistentMemory;
   remoteAgents?: RemoteAgentRegistry;
   factory?: FactoryController;
+  /** WebSocket server reference — injected by createDashboardServer. */
+  ws?: WebSocketServer;
 }
 
 // ---------------------------------------------------------------------------
