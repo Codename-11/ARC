@@ -8,6 +8,16 @@ import {
 import { resolveProfile, loadConfig } from "@axiom-labs/arc-core";
 import type { ArcConfig, Profile } from "@axiom-labs/arc-core";
 
+// Mock auth module so launch.ts's buildProfileEnv doesn't depend on
+// adapter wiring that may differ across ESM module boundaries on Linux.
+vi.mock("../../packages/cli/src/auth.js", async (importOriginal) => {
+  const actual = (await importOriginal()) as Record<string, unknown>;
+  return {
+    ...actual,
+    buildProfileEnv: vi.fn(async () => ({ CLAUDE_CONFIG_DIR: "/tmp/test" })),
+  };
+});
+
 let arcDir: string;
 let cleanup: () => void;
 let originalArcDir: string | undefined;
@@ -208,12 +218,6 @@ describe("Profile Inheritance – Launch Pipeline", () => {
     // Mock findBinary to return true so launch doesn't fail on missing binary
     const launchModule = await import("../../packages/cli/src/commands/launch.js");
     vi.spyOn(launchModule, "findBinary").mockReturnValue(true);
-
-    // Mock buildProfileEnv from auth.js so it doesn't depend on adapter wiring
-    const authModule = await import("../../packages/cli/src/auth.js");
-    vi.spyOn(authModule, "buildProfileEnv").mockResolvedValue({
-      CLAUDE_CONFIG_DIR: "/tmp/test",
-    });
 
     // Mock the adapter to capture the profile that gets passed to launch()
     const adapterModule = await import("../../packages/cli/src/adapters/index.js");
