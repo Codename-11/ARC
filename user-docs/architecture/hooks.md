@@ -42,20 +42,39 @@ The pipeline:
 4. Optionally runs `inject()` for context enrichment
 5. Writes a trace entry for every hook evaluation
 
+```mermaid
+graph LR
+    A[Message In] --> B[Source Classify]
+    B --> C[Interagent Routing]
+    C --> D[Risk Detection]
+    D --> E[Attempt Tracker]
+    E --> F[Roundtable]
+    F --> G[Agent Executes]
+    G --> H[Audit Score]
+    H --> I[Supervision Gate]
+    I --> J[Post Verify]
+    J --> K[Trace Written]
+```
+
 ## Built-In Hooks
 
-| Priority | Hook | Description |
-|----------|------|-------------|
-| 1 | **Source Classifier** | Deterministic message source detection (human/agent/system/cron) |
-| 2 | **Interagent Routing** | Suppress bot-to-bot loops in multi-agent setups |
-| 5 | **Watchdog Pause** | Auto-pause before destructive operations |
-| 10 | **Risk Detection** | 5-tier keyword-based risk classification |
-| 15 | **Subagent Inject** | Inject rules into subagent prompts |
-| 20 | **Attempt Tracker** | Session + turn scoped retry counting |
-| 50 | **Roundtable** | Multi-agent orchestration advancement |
-| 85 | **Memory Sync** | Sync memories on session end |
-| 90 | **Audit Score** | Completion audit (LLM-enhanced, log-only default) |
-| 95 | **Post-Verify** | Gateway/service health checks with exponential backoff |
+| Priority | Hook | Description | Status |
+|----------|------|-------------|--------|
+| 1 | **Source Classifier** | Deterministic message source detection (human/agent/system/cron) | Default pipeline |
+| 2 | **Interagent Routing** | Suppress bot-to-bot loops, roundtable-aware | Default pipeline |
+| 10 | **Risk Detection** | 5-tier keyword-based risk classification | Default pipeline |
+| 20 | **Attempt Tracker** | Session + turn scoped retry counting | Default pipeline |
+| 50 | **Roundtable** | [Multi-agent discussion](/features/orchestration#roundtable-discussions) orchestration | Default pipeline |
+| 90 | **Audit Score** | Completion audit (deterministic, log-only default) | Default pipeline |
+| 92 | **Supervision Gate** | ALLOW/BLOCK review of substantive output | Default pipeline |
+| 95 | **Post-Verify** | Gateway/service health checks with exponential backoff | Default pipeline |
+| 5 | **Watchdog Pause** | Auto-pause before destructive operations | Spec only |
+| 15 | **Subagent Inject** | Inject rules into subagent prompts | Spec only |
+| 85 | **Memory Sync** | Sync memories on session end | Spec only |
+
+::: info
+Hooks marked "Spec only" are defined in the [v2.0 spec](/architecture/) but not yet implemented in the default pipeline. They can be added as custom hooks when needed.
+:::
 
 ## Risk Classification
 
@@ -146,3 +165,118 @@ hookBus.register({
 ```
 
 Custom hooks participate in the same pipeline as built-in hooks and produce the same trace entries.
+
+## Roundtable Multi-Agent Discussions
+
+The roundtable hook (priority 50) orchestrates structured multi-agent discussions. When a trigger phrase is detected, the hook initializes a discussion session with turn management, mode assignment, and round tracking.
+
+The interagent-routing hook (priority 2) is roundtable-aware — it allows agent messages through without `@mention` when a roundtable is active, preventing the bot→bot suppression from blocking discussion turns.
+
+### Trigger Phrases
+
+Any of these in a message starts a new roundtable:
+
+- `let's discuss ...`
+- `roundtable: ...`
+- `@roundtable ...`
+- `debate this ...`
+
+### Configuration
+
+Triggers can include inline configuration:
+
+```
+roundtable: Should we refactor the auth layer? agents: claude, gemini, codex rounds: 3
+```
+
+If agents or rounds aren't specified, the hook falls back to configured defaults (2 rounds, current adapter). Duplicate agent names are automatically deduplicated.
+
+### Agent Modes
+
+The first two agents are assigned contrasting roles:
+
+| Agent | Mode |
+|-------|------|
+| First | **advocate** — argues in favor |
+| Second | **critic** — argues against |
+| Others | **neutral** — balanced perspective |
+
+### Discussion Lifecycle
+
+```
+Trigger detected → active (agents take turns per round)
+    → all rounds complete → synthesizing (summary phase)
+    → synthesis message arrives → complete
+```
+
+In `enforce` mode, out-of-turn messages are blocked. In `log`/`advise` modes, out-of-turn messages are allowed but recorded separately — the turn index is not advanced, so the expected agent still gets their turn.
+
+### Metadata Injection
+
+While active, the roundtable hook injects metadata for downstream hooks and adapters:
+
+| Key | Description |
+|-----|-------------|
+| `roundtable` | `true` when a discussion is active |
+| `roundtableId` | Unique session identifier |
+| `currentAgent` | Which agent should speak next |
+| `currentRound` | Current round number |
+| `mode` | The current agent's assigned mode |
+
+## Task Delegation
+
+ARC includes a first-class task delegation protocol (`TaskDelegator`) that enables agent-to-agent work handoff with validated status transitions:
+
+```
+Agent A delegates → Task created + assigned → Handoff message sent
+Agent B accepts → Task working → Completes with output
+Agent A notified → Reads result
+```
+
+### Delegation Flow
+
+```typescript
+const delegator = new TaskDelegator(taskStore, messageBus);
+
+// Agent A delegates to Agent B
+const { task } = await delegator.delegate({
+  from: 'claude-work',
+  to: 'codex-review',
+  description: 'Review auth refactor PR',
+  priority: 'high',
+  onComplete: (task) => console.log('Done:', task.output),
+  listenerTimeoutMs: 300_000, // 5 min TTL on listener
+});
+
+// Agent B accepts and completes
+await delegator.accept(task.id, 'codex-review');
+await delegator.complete(task.id, 'codex-review', 'LGTM — no issues found');
+```
+
+### Input Requests
+
+When a task needs more information:
+
+```typescript
+// Assignee requests input
+await delegator.requestInput(task.id, 'codex-review', 'Which files should I focus on?');
+
+// Delegator provides it (transitions input-required → working)
+await delegator.provideInput(task.id, 'claude-work', 'Focus on src/auth/ directory');
+```
+
+### Status Transitions
+
+Tasks follow a validated state machine — invalid transitions throw errors:
+
+```
+created → assigned → working → completed | failed
+                       ↕
+                  input-required
+```
+
+### Guards
+
+- **Self-delegation** is blocked (`from === to` throws)
+- **Listener TTL** prevents memory leaks from tasks that never complete
+- **`dispose()`** cleans up all active listeners when the delegator is destroyed

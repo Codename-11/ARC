@@ -20,6 +20,7 @@ ARC implements all 25 phases of the v2.0 specification. This section covers the 
 | [Plugins](/features/plugins) | Stable | `arc plugins` | -- | -- |
 | [Remote Agents](/features/remote) | Stable | `arc remote` | -- | API |
 | [Shared Layer](/features/sync#shared-layer) | Stable | `arc shared` | Settings | -- |
+| [Multi-Agent Orchestration](/features/orchestration) | Stable | hooks + tasks | -- | -- |
 | [Credential Swap](/features/swap) | Experimental | `arc swap` | Overlay | -- |
 
 ## Architecture Layers

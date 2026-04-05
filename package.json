@@ -12,6 +12,7 @@
     "scripts"
   ],
   "scripts": {
+    "help": "node scripts/help.js",
     "build": "tsup",
     "predev": "node scripts/kill-stale.js tsx",
     "dev": "tsx src/index.ts",
@@ -36,7 +37,6 @@
     "link:global:npm": "npm run build && npm link",
     "install:local": "node scripts/install-local.js",
     "uninstall:local": "node scripts/uninstall-local.js",
-    "setup:local-bin": "npm run build && node scripts/setup-local-bin.js",
     "bootstrap:windows": "powershell -ExecutionPolicy Bypass -File scripts/bootstrap.ps1",
     "bootstrap:unix": "bash scripts/bootstrap.sh",
     "unlink:global": "pnpm unlink --global",
@@ -104,10 +104,12 @@
     "@types/react": "^19.2.14",
     "concurrently": "^9.2.1",
     "ink-testing-library": "^4.0.0",
+    "mermaid": "^11.14.0",
     "tsup": "^8",
     "tsx": "^4",
     "typescript": "^6.0",
     "vitepress": "^1.6.4",
+    "vitepress-plugin-mermaid": "^2.0.17",
     "vitest": "^4.1.2"
   },
   "optionalDependencies": {

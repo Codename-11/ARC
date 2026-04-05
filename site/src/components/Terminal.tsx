@@ -5,21 +5,25 @@ interface Line {
   text: string;
   delay: number;
   accent?: boolean;
+  dim?: boolean;
+  label?: boolean;
 }
 
 const LINES: Line[] = [
   { prompt: true, text: "arc dashboard", delay: 0 },
   { text: "", delay: 400 },
-  { text: `  ARC v${__ARC_VERSION__} — Agent Runtime Control`, delay: 600, accent: true },
-  { text: "", delay: 700 },
-  { text: "  ┌── Profiles ──────────────────────────┐", delay: 800 },
-  { text: "  │ ● claude-main   Claude Code [active]  │", delay: 900 },
-  { text: "  │ ○ gemini-dev    Gemini CLI             │", delay: 1000 },
-  { text: "  │ ○ codex-review  Codex CLI              │", delay: 1100 },
-  { text: "  └──────────────────────────────────────┘", delay: 1200 },
-  { text: "", delay: 1300 },
-  { text: "  [HOOKS] 3 active  [TASKS] 2 pending  [MEM] 847", delay: 1400 },
-  { text: "  [SESSIONS] 1 running  [SYNC] up to date", delay: 1550 },
+  { text: `  ARC v${__ARC_VERSION__}`, accent: true, delay: 600 },
+  { text: "  Agent Runtime Control", dim: true, delay: 750 },
+  { text: "", delay: 850 },
+  { label: true, text: "  PROFILES", delay: 950 },
+  { text: "    \u25CF claude-main    Claude Code    active", delay: 1050 },
+  { text: "    \u25CB gemini-dev     Gemini CLI", dim: true, delay: 1150 },
+  { text: "    \u25CB codex-review   Codex CLI", dim: true, delay: 1250 },
+  { text: "", delay: 1350 },
+  { label: true, text: "  STATUS", delay: 1450 },
+  { text: "    Hooks     8 active     Tasks    2 pending", delay: 1550 },
+  { text: "    Memory    847 entries   Sessions 1 running", delay: 1650 },
+  { text: "    Sync      up to date   Factory  idle", delay: 1750 },
 ];
 
 export default function Terminal() {
@@ -85,7 +89,11 @@ export default function Terminal() {
                     className={
                       line.accent
                         ? "text-(--color-accent)"
-                        : "text-(--color-text-primary)"
+                        : line.label
+                          ? "text-(--color-text-disabled) text-[11px] tracking-widest"
+                          : line.dim
+                            ? "text-(--color-text-secondary)"
+                            : "text-(--color-text-primary)"
                     }
                   >
                     {line.text}

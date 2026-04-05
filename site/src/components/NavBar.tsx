@@ -26,6 +26,7 @@ export default function NavBar() {
           <span className="font-mono-label text-sm text-(--color-text-display) tracking-widest">
             ARC
           </span>
+          <span className="cursor-blink text-(--color-accent) text-sm leading-none" aria-hidden="true">▊</span>
         </a>
 
         {/* Desktop nav */}

@@ -75,6 +75,24 @@ messageBus.send({
 
 This enables coordination patterns in multi-agent setups, particularly in [Dark Factory](/features/factory) mode.
 
+## Task Delegation
+
+For structured agent-to-agent work handoff, ARC provides the `TaskDelegator` — a higher-level protocol on top of tasks and messaging. One agent creates a task, assigns it to another, and gets notified when it's done.
+
+```typescript
+await delegator.delegate({
+  from: 'claude-work',
+  to: 'codex-review',
+  description: 'Review the auth refactor PR',
+  priority: 'high',
+  onComplete: (task) => console.log('Done:', task.output),
+});
+```
+
+Delegation includes status transition validation, input request/response flow, self-delegation guards, and automatic listener cleanup.
+
+See [Multi-Agent Orchestration](/features/orchestration#task-delegation) for the full guide with use cases.
+
 ## Storage
 
 Tasks are stored in `~/.arc/tasks/tasks.json` as a flat JSON array. Each task has a unique ID, creation timestamp, and update timestamp.

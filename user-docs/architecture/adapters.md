@@ -34,16 +34,16 @@ interface RuntimeAdapter {
 
 ## Capability Matrix
 
-| Capability | Claude Code | Codex CLI | Gemini CLI | OpenClaw | Generic |
-|------------|:-----------:|:---------:|:----------:|:--------:|:-------:|
-| **Hooks** | Yes | -- | -- | Yes | -- |
-| **SDK Control** | Yes | -- | -- | -- | -- |
-| **Plugin System** | Yes | -- | -- | -- | -- |
-| **MCP Support** | Yes | Yes | Yes | -- | Yes |
-| **JSON Output** | Yes | Yes | -- | -- | -- |
-| **Sandboxing** | -- | Yes | -- | -- | -- |
-| **Process Wrap** | Yes | Yes | Yes | Yes | Yes |
-| **Remote Support** | -- | -- | -- | -- | Yes |
+| Capability | Claude Code | Codex CLI | Gemini CLI | OpenClaw | Hermes | Generic |
+|------------|:-----------:|:---------:|:----------:|:--------:|:------:|:-------:|
+| **Hooks** | Yes | -- | -- | Yes | -- | -- |
+| **SDK Control** | Yes | -- | -- | -- | -- | -- |
+| **Plugin System** | Yes | -- | -- | Yes | -- | -- |
+| **MCP Support** | Yes | Yes | Yes | -- | Yes | Yes |
+| **JSON Output** | Yes | Yes | -- | -- | -- | -- |
+| **Sandboxing** | -- | Yes | -- | -- | -- | -- |
+| **Process Wrap** | Yes | Yes | Yes | -- | Yes | Yes |
+| **Remote Support** | -- | -- | -- | -- | Yes | Yes |
 
 ## Claude Code Adapter <Badge type="tip" text="deepest integration" />
 
@@ -133,16 +133,47 @@ Process wrapper with stdio capture:
 - stdio stream capture for monitoring
 - MCP server connection for tool integration
 
-## OpenClaw Adapter
+## OpenClaw Adapter <Badge type="tip" text="native plugin" />
 
-Native plugin integration:
+Unlike other adapters, OpenClaw runs ARC as a **native plugin** inside the Gateway process — no subprocess wrapping. The adapter registers directly with OpenClaw's lifecycle bus via `jiti` dynamic loading.
 
 **Integration points:**
 
-- `openclaw.plugin.json` manifest
-- Three lifecycle hooks via the hook bus
-- Chat middleware injection
-- Session bridge for state synchronization
+- `openclaw.plugin.json` — plugin manifest with config schema (`profileName`, `enforcementMode`)
+- **Three lifecycle hooks** registered on the bus:
+  - `before_prompt_build` — runs pre-message pipeline, injects `[ARC]` metadata lines into system prompt
+  - `agent_end` — runs post-message pipeline, audit check, retry signal on low confidence
+  - `session_end` — clears ephemeral hook state
+- **Five supervision tools** registered as optional agent tools (`arc_expand_intent`, `arc_classify_risk`, `arc_derive_completion`, `arc_audit_completion`, `arc_explain_trace`)
+- **No process lifecycle** — `launch()` throws (Gateway manages its own lifecycle), `terminate()` is a no-op
+- **Auth** — uses upstream provider credentials (Anthropic, OpenAI, etc.), not its own
+
+Since OpenClaw Gateway bridges 23+ messaging channels, ARC's full hook pipeline applies uniformly to messages from Telegram, Discord, Slack, WhatsApp, and all other connected channels.
+
+::: tip
+See the [OpenClaw integration guide](/guide/openclaw) for setup instructions and use cases.
+:::
+
+## Hermes Agent Adapter
+
+Process wrapper with MCP bridge integration. Hermes is a Python-based agent framework by Nous Research with persistent memory, self-improving skills, and a multi-channel gateway.
+
+**Integration points:**
+
+- **Process wrap** — ARC spawns `hermes` CLI with profile-specific environment
+- **MCP bridge (bidirectional):**
+  - ARC as MCP server → Hermes consumes supervision tools via `mcp_servers` config
+  - Hermes as MCP server (`hermes mcp serve`) → ARC profiles access conversations and approvals
+- **Profile mapping** — ARC profiles map to `~/.hermes/profiles/<name>/` directories
+- **Context file compatibility** — Hermes reads `CLAUDE.md` (priority 3), so ARC's shared layer sync works automatically
+- **Auth** — API keys via `~/.hermes/.env` or ARC secret management
+- **Terminal backends** — local, Docker (sandboxed), SSH, Modal, Daytona
+
+Hermes' persistent memory (SQLite FTS5 + Honcho dialectic modeling) complements ARC's cross-profile shared memory, giving deep per-agent recall alongside broad cross-agent context.
+
+::: tip
+See the [Hermes Agent integration guide](/guide/hermes) for setup instructions and use cases.
+:::
 
 ## Generic Adapter
 

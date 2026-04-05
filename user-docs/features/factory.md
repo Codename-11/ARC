@@ -42,6 +42,21 @@ idle → planning → executing → verifying → gating → completed
 | `gating` | Consensus gate — all verifiers must agree to proceed |
 | `completed` | All waves finished successfully |
 
+```mermaid
+stateDiagram-v2
+    [*] --> idle
+    idle --> planning: Start
+    planning --> executing: Plan ready
+    executing --> verifying: Wave done
+    verifying --> gating: Verified
+    gating --> executing: Next wave
+    gating --> completed: All waves done
+    executing --> failed: Error
+    planning --> failed: Error
+    verifying --> failed: Error
+    executing --> aborted: User abort
+```
+
 ## Wave Model
 
 Tasks within a wave run in parallel. The consensus gate at the end of each wave ensures all verifiers agree before advancing to the next wave.
@@ -93,6 +108,8 @@ arc factory abort
 ```
 
 Halts execution at the next consensus gate. Tasks already running will complete, but no new tasks will start. The factory state transitions to `idle`.
+
+Dark Factory builds on ARC's [multi-agent orchestration](/features/orchestration) primitives — task delegation assigns work to agents, and roundtable-style reviews can serve as consensus gates.
 
 ## Use Cases
 

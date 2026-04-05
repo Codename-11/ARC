@@ -10,7 +10,7 @@ arc remote add build-box ssh://ci@10.0.1.50 --transport ssh --profile worker
 arc remote add mcp-relay mcp://relay.local:9090 --transport mcp
 ```
 
-Each agent gets a unique ID, and you can optionally bind it to an ARC profile.
+Each agent gets a unique ID, and you can optionally bind it to an ARC profile. Remote agents can also be targets for [task delegation](/features/orchestration#task-delegation).
 
 ## Listing Remote Agents
 

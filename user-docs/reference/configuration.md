@@ -92,6 +92,8 @@ The central configuration file. Contains the profile registry, active profile, a
 | `useSharedMemory` | `boolean?` | Whether `memory/` is linked to `shared/memory/` |
 | `useSharedProjects` | `boolean?` | Whether `projects/` is linked to `shared/projects/` |
 | `launchArgs` | `string[]?` | Default flags passed to the agent tool on every launch |
+| `enforcement` | `"off" \| "log" \| "advise" \| "enforce"?` | Hook enforcement mode for this profile. Defaults to `"log"`. See [Hooks & Supervision](/features/hooks) |
+| `hooks` | `object?` | Per-hook config overrides (`{ "hook-name": { enabled, timeout } }`). See [Hook Configuration](/features/hooks#configuring-hooks-per-profile) |
 
 ## arc.json
 

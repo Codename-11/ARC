@@ -33,6 +33,7 @@ ARC ships with a default hook pipeline that runs in priority order:
 | 2 | Interagent Routing | Suppresses bot-to-bot message loops |
 | 10 | Risk Detection | Classifies messages into 5 risk tiers |
 | 20 | Attempt Tracker | Counts retries per session and turn |
+| 50 | Roundtable | [Multi-agent discussion](/features/orchestration#roundtable-discussions) orchestration |
 | 90 | Audit Score | Deterministic completion audit on agent output |
 | 92 | Supervision Gate | ALLOW/BLOCK review of substantive output |
 | 95 | Post Verify | Health polling after service operations |

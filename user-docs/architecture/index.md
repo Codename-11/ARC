@@ -38,32 +38,33 @@ ARC is a layered runtime control plane. Each layer has a clear responsibility an
 
 When an agent is launched via `arc launch <profile>`:
 
+```mermaid
+graph TD
+    A[Profile Resolution] --> B{arc.json?}
+    B -->|yes| C[Workspace Override]
+    B -->|no| D[Profile Inheritance]
+    C --> D
+    D --> E[Adapter.launch]
+    E --> F[Source Classifier]
+    F --> G[Hook Pipeline]
+    G --> H{Blocked?}
+    H -->|no| I[Agent Executes]
+    H -->|yes| J[Block + Log]
+    I --> K[Post-Process Hooks]
+    K --> L[Trace Written]
 ```
-[Profile Resolution]         — credentials, env, adapter, flags
-    ↓ (if arc.json found)
-[Workspace Override]         — per-repo profile/adapter auto-selection
-    ↓ (if inherits set)
-[Profile Inheritance]        — base profile merged with overrides
-    ↓
-[Adapter.launch()]           — spawn agent process with correct env
-    ↓
-Message/event arrives from agent
-    ↓
-[Source Classifier]          — human / agent / system / cron
-    ↓
-[Hook Pipeline]              — sequential by priority
-    - check()                — pass / flag / block (deterministic)
-    - inject()               — add structured metadata to context
-    ↓
-[Circuit Breaker]            — 3 consecutive failures → degrade + alert
-    ↓
-[Agent receives context]     — structured metadata, not freeform text
-    ↓
-[Agent responds]
-    ↓
-[Post-Process Hooks]         — memory-sync, post-verify, roundtable
-    ↓
-[Trace Written]              — JSONL + OpenTelemetry span
+
+```mermaid
+graph TB
+    CLI[CLI Commands] --> Core[ARC Core]
+    TUI[TUI Dashboard] --> Core
+    Web[Web Dashboard] --> Core
+    Core --> Profiles[Profile Store]
+    Core --> Hooks[Hook Bus]
+    Core --> Tasks[Task Store]
+    Core --> Memory[Persistent Memory]
+    Core --> Skills[Skill Registry]
+    Core --> Sessions[Session Store]
 ```
 
 ## Design Principles
@@ -94,8 +95,11 @@ Message/event arrives from agent
 
 ### Orchestration Layer
 
-- Hook pipeline with 4-mode enforcement
+- Hook pipeline with 4-mode enforcement (8 hooks in default pipeline)
 - Risk classification (5-tier keyword-based)
+- Interagent routing (bot→bot loop suppression, roundtable-aware)
+- Roundtable multi-agent discussions (trigger detection, turn management, synthesis)
+- Task delegation protocol (delegate/accept/complete/fail with validated transitions)
 - Retry loops with configurable attempt tracking
 - Circuit breaker with auto-degradation
 - Session tracking and context management
