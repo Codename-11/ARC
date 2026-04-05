@@ -19,9 +19,17 @@ const FILES = [
     },
   },
   {
-    path: join(ROOT_DIR, 'src', 'version.ts'),
+    path: join(ROOT_DIR, 'packages', 'cli', 'src', 'version.ts'),
     update: (content, version) =>
       content.replace(/export const VERSION = "[^"]+";/, `export const VERSION = "${version}";`),
+  },
+  {
+    path: join(ROOT_DIR, 'site', 'package.json'),
+    update: (content, version) => {
+      const pkg = JSON.parse(content);
+      pkg.version = version;
+      return JSON.stringify(pkg, null, 2) + '\n';
+    },
   },
 ];
 

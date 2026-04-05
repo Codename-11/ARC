@@ -1,4 +1,10 @@
 import { defineConfig } from 'vitepress';
+import { readFileSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const pkg = JSON.parse(readFileSync(resolve(__dirname, '../../package.json'), 'utf-8'));
 
 export default defineConfig({
   title: 'ARC',
@@ -43,6 +49,7 @@ export default defineConfig({
       { text: 'Reference', link: '/reference/cli' },
       { text: 'FAQ', link: '/guide/faq' },
       { text: 'GitHub', link: 'https://github.com/Codename-11/ARC' },
+      { text: `v${pkg.version}`, link: 'https://www.npmjs.com/package/@axiom-labs/arc-cli' },
     ],
 
     sidebar: {

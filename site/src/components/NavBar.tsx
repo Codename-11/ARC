@@ -23,9 +23,14 @@ export default function NavBar() {
         {/* Logo */}
         <a href="/" className="flex items-center gap-3">
           <img src="/logo.svg" alt="ARC" className="h-6 w-6" />
-          <span className="font-mono-label text-sm text-(--color-text-display) tracking-widest">
-            ARC
-          </span>
+          <div className="flex flex-col leading-tight">
+            <span className="font-mono-label text-sm text-(--color-text-display) tracking-widest">
+              ARC
+            </span>
+            <span className="font-mono-label text-[10px] text-(--color-accent) hidden md:block">
+              Latest: v{__ARC_VERSION__}
+            </span>
+          </div>
           <span className="cursor-blink text-(--color-accent) text-sm leading-none" aria-hidden="true">▊</span>
         </a>
 
