@@ -209,6 +209,12 @@ describe("Profile Inheritance – Launch Pipeline", () => {
     const launchModule = await import("../../packages/cli/src/commands/launch.js");
     vi.spyOn(launchModule, "findBinary").mockReturnValue(true);
 
+    // Mock buildProfileEnv from auth.js so it doesn't depend on adapter wiring
+    const authModule = await import("../../packages/cli/src/auth.js");
+    vi.spyOn(authModule, "buildProfileEnv").mockResolvedValue({
+      CLAUDE_CONFIG_DIR: "/tmp/test",
+    });
+
     // Mock the adapter to capture the profile that gets passed to launch()
     const adapterModule = await import("../../packages/cli/src/adapters/index.js");
     let capturedProfile: Profile | null = null;

@@ -139,11 +139,13 @@ describe("SessionStore", () => {
       expect(store.getLastSuspended()).toBeNull();
     });
 
-    it("returns the most recently suspended session", () => {
+    it("returns the most recently suspended session", async () => {
       const s1 = store.create("first", "default", "claude");
       const s2 = store.create("second", "default", "claude");
 
       store.suspend(s1.id);
+      // Ensure s2 gets a strictly later timestamp so sort order is deterministic
+      await new Promise((r) => setTimeout(r, 5));
       store.suspend(s2.id);
 
       const last = store.getLastSuspended();
