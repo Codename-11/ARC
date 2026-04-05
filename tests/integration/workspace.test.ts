@@ -13,7 +13,7 @@ import {
   loadWorkspaceConfig,
 } from "@axiom-labs/arc-core";
 import type { ArcConfig, Profile } from "@axiom-labs/arc-core";
-import { handleWhich } from "../../src/commands/which.js";
+import { handleWhich } from "../../packages/cli/src/commands/which.js";
 
 let arcDir: string;
 let cleanup: () => void;

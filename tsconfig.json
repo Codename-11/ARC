@@ -19,12 +19,6 @@
   },
   "include": [
     "src/index.ts",
-    "src/cli.ts",
-    "src/config.ts",
-    "src/paths.ts",
-    "src/shared.ts",
-    "src/types.ts",
-    "src/log.ts",
     "packages/core/src/**/*.ts",
     "packages/adapter-claude/src/**/*.ts",
     "packages/adapter-openclaw/src/**/*.ts",

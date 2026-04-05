@@ -24,14 +24,14 @@ vi.mock("fullscreen-ink", () => ({
 }));
 
 // Mock the update module to prevent real npm registry calls
-vi.mock("../../src/update.js", () => ({
+vi.mock("../../packages/cli/src/update.js", () => ({
   checkForUpdate: () => Promise.resolve(null),
   runSelfUpdate: () => Promise.resolve({ ok: true, message: "Updated" }),
   PACKAGE_NAME: "arc-cli",
 }));
 
 // Mock the config module
-vi.mock("../../src/config.js", () => ({
+vi.mock("../../packages/cli/src/config.js", () => ({
   loadConfig: () => ({
     version: 1,
     activeProfile: "work",
@@ -58,7 +58,7 @@ vi.mock("../../src/config.js", () => ({
 }));
 
 // Mock the auth module
-vi.mock("../../src/auth.js", () => ({
+vi.mock("../../packages/cli/src/auth.js", () => ({
   getCredentialStatus: () =>
     Promise.resolve({
       authenticated: true,
@@ -68,7 +68,7 @@ vi.mock("../../src/auth.js", () => ({
 }));
 
 // Mock the shared module
-vi.mock("../../src/shared.js", () => ({
+vi.mock("../../packages/cli/src/shared.js", () => ({
   syncSharedToProfile: vi.fn(),
   unsyncSharedFromProfile: vi.fn(),
   getSharedManifest: () => null,
@@ -76,40 +76,40 @@ vi.mock("../../src/shared.js", () => ({
 }));
 
 // Mock the swap module
-vi.mock("../../src/swap.js", () => ({
+vi.mock("../../packages/cli/src/swap.js", () => ({
   listAccounts: () => [],
 }));
 
 // Mock the detect module
-vi.mock("../../src/detect.js", () => ({
+vi.mock("../../packages/cli/src/detect.js", () => ({
   detectToolConfigs: () => [],
 }));
 
 // Mock the paths module
-vi.mock("../../src/paths.js", () => ({
+vi.mock("../../packages/cli/src/paths.js", () => ({
   getConfigPath: () => "/tmp/arc-test/config.json",
   getSharedSettingsPath: () => "/tmp/arc-test/shared/settings.json",
 }));
 
 // Mock the log module
-vi.mock("../../src/log.js", () => ({
+vi.mock("../../packages/cli/src/log.js", () => ({
   logActivity: vi.fn(),
 }));
 
 // Mock the launch command to prevent spawning real processes
-vi.mock("../../src/commands/launch.js", () => ({
+vi.mock("../../packages/cli/src/commands/launch.js", () => ({
   handleLaunch: vi.fn(),
   findBinary: () => true,
 }));
 
 // Mock the render module to prevent real terminal manipulation
-vi.mock("../../src/tui/render.js", () => ({
+vi.mock("../../packages/cli/src/tui/render.js", () => ({
   markLaunchPending: vi.fn(),
   launchPending: false,
 }));
 
 // Mock createProfile module
-vi.mock("../../src/tui/createProfile.js", () => ({
+vi.mock("../../packages/cli/src/tui/createProfile.js", () => ({
   RENDER_DEFER_MS: 0,
 }));
 

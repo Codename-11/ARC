@@ -206,7 +206,7 @@ describe("Profile Inheritance – Launch Pipeline", () => {
     }, "child");
 
     // Mock findBinary to return true so launch doesn't fail on missing binary
-    const launchModule = await import("../../src/commands/launch.js");
+    const launchModule = await import("../../packages/cli/src/commands/launch.js");
     vi.spyOn(launchModule, "findBinary").mockReturnValue(true);
 
     // Mock the adapter to capture the profile that gets passed to launch()
@@ -260,11 +260,11 @@ describe("Profile Inheritance – Launch Pipeline", () => {
       },
     }, "a");
 
-    const launchModule = await import("../../src/commands/launch.js");
+    const launchModule = await import("../../packages/cli/src/commands/launch.js");
 
     // Capture error output
     const errorMessages: string[] = [];
-    const displayModule = await import("../../src/display.js");
+    const displayModule = await import("../../packages/cli/src/display.js");
     vi.spyOn(displayModule, "error").mockImplementation((msg: string) => {
       errorMessages.push(msg);
     });
