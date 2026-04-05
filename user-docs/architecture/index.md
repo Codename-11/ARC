@@ -14,14 +14,14 @@ ARC is a layered runtime control plane. Each layer has a clear responsibility an
 │  Hook Pipeline · Risk Classifier · Retry Loop · Roundtable   │
 │  Session Tracker · Alert Engine · Scope Tracker · Traces     │
 │  Circuit Breaker · Dark Factory Controller                   │
-├──────────┬──────────┬──────────┬──────────┬─────────────────┤
-│  Claude  │  Codex   │  Gemini  │ OpenClaw │  Generic        │
-│  Adapter │  Adapter  │  Adapter │  Adapter │  Adapter        │
-│  SDK +   │  Process │  Process │  Plugin  │  MCP Server     │
-│  Hooks + │  Wrap +  │  Wrap +  │  API +   │  or HTTP        │
-│  Plugin  │  MCP +   │  MCP +   │  Hooks   │                 │
-│  System  │  JSON    │  stdio   │          │                 │
-├──────────┴──────────┴──────────┴──────────┴─────────────────┤
+├─────────┬─────────┬─────────┬──────────┬─────────┬──────────┤
+│ Claude  │ Codex   │ Gemini  │ OpenClaw │ Hermes  │ Generic  │
+│ Adapter │ Adapter │ Adapter │ Adapter  │ Adapter │ Adapter  │
+│ SDK +   │ Process │ Process │ Plugin   │ Process │ MCP      │
+│ Hooks + │ Wrap +  │ Wrap +  │ API +    │ Wrap +  │ Server   │
+│ Plugin  │ MCP +   │ MCP +   │ Hooks    │ MCP     │ or HTTP  │
+│ System  │ JSON    │ stdio   │          │ Bridge  │          │
+├─────────┴─────────┴─────────┴──────────┴─────────┴──────────┤
 │                     Protocol Layer                           │
 │  MCP Host (connect to tool servers)                          │
 │  MCP Server (expose ARC supervision as tools)                │
@@ -38,34 +38,9 @@ ARC is a layered runtime control plane. Each layer has a clear responsibility an
 
 When an agent is launched via `arc launch <profile>`:
 
-```mermaid
-graph TD
-    A[Profile Resolution] --> B{arc.json?}
-    B -->|yes| C[Workspace Override]
-    B -->|no| D[Profile Inheritance]
-    C --> D
-    D --> E[Adapter.launch]
-    E --> F[Source Classifier]
-    F --> G[Hook Pipeline]
-    G --> H{Blocked?}
-    H -->|no| I[Agent Executes]
-    H -->|yes| J[Block + Log]
-    I --> K[Post-Process Hooks]
-    K --> L[Trace Written]
-```
+<ArcFlow diagram="data-flow" height="280px" />
 
-```mermaid
-graph TB
-    CLI[CLI Commands] --> Core[ARC Core]
-    TUI[TUI Dashboard] --> Core
-    Web[Web Dashboard] --> Core
-    Core --> Profiles[Profile Store]
-    Core --> Hooks[Hook Bus]
-    Core --> Tasks[Task Store]
-    Core --> Memory[Persistent Memory]
-    Core --> Skills[Skill Registry]
-    Core --> Sessions[Session Store]
-```
+<ArcFlow diagram="architecture" height="240px" />
 
 ## Design Principles
 

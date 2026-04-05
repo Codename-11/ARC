@@ -42,19 +42,7 @@ The pipeline:
 4. Optionally runs `inject()` for context enrichment
 5. Writes a trace entry for every hook evaluation
 
-```mermaid
-graph LR
-    A[Message In] --> B[Source Classify]
-    B --> C[Interagent Routing]
-    C --> D[Risk Detection]
-    D --> E[Attempt Tracker]
-    E --> F[Roundtable]
-    F --> G[Agent Executes]
-    G --> H[Audit Score]
-    H --> I[Supervision Gate]
-    I --> J[Post Verify]
-    J --> K[Trace Written]
-```
+<ArcFlow diagram="hook-pipeline" height="280px" />
 
 ## Built-In Hooks
 
@@ -68,12 +56,12 @@ graph LR
 | 90 | **Audit Score** | Completion audit (deterministic, log-only default) | Default pipeline |
 | 92 | **Supervision Gate** | ALLOW/BLOCK review of substantive output | Default pipeline |
 | 95 | **Post-Verify** | Gateway/service health checks with exponential backoff | Default pipeline |
-| 5 | **Watchdog Pause** | Auto-pause before destructive operations | Spec only |
-| 15 | **Subagent Inject** | Inject rules into subagent prompts | Spec only |
-| 85 | **Memory Sync** | Sync memories on session end | Spec only |
+| 5 | **Watchdog Pause** | Auto-pause before destructive operations | Planned |
+| 15 | **Subagent Inject** | Inject rules into subagent prompts | Planned |
+| 85 | **Memory Sync** | Sync memories on session end | Planned |
 
 ::: info
-Hooks marked "Spec only" are defined in the [v2.0 spec](/architecture/) but not yet implemented in the default pipeline. They can be added as custom hooks when needed.
+Hooks marked "Planned" are designed but not yet implemented in the default pipeline. They can be added as custom hooks when needed.
 :::
 
 ## Risk Classification

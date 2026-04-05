@@ -26,12 +26,7 @@ Dark Factory is designed for batch operations like codebase migrations, multi-fi
 
 The factory controller follows a strict state machine:
 
-```
-idle → planning → executing → verifying → gating → completed
-                      ↑                      │
-                      └──────────────────────┘
-                         (retry on reject)
-```
+<ArcFlow diagram="factory" height="260px" />
 
 | State | Description |
 |-------|-------------|
@@ -41,21 +36,6 @@ idle → planning → executing → verifying → gating → completed
 | `verifying` | Independent verifier agents checking results |
 | `gating` | Consensus gate — all verifiers must agree to proceed |
 | `completed` | All waves finished successfully |
-
-```mermaid
-stateDiagram-v2
-    [*] --> idle
-    idle --> planning: Start
-    planning --> executing: Plan ready
-    executing --> verifying: Wave done
-    verifying --> gating: Verified
-    gating --> executing: Next wave
-    gating --> completed: All waves done
-    executing --> failed: Error
-    planning --> failed: Error
-    verifying --> failed: Error
-    executing --> aborted: User abort
-```
 
 ## Wave Model
 
@@ -109,8 +89,6 @@ arc factory abort
 
 Halts execution at the next consensus gate. Tasks already running will complete, but no new tasks will start. The factory state transitions to `idle`.
 
-Dark Factory builds on ARC's [multi-agent orchestration](/features/orchestration) primitives — task delegation assigns work to agents, and roundtable-style reviews can serve as consensus gates.
-
 ## Use Cases
 
 - **Codebase migrations** — update import paths, API calls, or config formats across hundreds of files
@@ -122,3 +100,19 @@ Dark Factory builds on ARC's [multi-agent orchestration](/features/orchestration
 ## Monitoring
 
 The web dashboard provides real-time factory monitoring via the `/api/factory` endpoint. The Factory view shows wave progression, task status, and verifier results with live WebSocket updates.
+
+## Web Dashboard Factory Controls
+
+The [Web Dashboard](/features/dashboard) Factory view goes beyond monitoring — it supports an **abort** action to halt a running factory at the next consensus gate. This is equivalent to `arc factory abort` from the CLI.
+
+The Factory view displays:
+
+- Current state (idle/planning/executing/verifying/gating/completed)
+- Wave progression with per-task status
+- Verifier results at each consensus gate
+- Overall progress percentage
+- **Abort button** — stops factory execution at the next gate
+
+::: warning
+Aborting from the Web Dashboard behaves identically to the CLI — tasks already running will complete, but no new tasks will start.
+:::

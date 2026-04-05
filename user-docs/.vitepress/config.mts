@@ -1,7 +1,6 @@
 import { defineConfig } from 'vitepress';
-import { withMermaid } from 'vitepress-plugin-mermaid';
 
-export default withMermaid(defineConfig({
+export default defineConfig({
   title: 'ARC',
   description: 'Agent Runtime Control — unified control plane for AI coding agents',
   base: '/docs/',
@@ -64,13 +63,6 @@ export default withMermaid(defineConfig({
           ],
         },
         {
-          text: 'Agent Runtimes',
-          items: [
-            { text: 'OpenClaw', link: '/guide/openclaw' },
-            { text: 'Hermes Agent', link: '/guide/hermes' },
-          ],
-        },
-        {
           text: 'Integration',
           items: [
             { text: 'Shell Integration', link: '/guide/shell-integration' },
@@ -117,7 +109,7 @@ export default withMermaid(defineConfig({
         {
           text: 'Advanced',
           items: [
-            { text: 'Multi-Agent Orchestration', link: '/features/orchestration' },
+            { text: 'Orchestration', link: '/features/orchestration' },
             { text: 'Credential Hot-Swap', link: '/features/swap' },
             { text: 'Dark Factory', link: '/features/factory' },
           ],
@@ -161,25 +153,8 @@ export default withMermaid(defineConfig({
   },
 
   vite: {
-    optimizeDeps: {
-      include: ['mermaid', 'dayjs'],
-    },
     ssr: {
-      noExternal: ['vitepress-plugin-mermaid', 'mermaid'],
+      noExternal: ['@vue-flow/core'],
     },
   },
-
-  mermaid: {
-    theme: 'dark',
-    themeVariables: {
-      primaryColor: '#1A1A1A',
-      primaryTextColor: '#E8E8E8',
-      primaryBorderColor: '#333333',
-      lineColor: '#2563EB',
-      secondaryColor: '#111111',
-      tertiaryColor: '#0A0A0A',
-      fontSize: '13px',
-      fontFamily: '"Space Mono", monospace',
-    },
-  },
-}));
+});

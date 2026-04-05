@@ -47,14 +47,7 @@ Add `agents: a, b, c` and/or `rounds: N` to configure inline.
 Trigger → Active → Round 1 (each agent speaks) → Round 2 → ... → Synthesize → Complete
 ```
 
-```mermaid
-stateDiagram-v2
-    [*] --> Active: Trigger detected
-    Active --> Active: Agent speaks (next turn)
-    Active --> Synthesizing: All rounds complete
-    Synthesizing --> Complete: Synthesis message
-    Complete --> [*]
-```
+<ArcFlow diagram="roundtable" height="200px" />
 
 After all rounds, the discussion enters a synthesis phase where the accumulated responses are available for a final summary.
 
@@ -126,18 +119,7 @@ Delegator creates task → Assigns to target → Sends handoff message
                                           Delegator gets notified
 ```
 
-```mermaid
-sequenceDiagram
-    participant A as Delegator
-    participant T as TaskStore
-    participant B as Assignee
-    A->>T: Create task
-    T-->>A: Task created
-    A->>B: Handoff message
-    B->>T: Accept (assigned→working)
-    B->>T: Complete with output
-    B->>A: Response message
-```
+<ArcFlow diagram="delegation" height="300px" />
 
 ### Use Cases
 
@@ -269,3 +251,16 @@ When agents communicate, the interagent-routing hook prevents infinite bot-to-bo
 | Agent sends without `@mention`, no roundtable | Suppressed (blocked in enforce mode) |
 
 This means you can safely enable multi-agent features without worrying about message storms.
+
+## Web Dashboard Visibility
+
+The [Web Dashboard](/features/dashboard) provides several views for monitoring orchestration in real time:
+
+- **Hook Pipeline Monitor** — see which hooks are firing, pass/flag/block decisions per agent, interagent routing suppressions, and risk classifications
+- **Agents View** — verify all participating remote agents are reachable; add, remove, and health-check from the browser
+- **Factory View** — live wave progression, per-task status, and consensus gate results during Dark Factory runs
+- **Overview** — hook pipeline summary card showing enforcement mode and recent decision counts
+
+::: tip
+For full control over orchestration configuration (enforcement modes, hook timeouts, roundtable parameters), use the CLI or profile configuration files. The Web Dashboard provides monitoring and visibility.
+:::

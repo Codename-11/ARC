@@ -2,6 +2,7 @@ import DefaultTheme from 'vitepress/theme';
 import './custom.css';
 import { h, onMounted } from 'vue';
 import { useRouter } from 'vitepress';
+import ArcFlow from './components/ArcFlow.vue';
 
 // Component that patches logo + injects Home link after DOM is ready
 const NavPatcher = {
@@ -50,6 +51,9 @@ const NavPatcher = {
 
 export default {
   extends: DefaultTheme,
+  enhanceApp({ app }: { app: any }) {
+    app.component('ArcFlow', ArcFlow);
+  },
   Layout() {
     return h(DefaultTheme.Layout, null, {
       // NavPatcher runs as invisible component in layout-top slot
