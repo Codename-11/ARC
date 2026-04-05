@@ -13,6 +13,8 @@ Tracking file for planned features, enhancements, and ideas. Checked items are s
 ## Priority 2 — Workflow Improvements
 
 - [x] **Workspace-aware profile auto-selection** — `arc.json` in repo root specifies preferred profile/tool; workspace overrides applied on launch (Phase 9)
+- [x] **Workspace shell syntax highlighting** — tokenized input with color-coded `/commands` (green), `@profiles` (blue), `#tags` (dimmed); invalid tokens show in red
+- [x] **Workspace shell auto-complete** — suggestion overlay for `/` commands and `@profile` mentions; Tab/Enter accepts, arrows navigate, Escape dismisses
 - [ ] **Quick profile switch overlay** — global `Ctrl+S` or palette action that shows a focused profile picker from any view
 - [x] **Doctor repair actions** — inline install hints, re-auth instructions, and PATH/shell fix hints on actionable diagnostics
 - [ ] **Profile search/filter** — `/` search in Profiles view and queue for scaling to 10+ profiles
@@ -49,7 +51,9 @@ Tracking file for planned features, enhancements, and ideas. Checked items are s
 - [x] Codex CLI adapter (cross-platform process management, real spawn/terminate)
 - [x] Gemini CLI adapter (real lifecycle wired)
 - [x] OpenClaw adapter (plugin manifest, RuntimeAdapter, 3 lifecycle hooks)
-- [x] 27 adapter registry characterization tests
+- [x] Hermes Agent adapter (MCP bridge, lifecycle, process management)
+- [x] Generic adapter factory (fallback for any unknown tool, health monitoring)
+- [x] 48 adapter registry + generic adapter tests
 
 ### Logging & Lifecycle (Phases 3-4)
 - [x] Structured JSONL log at `~/.arc/logs/structured.jsonl`

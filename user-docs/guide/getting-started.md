@@ -107,6 +107,26 @@ arc status               # Show all profiles and auth state
 
 The doctor command checks tool installations, PATH configuration, shell integration, and keyring availability.
 
+## Workspace Shell
+
+The TUI includes a workspace shell with smart input features:
+
+**Syntax highlighting** — trigger tokens are color-coded as you type:
+- `/commands` in green (e.g., `/launch`, `/switch`, `/status`)
+- `@profiles` in blue (e.g., `@work`, `@personal`)
+- `#tags` in dimmed
+- Invalid tokens (unknown commands, non-existent profiles) show in red
+
+**Auto-complete** — suggestions appear automatically:
+- Type `/` to see available commands with descriptions
+- Type `@` to see profile names
+- After `/launch` or `/switch`, profiles are suggested as arguments
+- **Tab** or **Enter** accepts the selected suggestion
+- **Arrow keys** navigate the suggestion list
+- **Escape** dismisses suggestions
+
+**Shell commands** — any non-`/` input runs as a shell command with the active profile's environment applied.
+
 ## Next Steps
 
 - **[Profiles](/guide/profiles)** — manage multiple accounts across tools
