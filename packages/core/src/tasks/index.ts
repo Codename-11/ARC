@@ -3,3 +3,5 @@ export { TaskStore, type TaskListFilters, type TaskCreateOptions } from "./task-
 export { MessageBus, type MessageHandler, type SendOptions } from "./messaging.js";
 export { CronStore, parseCronExpression } from "./cron.js";
 export { CronScheduler } from "./scheduler.js";
+export { TaskDelegator } from "./delegation.js";
+export type { DelegationOptions, DelegationResult } from "./delegation.js";

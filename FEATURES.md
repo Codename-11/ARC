@@ -60,7 +60,9 @@ Tracking file for planned features, enhancements, and ideas. Checked items are s
 ### Hook Pipeline (Phase 7)
 - [x] Hook type system + HookBus pipeline runner with 4-mode enforcement (log/warn/enforce/off)
 - [x] Source-classify hook (priority 1) + risk-classifier pure function
+- [x] Interagent-routing hook factory (priority 2) — bot→bot loop suppression with @mention override, roundtable-aware
 - [x] Attempt-tracker factory (session + turn scoped retry counting)
+- [x] Roundtable hook factory (priority 50) — multi-agent discussion orchestration with turn management, mode assignment, synthesis lifecycle
 - [x] `auditCompletion()` pure function (status x confidence -> recommendation)
 - [x] `runWithRetry()` enforce-mode retry loop + `createDefaultPipeline`
 - [x] Supervision-gate hook factory (ALLOW/BLOCK parsing)
@@ -119,6 +121,8 @@ Tracking file for planned features, enhancements, and ideas. Checked items are s
 ### Task Management (Phase 17)
 - [x] TaskStore (JSON file-backed CRUD)
 - [x] MessageBus (in-memory agent-to-agent routing)
+- [x] TaskDelegator — agent-to-agent delegation (delegate/accept/complete/fail/requestInput/provideInput), self-delegation guard, listener TTL cleanup
+- [x] Status transition validation (created → assigned → working → completed/failed, input-required ↔ working)
 - [x] CronStore with 5-field cron expression parser
 
 ### Session Continuity (Phase 18)
@@ -158,7 +162,8 @@ Tracking file for planned features, enhancements, and ideas. Checked items are s
 
 ## Deferred to v2
 
-- A2A protocol implementation
+- A2A protocol implementation (agent cards, task lifecycle over HTTP)
+- Roundtable via A2A (replace hook state machine with A2A task lifecycle)
 - Prompt routing (score-based intent dispatch)
 - Agent personas / buddy system
 - S3 sync provider

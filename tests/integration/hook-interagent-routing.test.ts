@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { interagentRoutingHook } from "@axiom-labs/arc-core";
+import { interagentRoutingHook, createInteragentRoutingHook, HookStateStore } from "@axiom-labs/arc-core";
 import type { HookContext, HookResult } from "../../packages/core/src/hooks/types.js";
 import type { Profile } from "@axiom-labs/arc-core";
 
@@ -28,7 +28,7 @@ function check(ctx: HookContext): HookResult {
   return interagentRoutingHook.check(ctx) as HookResult;
 }
 
-// ─── Tests ───────────────────────────────────────────────────────────
+// ─── Tests — backward-compat plain hook ─────────────────────────────
 
 describe("interagent-routing hook", () => {
   describe("hook metadata", () => {
@@ -205,5 +205,92 @@ describe("interagent-routing hook", () => {
       const ctx = makeCtx({ source: "agent", message: "send to user@example.com" });
       expect(check(ctx).pass).toBe(true);
     });
+  });
+});
+
+// ─── Tests — factory hook with roundtable awareness ─────────────────
+
+describe("createInteragentRoutingHook (factory)", () => {
+  function makeFactoryHook() {
+    const stateStore = new HookStateStore();
+    const hook = createInteragentRoutingHook(stateStore);
+    return { hook, stateStore };
+  }
+
+  it("has the same name and priority as the plain hook", () => {
+    const { hook } = makeFactoryHook();
+    expect(hook.name).toBe("interagent-routing");
+    expect(hook.priority).toBe(2);
+    expect(hook.events).toEqual(["pre-message"]);
+  });
+
+  it("blocks agent messages without @mention in enforce mode (no roundtable)", () => {
+    const { hook } = makeFactoryHook();
+    const ctx = makeCtx({
+      source: "agent",
+      message: "do this task",
+      profile: makeProfile("enforce"),
+    });
+    const result = hook.check(ctx) as HookResult;
+    expect(result.pass).toBe(false);
+    expect(result.block).toBe(true);
+  });
+
+  it("allows agent messages during active roundtable", () => {
+    const { hook, stateStore } = makeFactoryHook();
+
+    // Simulate active roundtable state
+    stateStore.set("sess-001", "roundtable", "roundtableState", {
+      id: "rt-test",
+      status: "active",
+      agents: ["claude", "codex"],
+      currentRound: 1,
+    });
+
+    const ctx = makeCtx({
+      source: "agent",
+      message: "here is my take on the topic",
+      profile: makeProfile("enforce"),
+    });
+    const result = hook.check(ctx) as HookResult;
+    expect(result.pass).toBe(true);
+    expect(result.metadata?.roundtableBypass).toBe(true);
+  });
+
+  it("blocks agent messages when roundtable is complete", () => {
+    const { hook, stateStore } = makeFactoryHook();
+
+    stateStore.set("sess-001", "roundtable", "roundtableState", {
+      id: "rt-done",
+      status: "complete",
+    });
+
+    const ctx = makeCtx({
+      source: "agent",
+      message: "follow up message",
+      profile: makeProfile("enforce"),
+    });
+    const result = hook.check(ctx) as HookResult;
+    expect(result.pass).toBe(false);
+    expect(result.block).toBe(true);
+  });
+
+  it("still allows @mentions during non-roundtable", () => {
+    const { hook } = makeFactoryHook();
+    const ctx = makeCtx({
+      source: "agent",
+      message: "hey @reviewer check this",
+      profile: makeProfile("enforce"),
+    });
+    const result = hook.check(ctx) as HookResult;
+    expect(result.pass).toBe(true);
+    expect(result.metadata?.hasMention).toBe(true);
+  });
+
+  it("allows non-agent sources regardless of roundtable state", () => {
+    const { hook } = makeFactoryHook();
+    const ctx = makeCtx({ source: "user", message: "hello" });
+    const result = hook.check(ctx) as HookResult;
+    expect(result.pass).toBe(true);
   });
 });
