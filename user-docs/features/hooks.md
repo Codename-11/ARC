@@ -33,7 +33,6 @@ ARC ships with a default hook pipeline that runs in priority order:
 | 2 | Interagent Routing | Suppresses bot-to-bot message loops |
 | 10 | Risk Detection | Classifies messages into 5 risk tiers |
 | 20 | Attempt Tracker | Counts retries per session and turn |
-| 50 | Roundtable | [Multi-agent discussion](/features/orchestration#roundtable-discussions) orchestration |
 | 90 | Audit Score | Deterministic completion audit on agent output |
 | 92 | Supervision Gate | ALLOW/BLOCK review of substantive output |
 | 95 | Post Verify | Health polling after service operations |
@@ -101,3 +100,20 @@ arc logs --component launch --action hook:block
 ```
 
 In `enforce` mode, blocked actions include the hook name and reason in the error output.
+
+## Web Dashboard Hook Pipeline Monitor
+
+The [Web Dashboard](/features/dashboard) includes a dedicated **Hook Pipeline** view that provides real-time visibility into the supervision pipeline:
+
+- **Registered hooks** — lists every hook in the pipeline with its name, priority, and current mode
+- **Enforcement mode** — displays the active enforcement mode for the current profile (`off`, `log`, `advise`, `enforce`)
+- **Recent decisions** — live feed of hook evaluations showing pass/flag/block results, the hook that produced each decision, and timestamps
+- **Circuit breaker state** — current state (closed, open, half-open) with failure count
+
+The hook pipeline monitor receives updates over WebSocket as decisions happen, so the view is always current. This is particularly useful when running in `enforce` mode to see which hooks are blocking actions and why.
+
+The **Overview** page also includes a hook pipeline summary card showing the total number of registered hooks, the enforcement mode, and recent decision counts.
+
+::: tip
+The Web Dashboard hook monitor is read-only — hook configuration is done per-profile in the profile JSON or via the CLI. See [Hook Pipeline](/architecture/hooks) for architecture details.
+:::

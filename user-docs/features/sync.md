@@ -79,6 +79,32 @@ arc shared status
 
 A manifest file (`.arc-shared.json`) tracks what was synced, enabling clean reversal and re-sync.
 
+## TUI Sync View
+
+The TUI Sync view displays real shared layer state with keyboard-driven sync actions.
+
+| Key | Action |
+|-----|--------|
+| `p` | Pull — sync remote changes to local |
+| `P` | Push — sync local changes to remote |
+
+The view shows the current sync status, last sync time, which profiles have the shared layer enabled, and any pending changes. Sync progress is displayed inline during pull and push operations.
+
+## Web Dashboard Sync Management
+
+The [Web Dashboard](/features/dashboard) Sync view provides sync management through a browser interface:
+
+- **Status** — real-time sync state, last sync time, and drift detection
+- **Pull** — pull remote changes to the local machine
+- **Push** — push local changes to the remote sync target
+- **Conflict log** — view any sync conflicts pending resolution
+
+All sync operations broadcast progress updates over WebSocket. Connected clients see pull/push status in real time.
+
+::: tip
+Sync is fully managed from all three interfaces — CLI, TUI, and Web Dashboard. The TUI and Web views show the same real-time shared layer state.
+:::
+
 ## SyncManager
 
 The `SyncManager` wraps any `SyncProvider` with cursor tracking and status reporting:

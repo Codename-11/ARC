@@ -1,90 +1,83 @@
-# Feature Overview
+# Features
 
-ARC implements all 25 phases of the v2.0 specification. This section covers the major feature systems.
+ARC ships with a full set of tools for managing, supervising, and orchestrating AI coding agents. Everything works across three interfaces — **CLI** for scripting and power users, **TUI** for interactive terminal sessions, and **Web Dashboard** for browser-based monitoring and management.
 
-## Capability Matrix
+## Interface Capability Matrix
 
-| Feature | Status | CLI | TUI | Web |
-|---------|--------|-----|-----|-----|
-| [Tasks](/features/tasks) | Stable | `arc tasks` | -- | API |
-| [Memory](/features/memory) | Stable | `arc memory` | -- | API |
-| [Skills](/features/skills) | Stable | `arc skills` | -- | API |
-| [Sessions](/features/sessions) | Stable | `arc sessions` | -- | API |
-| [Web Dashboard](/features/dashboard) | Stable | `arc web` | -- | SPA |
-| [Cloud Sync](/features/sync) | Stable | `arc sync` | Settings | -- |
-| [Dark Factory](/features/factory) | Stable | `arc factory` | -- | API |
-| [Telemetry](/features/telemetry) | Stable | `arc telemetry` | -- | API |
-| [Secrets](/features/secrets) | Stable | `arc secret` | -- | -- |
-| [Hooks & Supervision](/features/hooks) | Stable | per-profile | -- | Traces |
-| [Permissions](/features/permissions) | Stable | per-launch | -- | -- |
-| [Plugins](/features/plugins) | Stable | `arc plugins` | -- | -- |
-| [Remote Agents](/features/remote) | Stable | `arc remote` | -- | API |
-| [Shared Layer](/features/sync#shared-layer) | Stable | `arc shared` | Settings | -- |
-| [Multi-Agent Orchestration](/features/orchestration) | Stable | hooks + tasks | -- | -- |
-| [Credential Swap](/features/swap) | Experimental | `arc swap` | Overlay | -- |
+| Feature | CLI | TUI | Web |
+|---------|:---:|:---:|:---:|
+| [Profiles](/guide/profiles) | Full CRUD | Full CRUD + launch | Switch + delete |
+| [Tasks](/features/tasks) | Full CRUD + cron | Full CRUD | Full CRUD |
+| [Memory](/features/memory) | Search, prune, stats | Search, browse, delete | Add, search, filter, delete |
+| [Skills](/features/skills) | Load, info, list | Reload, detail view | Reload, remove |
+| [Sessions](/features/sessions) | Full lifecycle | Interactive shell | Complete, suspend |
+| [Hooks & Supervision](/features/hooks) | Per-profile config | -- | Live pipeline monitor |
+| [Secrets & Credentials](/features/secrets) | Full CRUD | -- | -- |
+| [Permissions](/features/permissions) | Per-launch config | -- | -- |
+| [Web Dashboard](/features/dashboard) | `arc web` | -- | 14-view SPA |
+| [Cloud Sync](/features/sync) | Full (configure, push, pull) | Pull/push per-profile | Pull/push |
+| [Telemetry](/features/telemetry) | Traces, logs, stats | Auto-refresh viewer | Traces view |
+| [Plugins](/features/plugins) | Full CRUD | -- | Enable/disable |
+| [Remote Agents](/features/remote) | Full CRUD + health | Full CRUD + health | Full CRUD + health |
+| [Orchestration](/features/orchestration) | Roundtable, delegation | -- | Hook monitor, agents |
+| [Credential Swap](/features/swap) | `arc swap` | Overlay | -- |
+| [Dark Factory](/features/factory) | Start, status, abort | -- | Status, abort, wave viz |
+| [Shell Integration](/guide/shell-integration) | `arc shell-init` | -- | -- |
 
-## Architecture Layers
-
-Each feature maps to one or more layers in the ARC stack:
-
-```
-Features → Orchestration → Adapters → Protocols → Storage
-```
-
-- **Tasks, Memory, Skills, Sessions** live in the orchestration layer inside `packages/core/`
-- **Dashboard** is a separate package at `packages/dashboard/`
-- **Sync** uses the `SyncProvider` interface with pluggable backends
-- **Telemetry** wraps OpenTelemetry with ARC-specific span helpers
-- **Factory** is a state machine controller that orchestrates adapters
-
-## [Shared Layer](/features/sync#shared-layer) {#shared}
-
-The shared layer syncs configuration across profiles — MCP servers, commands, CLAUDE.md content, memory, and projects. It lives in `~/.arc/shared/` and can be enabled per-profile.
-
-```bash
-arc shared enable work --memory --claude-md
-arc shared sync
-arc shared status
-```
-
-See [Cloud Sync](/features/sync) for cross-machine synchronization.
-
-## [Secrets](/features/secrets)
-
-An encrypted secret store using Argon2id KDF and AES-256-GCM per-entry encryption.
-
-```bash
-arc secret set DB_TOKEN "my-secret-token"
-arc secret get DB_TOKEN
-arc secret list
-arc secret delete DB_TOKEN
-```
-
-## [Plugins](/features/plugins)
-
-JSON-backed plugin registry with semver compatibility checking.
-
-```bash
-arc plugins list
-arc plugins install ./my-plugin
-arc plugins enable my-plugin
-arc plugins disable my-plugin
-arc plugins uninstall my-plugin
-```
-
-Plugins are loaded from `~/.arc/plugins/` and can add commands, views, and integrations.
-
-::: warning
-Plugins run in the same process as ARC. Only install plugins you trust.
+::: tip
+Most features are available across all three interfaces. The CLI is the most complete; the TUI excels at interactive workflows; the Web Dashboard is best for monitoring and oversight.
 :::
 
-## [Remote Agents](/features/remote)
+## Feature Categories
 
-Register and health-check remote agent endpoints accessible over HTTP, SSH, or MCP transports.
+### Identity & Access
 
-```bash
-arc remote register https://staging.example.com --transport http
-arc remote list
-arc remote check            # Health-check all registered remotes
-arc remote remove staging
-```
+**[Profiles](/guide/profiles)** — Named agent identities with tool binding, credentials, enforcement settings, and hook config. Profiles can inherit from each other and share settings via the sync layer.
+
+**[Authentication](/guide/authentication)** — Five auth types (OAuth, API key, AWS Bedrock, Google Vertex AI, Foundry) with OS keyring storage and per-profile credential isolation.
+
+**[Secrets](/features/secrets)** — Encrypted secret store using Argon2id KDF and AES-256-GCM. Per-entry encryption with interactive or stdin input.
+
+**[Permissions](/features/permissions)** — Three-tier permission model (coordinator, interactive, worker) with deny > ask > allow evaluation and audit logging.
+
+**[Credential Swap](/features/swap)** — Capture and hot-swap auth credentials between profiles without changing MCP servers, settings, or history. Experimental.
+
+### Supervision & Safety
+
+**[Hooks & Supervision](/features/hooks)** — Eight-hook pipeline running on every message. Four enforcement modes (off, log, advise, enforce). Five risk tiers. Circuit breaker for graceful degradation.
+
+**[Orchestration](/features/orchestration)** — Multi-agent roundtable discussions with roles and turns. Task delegation between profiles. Interagent routing to prevent message loops.
+
+**[Dark Factory](/features/factory)** — Autonomous operation mode. Define a spec, ARC executes it in waves with consensus gates and verification steps.
+
+### Data & Automation
+
+**[Tasks](/features/tasks)** — Task CRUD with priority, assignee, and status tracking. Cron scheduling with 5-field expressions. Agent-to-agent message bus.
+
+**[Memory](/features/memory)** — Three scopes (session, persistent, shared) with exponential decay relevance scoring. Keyword search and auto-extraction from session logs.
+
+**[Skills](/features/skills)** — Directory-based skill loading with MCP-to-skill adapters. Self-improving skillify meta-skill and stuck detector for loop detection.
+
+**[Sessions](/features/sessions)** — Full session lifecycle (create, suspend, resume, complete) with resume-intent detection and checkpoint storage.
+
+### Infrastructure
+
+**[Web Dashboard](/features/dashboard)** — 14-view browser SPA with REST API, WebSocket real-time updates, and full CRUD for tasks, memory, agents, and more. Live hook pipeline monitor for supervision visibility.
+
+**[Cloud Sync](/features/sync)** — Filesystem-based sync with atomic writes and mtime detection. Syncs config, shared layer, tasks, and memory. S3 provider planned.
+
+**[Telemetry](/features/telemetry)** — OpenTelemetry integration with seven span types. Three exporters (console, JSONL file, OTLP). Structured logging.
+
+**[Plugins](/features/plugins)** — JSON-backed plugin registry with semver compatibility. Five capability types: adapter, hook, skill, MCP, dashboard.
+
+**[Remote Agents](/features/remote)** — Register and health-check agent endpoints over HTTP, SSH, or MCP transports.
+
+### Integrations
+
+**[OpenClaw](/guide/openclaw)** — Native plugin adapter running inside OpenClaw Gateway. Full hook pipeline access across 23+ messaging channels.
+
+**[Hermes Agent](/guide/hermes)** — Process wrapper with bidirectional MCP bridge. Persistent memory interop and context file compatibility.
+
+**[Shell Integration](/guide/shell-integration)** — Shell shims for bash, zsh, fish, and PowerShell. Profile-aware `arc shell` and `arc exec` for environment isolation.
+
+**[MCP Protocol](/architecture/mcp)** — Dual-role: host (connect to external MCP servers) and server (expose five supervision tools via stdio or HTTP).

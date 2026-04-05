@@ -100,9 +100,9 @@ OpenClaw-specific adapter:
 Web dashboard package:
 
 - **HTTP server** — raw `node:http`, no Express dependency
-- **REST API** — 10 endpoints for system data
-- **WebSocket** — RFC 6455 real-time event push
-- **Frontend** — Nothing-designed SPA with 9 view components
+- **REST API** — 14 resource endpoints with full CRUD (30 total routes)
+- **WebSocket** — RFC 6455 real-time event push with mutation broadcasts
+- **Frontend** — Nothing-designed SPA with 14 view components and management actions
 
 ## Dependency Graph
 

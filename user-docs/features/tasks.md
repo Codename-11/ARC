@@ -38,6 +38,33 @@ arc tasks stop <id>
 
 Tasks assigned to a profile are displayed in that profile's detail view in the TUI.
 
+## TUI Task Management
+
+The TUI Tasks view displays real task data from the TaskStore with full keyboard-driven management.
+
+| Key | Action |
+|-----|--------|
+| `n` | Create a new task |
+| `d` | Delete the selected task |
+| `Enter` | Toggle task status (pending → working → completed) |
+| `↑` / `↓` | Navigate the task list |
+
+Tasks assigned to the active profile are highlighted. Status changes made in the TUI are immediately reflected in the CLI and Web Dashboard.
+
+## Web Dashboard Task Management
+
+The [Web Dashboard](/features/dashboard) Tasks view provides the same full CRUD capabilities through a browser interface:
+
+- **Create** — add new tasks with title, priority, and assignee
+- **Update** — change task status, priority, or assignment
+- **Delete** — remove tasks from the store
+
+All changes are broadcast over WebSocket, so every connected client sees updates in real time. The Tasks view also supports filtering by status, priority, and assignee.
+
+::: tip
+Tasks are fully managed from all three interfaces — CLI, TUI, and Web Dashboard. Changes made in any interface are immediately visible in the others.
+:::
+
 ## Cron Scheduling
 
 Schedule tasks to run on a recurring basis using standard 5-field cron expressions.
@@ -74,24 +101,6 @@ messageBus.send({
 ```
 
 This enables coordination patterns in multi-agent setups, particularly in [Dark Factory](/features/factory) mode.
-
-## Task Delegation
-
-For structured agent-to-agent work handoff, ARC provides the `TaskDelegator` — a higher-level protocol on top of tasks and messaging. One agent creates a task, assigns it to another, and gets notified when it's done.
-
-```typescript
-await delegator.delegate({
-  from: 'claude-work',
-  to: 'codex-review',
-  description: 'Review the auth refactor PR',
-  priority: 'high',
-  onComplete: (task) => console.log('Done:', task.output),
-});
-```
-
-Delegation includes status transition validation, input request/response flow, self-delegation guards, and automatic listener cleanup.
-
-See [Multi-Agent Orchestration](/features/orchestration#task-delegation) for the full guide with use cases.
 
 ## Storage
 

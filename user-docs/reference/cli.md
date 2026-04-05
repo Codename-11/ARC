@@ -2,6 +2,10 @@
 
 Complete reference for all `arc` CLI commands.
 
+::: tip Interface Parity
+Most CLI commands have equivalent capabilities in the TUI and Web Dashboard. Tasks, memory, skills, remote agents, and sync have full management across all three interfaces. See the [capability matrix](/features/dashboard#interface-capability-matrix) for a complete comparison.
+:::
+
 ## Profiles
 
 ### `arc create <name>`
@@ -42,27 +46,6 @@ Import an existing tool config into a new ARC profile.
 ```bash
 arc profile import --name default
 arc profile import --name work --from ~/.claude --tool claude
-```
-
-### `arc profile set-flags <name> <flags...>`
-
-Set persistent launch flags for a profile. These flags are prepended on every `arc launch`.
-
-```bash
-arc profile set-flags work --dangerously-skip-permissions
-arc profile set-flags work --model sonnet --verbose
-arc profile set-flags work --clear    # remove all flags
-```
-
-### `arc import [name]`
-
-Top-level shortcut to import detected tool configs into profiles.
-
-```bash
-arc import                # import Claude config as "default"
-arc import work           # import as "work"
-arc import --all          # import all detected tool configs
-arc import --all --force  # overwrite existing profiles
 ```
 
 ### `arc which`
@@ -113,7 +96,7 @@ Open the TUI dashboard.
 Open the web dashboard.
 
 ```bash
-arc web [--port 3000] [--host localhost]
+arc web [--port 3700] [--host localhost]
 ```
 
 ## Auth
@@ -135,33 +118,9 @@ Trigger OAuth login for a profile.
 
 Show auth status for all profiles.
 
-### `arc auth refresh <profile>`
-
-Check or force token refresh for an OAuth profile.
-
 ### `arc auth whoami [profile]`
 
 Show the authenticated identity for a profile.
-
-## Config
-
-### `arc config get [key]`
-
-Show a config setting value, or all settings if no key is given.
-
-```bash
-arc config get              # show all settings
-arc config get theme        # show a specific setting
-```
-
-### `arc config set <key> <value>`
-
-Set a config value. Booleans use `true`/`false`, numbers are parsed automatically.
-
-```bash
-arc config set theme dark
-arc config set telemetryEnabled false
-```
 
 ## Sessions
 
@@ -214,15 +173,6 @@ Schedule a recurring task.
 
 ```bash
 arc tasks cron create "Nightly lint" --schedule "0 2 * * *"
-```
-
-### `arc tasks output <id> [text]`
-
-View task output. If `text` is provided, appends it to the task's output.
-
-```bash
-arc tasks output abc123              # view output
-arc tasks output abc123 "Step 2 done"  # append output
 ```
 
 ### `arc tasks cron list` / `arc tasks cron delete <id>`
@@ -333,24 +283,6 @@ arc shared sync [--all] [--name <profile>]
 
 Show shared layer contents and enabled profiles.
 
-### `arc shared source [name]`
-
-Set (or clear) a profile as the sync source for the shared layer. When set, `arc shared sync` auto-pulls from this profile first.
-
-```bash
-arc shared source work        # set work as sync source
-arc shared source --clear     # remove the sync source
-```
-
-### `arc shared pull [name]`
-
-Pull a profile's MCPs, commands, and CLAUDE.md into the shared layer. Defaults to the active profile.
-
-```bash
-arc shared pull           # pull from active profile
-arc shared pull work      # pull from work profile
-```
-
 ### `arc shared show`
 
 Print raw shared `settings.json`.
@@ -447,13 +379,12 @@ Remove a plugin.
 
 ## Remote Agents
 
-### `arc remote add <name> <endpoint>`
+### `arc remote register <url>`
 
 Register a remote agent.
 
 ```bash
-arc remote add staging https://staging.example.com --transport http
-arc remote add build-box ssh://ci@10.0.1.50 --transport ssh --profile worker
+arc remote register https://staging.example.com --transport http
 ```
 
 ### `arc remote list`
@@ -485,26 +416,6 @@ Refresh shims and self-update.
 ### `arc doctor`
 
 Run diagnostics (tool installations, PATH, shell integration, keyring).
-
-### `arc health`
-
-Run fast runtime readiness checks. Lighter than `arc doctor` — checks that ARC can start and profiles are loadable.
-
-```bash
-arc health
-arc health --json    # machine-readable output
-```
-
-### `arc shell-init`
-
-Output shell integration code for your shell. Used by `arc setup` internally, but can be called directly.
-
-```bash
-arc shell-init --shell bash
-arc shell-init --shell zsh
-arc shell-init --shell fish
-arc shell-init --shell powershell
-```
 
 ### `arc prune`
 

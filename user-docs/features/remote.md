@@ -10,7 +10,7 @@ arc remote add build-box ssh://ci@10.0.1.50 --transport ssh --profile worker
 arc remote add mcp-relay mcp://relay.local:9090 --transport mcp
 ```
 
-Each agent gets a unique ID, and you can optionally bind it to an ARC profile. Remote agents can also be targets for [task delegation](/features/orchestration#task-delegation).
+Each agent gets a unique ID, and you can optionally bind it to an ARC profile.
 
 ## Listing Remote Agents
 
@@ -51,6 +51,34 @@ arc remote remove <id>
 
 The default transport is `http` if not specified.
 
+## TUI Agent Management
+
+The TUI Agents view displays real remote agent data from the registry with full keyboard-driven management.
+
+| Key | Action |
+|-----|--------|
+| `c` | Check health of the selected agent (or all agents) |
+| `a` | Add a new remote agent |
+| `d` | Remove the selected agent |
+| `↑` / `↓` | Navigate the agent list |
+
+The view shows each agent's name, endpoint, transport, status (`online`, `offline`, `unknown`), and associated profile.
+
+## Web Dashboard Agent Management
+
+The [Web Dashboard](/features/dashboard) Agents view provides full agent management through a browser interface:
+
+- **Browse** — view all registered agents with endpoint, transport, and status
+- **Add** — register a new remote agent with endpoint and transport type
+- **Remove** — unregister an agent from the registry
+- **Health check** — check the status of individual agents or all agents at once
+
+Health check results update in real time over WebSocket. Status changes are immediately visible to all connected dashboard clients.
+
+::: tip
+Remote agents are fully managed from all three interfaces — CLI, TUI, and Web Dashboard.
+:::
+
 ## Use Cases
 
 ### Monitoring Distributed Agents
@@ -77,4 +105,4 @@ Remote agents pair with [Dark Factory](/features/factory) mode for multi-machine
 
 ## Storage
 
-Remote agent registrations are stored in `~/.arc/remote/agents.json`. Status is updated in-place after each health check. The web dashboard exposes remote agents via the `/api/remote` REST endpoint.
+Remote agent registrations are stored in `~/.arc/remote/agents.json`. Status is updated in-place after each health check. The web dashboard exposes remote agents via the `/api/agents` REST endpoint with full CRUD and health-check support. See [Web Dashboard](/features/dashboard) for details.

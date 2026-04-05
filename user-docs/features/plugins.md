@@ -78,6 +78,17 @@ A plugin declares one or more capabilities:
 | `mcp` | MCP server integration |
 | `dashboard` | Web dashboard widget |
 
+## Web Dashboard Plugin Management
+
+The [Web Dashboard](/features/dashboard) Plugins view displays real plugin data from the registry and supports enable/disable actions directly from the browser:
+
+- **Browse** — view all installed plugins with name, version, capabilities, and enabled state
+- **Enable/Disable** — toggle a plugin's enabled state without removing it
+
+::: tip
+Plugin install and uninstall operations are CLI-only. Use the Web Dashboard for quick enable/disable toggling when monitoring remotely.
+:::
+
 ## Compatibility Checking
 
 ARC validates the `compatibility.arc` field against the running ARC version before loading a plugin. Supported range formats are exact versions (`1.2.3`) and caret ranges (`^1.2.0`).

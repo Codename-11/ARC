@@ -91,6 +91,31 @@ const recovery = detector.check(recentActions);
 
 When an agent appears stuck, ARC can automatically suggest a different approach or escalate to the user.
 
+## TUI Skills View
+
+The TUI Skills view displays real skill data from the SkillRegistry.
+
+| Key | Action |
+|-----|--------|
+| `r` | Reload all skills from disk |
+| `i` | Show detailed info for the selected skill |
+
+The view lists each skill's name, description, trigger keyword, and step count.
+
+## Web Dashboard Skill Management
+
+The [Web Dashboard](/features/dashboard) Skills view provides skill management through a browser interface:
+
+- **Browse** — view all loaded skills with trigger info and step details
+- **Reload** — reload skills from disk (equivalent to `arc skills load`)
+- **Remove** — unregister a skill from the registry
+
+Changes are broadcast over WebSocket so connected clients see updates immediately.
+
+::: tip
+The CLI provides the most complete skill management (load from arbitrary directories, register new skills). The TUI and Web Dashboard support reading the registry plus reload and remove operations.
+:::
+
 ## Skill Registry
 
 The `SkillRegistry` manages skill lifecycle:

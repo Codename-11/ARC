@@ -81,6 +81,16 @@ Sends spans to any OpenTelemetry-compatible collector. Configure the endpoint in
 }
 ```
 
+## TUI Telemetry View
+
+The TUI Traces view (labeled "Telemetry" in the sidebar) displays real log events from `queryLogEvents()` with keyboard-driven refresh.
+
+| Key | Action |
+|-----|--------|
+| `r` | Refresh the event list |
+
+The view shows timestamped log events with level, component, and message. Events update on refresh, giving you a live tail of structured log output directly in the TUI.
+
 ## Structured Logs
 
 Separate from OpenTelemetry traces, ARC also writes structured logs:

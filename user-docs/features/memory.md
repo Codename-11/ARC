@@ -39,6 +39,33 @@ arc memory list --type preference
 | `preference` | Explicit preference | "Always use conventional commits" |
 | `fact` | Factual knowledge | "API rate limit is 100 req/min" |
 
+## TUI Memory Management
+
+The TUI Memory view displays real persistent memory entries with keyboard-driven browsing and search.
+
+| Key | Action |
+|-----|--------|
+| `s` | Search memories by keyword |
+| `d` | Delete the selected memory entry |
+| `↑` / `↓` | Navigate the memory list |
+
+The view shows each entry's scope, type, content preview, and relevance score. Search results are ranked by the same deterministic scoring used by the CLI.
+
+## Web Dashboard Memory Management
+
+The [Web Dashboard](/features/dashboard) Memory view provides full memory management through a browser interface:
+
+- **Add entries** — create new memory entries with content, scope, and type
+- **Search** — keyword search with the same ranking algorithm as the CLI
+- **Delete** — remove individual entries
+- **Filter** — narrow results by scope (`session`, `persistent`, `shared`) and type (`observation`, `correction`, `preference`, `fact`)
+
+All changes are broadcast over WebSocket for real-time updates across connected clients.
+
+::: tip
+Memory is fully managed from all three interfaces — CLI, TUI, and Web Dashboard. The same search ranking applies across all interfaces.
+:::
+
 ## Relevance Scoring
 
 Memories use an **exponential decay** scoring model. Each memory has a relevance score that decays over time, with a configurable half-life. Accessing a memory boosts its score.
@@ -73,4 +100,4 @@ Extracted memories are stored as `persistent` scope entries and surface in futur
 - **Persistent memory** — JSON file-backed at `~/.arc/memory/`
 - **Shared memory** — linked via junction/symlink to `~/.arc/shared/memory/`
 
-The web dashboard exposes memory via the `/api/memory` REST endpoint.
+The web dashboard exposes memory via the `/api/memory` REST endpoint with full CRUD support — add, search, delete, and filter. See [Web Dashboard](/features/dashboard) for details.
