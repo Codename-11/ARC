@@ -4,6 +4,13 @@ import { Box, Text, useInput } from "ink";
 import { useScreenSize } from "fullscreen-ink";
 import { Spinner } from "@inkjs/ui";
 import { ImportHint } from "../components/ImportHint.js";
+import { TokenizedInput } from "../components/TokenizedInput.js";
+import {
+  AutoCompleteOverlay,
+  resolveAutoComplete,
+  applyCompletion,
+  type AutoCompleteState,
+} from "../components/AutoComplete.js";
 import { useTheme } from "../theme.js";
 import { loadConfig, saveConfig } from "../../config.js";
 import { buildProfileEnv } from "../../auth.js";
@@ -98,7 +105,9 @@ export function SessionView({
   const maxLineWidth = Math.max(40, screenWidth - 27);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [composer, setComposer] = useState("");
+  const [acState, setAcState] = useState<AutoCompleteState | null>(null);
   const activeProfile = profiles.find((profile) => profile.active) ?? profiles[0];
+  const profileNames = profiles.map((p) => p.name);
   const readyProfiles = profiles.filter((profile) => profile.credential?.authenticated);
   const pendingProfiles = profiles.filter((profile) => !profile.credential?.authenticated);
   const queue = [...readyProfiles, ...pendingProfiles].slice(0, 5);
@@ -111,6 +120,7 @@ export function SessionView({
 
   useEffect(() => {
     onTypingChange(composer.length > 0);
+    if (composer.length === 0) setAcState(null);
     return () => {
       onTypingChange(false);
     };
@@ -120,6 +130,28 @@ export function SessionView({
     async (input, key) => {
       if (!isContentFocused) {
         return;
+      }
+
+      // ── Auto-complete navigation ────────────────────────────
+      if (acState) {
+        if (key.upArrow) {
+          setAcState((s) => s ? { ...s, selectedIndex: Math.max(0, s.selectedIndex - 1) } : null);
+          return;
+        }
+        if (key.downArrow) {
+          setAcState((s) => s ? { ...s, selectedIndex: Math.min(s.suggestions.length - 1, s.selectedIndex + 1) } : null);
+          return;
+        }
+        if (key.tab || (key.return && acState.suggestions.length > 0)) {
+          const completed = applyCompletion(composer, acState);
+          setComposer(completed);
+          setAcState(resolveAutoComplete(completed, profileNames));
+          return;
+        }
+        if (key.escape) {
+          setAcState(null);
+          return;
+        }
       }
 
       if (key.upArrow) {
@@ -139,12 +171,17 @@ export function SessionView({
       }
 
       if (key.backspace || key.delete) {
-        setComposer((current) => current.slice(0, -1));
+        setComposer((current) => {
+          const next = current.slice(0, -1);
+          setAcState(resolveAutoComplete(next, profileNames));
+          return next;
+        });
         return;
       }
 
       if (key.escape) {
         setComposer("");
+        setAcState(null);
         return;
       }
 
@@ -445,7 +482,11 @@ export function SessionView({
       }
 
       if (!key.ctrl && !key.meta && input.length === 1) {
-        setComposer((current) => current + input);
+        setComposer((current) => {
+          const next = current + input;
+          setAcState(resolveAutoComplete(next, profileNames));
+          return next;
+        });
       }
     },
     { isActive: isContentFocused }
@@ -531,16 +572,31 @@ export function SessionView({
         )}
       </Box>
 
+      {/* Auto-complete overlay */}
+      {acState && (
+        <AutoCompleteOverlay state={acState} colors={colors} maxWidth={Math.min(40, maxLineWidth)} />
+      )}
+
       {/* Command input */}
       <Section label="command" />
       <Box>
         <Text color={colors.primary} bold>{"› "}</Text>
-        <Text color={composer ? colors.text : colors.dimmed}>
-          {composer ||
-            (activeProfile
+        {composer ? (
+          <TokenizedInput
+            input={composer}
+            colors={colors}
+            validation={{
+              commands: ["/launch", "/switch", "/status", "/dash", "/profiles", "/doctor", "/settings", "/help", "/create", "/clear"],
+              profiles: profileNames,
+            }}
+          />
+        ) : (
+          <Text color={colors.dimmed}>
+            {activeProfile
               ? `/launch ${activeProfile.name}`
-              : "/help for commands")}
-        </Text>
+              : "/help for commands"}
+          </Text>
+        )}
       </Box>
 
       <ImportHint profiles={profiles} />
