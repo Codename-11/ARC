@@ -1,17 +1,11 @@
 ---
 layout: page
 title: Documentation
+head:
+  - - meta
+    - http-equiv: refresh
+      content: 0;url=/docs/guide/
 ---
-
-<script setup>
-import { onMounted } from 'vue'
-import { useRouter } from 'vitepress'
-
-onMounted(() => {
-  const router = useRouter()
-  router.go('/guide/')
-})
-</script>
 
 # ARC Documentation
 
