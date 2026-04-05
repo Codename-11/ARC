@@ -8,13 +8,24 @@ import {
 import { resolveProfile, loadConfig } from "@axiom-labs/arc-core";
 import type { ArcConfig, Profile } from "@axiom-labs/arc-core";
 
-// Mock auth module so launch.ts's buildProfileEnv doesn't depend on
-// adapter wiring that may differ across ESM module boundaries on Linux.
+// Capture variable shared between vi.mock factory and test assertions.
+const capturedLaunchProfile = vi.hoisted(() => ({ value: null as Profile | null }));
+
+// Mock auth + adapters so launch.ts gets our stubs regardless of ESM
+// module identity on Linux. vi.mock is hoisted above imports.
 vi.mock("../../packages/cli/src/auth.js", async (importOriginal) => {
   const actual = (await importOriginal()) as Record<string, unknown>;
   return {
     ...actual,
     buildProfileEnv: vi.fn(async () => ({ CLAUDE_CONFIG_DIR: "/tmp/test" })),
+  };
+});
+
+vi.mock("../../packages/cli/src/adapters/index.js", async (importOriginal) => {
+  const actual = (await importOriginal()) as Record<string, unknown>;
+  return {
+    ...actual,
+    getAdapter: vi.fn((actual as any).getAdapter),
   };
 });
 
@@ -219,14 +230,14 @@ describe("Profile Inheritance – Launch Pipeline", () => {
     const launchModule = await import("../../packages/cli/src/commands/launch.js");
     vi.spyOn(launchModule, "findBinary").mockReturnValue(true);
 
-    // Mock the adapter to capture the profile that gets passed to launch()
-    const adapterModule = await import("../../packages/cli/src/adapters/index.js");
-    let capturedProfile: Profile | null = null;
+    // Override getAdapter (already vi.mock'd at top level) to capture profile
+    const { getAdapter } = await import("../../packages/cli/src/adapters/index.js");
+    capturedLaunchProfile.value = null;
 
-    vi.spyOn(adapterModule, "getAdapter").mockReturnValue({
+    vi.mocked(getAdapter).mockReturnValue({
       name: "claude",
       launch: async (profile: Profile) => {
-        capturedProfile = profile;
+        capturedLaunchProfile.value = profile;
         throw new Error("not implemented");
       },
       terminate: async () => {},
@@ -248,15 +259,16 @@ describe("Profile Inheritance – Launch Pipeline", () => {
     }
 
     // The adapter's launch() received the resolved profile with merged env
-    expect(capturedProfile).not.toBeNull();
-    expect(capturedProfile!.enforcement).toBe("advise"); // child's override
-    expect(capturedProfile!.authType).toBe("oauth"); // from base
-    expect(capturedProfile!.envOverrides).toEqual({
+    expect(capturedLaunchProfile.value).not.toBeNull();
+    expect(capturedLaunchProfile.value!.enforcement).toBe("advise"); // child's override
+    expect(capturedLaunchProfile.value!.authType).toBe("oauth"); // from base
+    expect(capturedLaunchProfile.value!.envOverrides).toEqual({
       BASE_VAR: "from-base",
       CHILD_VAR: "from-child",
     });
 
     exitSpy.mockRestore();
+    vi.mocked(getAdapter).mockRestore();
   });
 
   it("handleLaunch displays error and exits on circular inheritance", async () => {
