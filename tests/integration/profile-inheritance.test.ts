@@ -29,6 +29,17 @@ vi.mock("../../packages/cli/src/adapters/index.js", async (importOriginal) => {
   };
 });
 
+// Mock spawnSync so that findBinary() succeeds on CI where agent tool
+// binaries (claude, gemini, codex) are not installed. vi.spyOn on the
+// launch module's export doesn't intercept the internal call in ESM.
+vi.mock("node:child_process", async (importOriginal) => {
+  const actual = (await importOriginal()) as Record<string, unknown>;
+  return {
+    ...actual,
+    spawnSync: vi.fn(() => ({ status: 0 })),
+  };
+});
+
 let arcDir: string;
 let cleanup: () => void;
 let originalArcDir: string | undefined;
@@ -226,9 +237,7 @@ describe("Profile Inheritance – Launch Pipeline", () => {
       } as Partial<Profile>,
     }, "child");
 
-    // Mock findBinary to return true so launch doesn't fail on missing binary
     const launchModule = await import("../../packages/cli/src/commands/launch.js");
-    vi.spyOn(launchModule, "findBinary").mockReturnValue(true);
 
     // Override getAdapter (already vi.mock'd at top level) to capture profile
     const { getAdapter } = await import("../../packages/cli/src/adapters/index.js");

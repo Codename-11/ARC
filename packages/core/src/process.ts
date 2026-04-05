@@ -57,6 +57,18 @@ export function spawnManagedProcess(opts: SpawnManagedProcessOptions): ManagedPr
 
   const child = spawn(opts.command, opts.args, spawnOpts);
 
+  // Attach error handler immediately to prevent uncaught exceptions from
+  // spawn failures (e.g., ENOENT when the binary doesn't exist on PATH).
+  child.on("error", (err) => {
+    writeLogEvent({
+      level: "error",
+      component: opts.component ?? "process",
+      action: "process:spawn:error",
+      message: `spawn error for ${opts.command}: ${err.message}`,
+      data: { command: opts.command, error: err.message },
+    });
+  });
+
   if (!child.pid) {
     throw new Error(`Failed to spawn process: ${opts.command} ${opts.args.join(" ")}`);
   }
