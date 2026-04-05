@@ -1,129 +1,245 @@
-import { Box, Text } from "ink";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { Box, Text, useInput } from "ink";
 import { useTheme } from "../theme.js";
-import type { ProfileEntry } from "../useProfiles.js";
-
-// TODO: Wire to TaskStore from @axiom-labs/arc-core
-interface Task {
-  id: string;
-  name: string;
-  status: "completed" | "working" | "failed" | "pending";
-  priority: "high" | "medium" | "low";
-  assignee: string;
-}
-
-// TODO: Replace with live data from TaskStore
-const PLACEHOLDER_TASKS: Task[] = [
-  { id: "t-001", name: "migrate auth to oauth2", status: "completed", priority: "high", assignee: "claude-main" },
-  { id: "t-002", name: "refactor hook pipeline", status: "working", priority: "medium", assignee: "gemini-dev" },
-  { id: "t-003", name: "fix swap credential leak", status: "failed", priority: "high", assignee: "claude-main" },
-  { id: "t-004", name: "add MCP server discovery", status: "pending", priority: "low", assignee: "unassigned" },
-];
+import { useTasks } from "../useTasks.js";
+import type { TaskStatus, TaskPriority } from "@axiom-labs/arc-core";
 
 interface Props {
-  profiles: ProfileEntry[];
+  focusedPane: "sidebar" | "content";
+  inputEnabled: boolean;
 }
 
-function SectionHeader({ label, fillWidth }: { label: string; fillWidth?: number }) {
+function statusIndicator(
+  status: TaskStatus,
+  colors: Record<string, string>,
+): { icon: string; label: string; color: string } {
+  switch (status) {
+    case "working":
+      return { icon: "\u25CF", label: "WORKING", color: colors.success };
+    case "completed":
+      return { icon: "\u2713", label: "COMPLETED", color: colors.dimmed };
+    case "failed":
+      return { icon: "\u2717", label: "FAILED", color: colors.error };
+    case "cancelled":
+      return { icon: "\u2717", label: "CANCELLED", color: colors.dimmed };
+    case "assigned":
+      return { icon: "\u25CB", label: "ASSIGNED", color: colors.primary };
+    case "input-required":
+      return { icon: "?", label: "INPUT REQ", color: colors.warning };
+    case "created":
+    default:
+      return { icon: "\u25CB", label: "CREATED", color: colors.dimmed };
+  }
+}
+
+function priorityColor(
+  priority: TaskPriority,
+  colors: Record<string, string>,
+): string {
+  switch (priority) {
+    case "critical":
+      return colors.error;
+    case "high":
+      return colors.warning;
+    case "medium":
+      return colors.text;
+    case "low":
+    default:
+      return colors.dimmed;
+  }
+}
+
+export function TasksView({ focusedPane, inputEnabled }: Props) {
   const { theme } = useTheme();
-  const fill = fillWidth ?? Math.max(2, 24 - label.length);
-  return (
-    <Box gap={1} marginBottom={1}>
-      <Text color={theme.colors.dimmed}>{label}</Text>
-      <Text color={theme.colors.border}>{"─".repeat(fill)}</Text>
-    </Box>
+  const { colors } = theme;
+  const isActive = focusedPane === "content";
+  const { tasks, cancelTask, cycleStatus } = useTasks();
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [message, setMessage] = useState<string | null>(null);
+  const [confirmCancel, setConfirmCancel] = useState(false);
+
+  // --- Fix #3: Safe message timeout ---
+  const messageTimer = useRef<ReturnType<typeof setTimeout>>();
+  const showMessage = useCallback((text: string) => {
+    if (messageTimer.current) clearTimeout(messageTimer.current);
+    setMessage(text);
+    messageTimer.current = setTimeout(() => setMessage(null), 2500);
+  }, []);
+  useEffect(() => () => { if (messageTimer.current) clearTimeout(messageTimer.current); }, []);
+
+  // --- Fix #4: Clamp selectedIndex when tasks change ---
+  useEffect(() => {
+    setSelectedIndex((i) => Math.min(i, Math.max(0, tasks.length - 1)));
+  }, [tasks.length]);
+
+  useInput(
+    (input, key) => {
+      if (!isActive || !inputEnabled) return;
+
+      // Cancel confirmation
+      if (confirmCancel) {
+        if (input === "y" || input === "Y") {
+          const task = tasks[selectedIndex];
+          if (task) {
+            cancelTask(task.id);
+            showMessage("Task cancelled");
+          }
+        }
+        setConfirmCancel(false);
+        return;
+      }
+
+      if (key.upArrow) {
+        setSelectedIndex((i) => Math.max(0, i - 1));
+        return;
+      }
+
+      if (key.downArrow) {
+        setSelectedIndex((i) => Math.min(tasks.length - 1, i + 1));
+        return;
+      }
+
+      // --- Fix #9: Rename to cancel ---
+      if (input === "d") {
+        if (tasks[selectedIndex]) {
+          setConfirmCancel(true);
+          setMessage("Cancel this task? (y/n)");
+        }
+        return;
+      }
+
+      if (input === "s") {
+        const task = tasks[selectedIndex];
+        if (task) {
+          cycleStatus(task.id);
+          showMessage("Status cycled");
+        }
+        return;
+      }
+    },
+    { isActive: isActive && inputEnabled },
   );
-}
 
-function StatusRow({ label, value, color }: { label: string; value: string; color?: string }) {
-  const { theme } = useTheme();
+  const workingCount = tasks.filter((t) => t.status === "working").length;
+  const totalCount = tasks.length;
+
   return (
-    <Box gap={1}>
-      <Box width={18}>
-        <Text color={theme.colors.dimmed}>{label}</Text>
+    <Box flexDirection="column" marginTop={1}>
+      {/* Header */}
+      <Box paddingLeft={2} gap={2} marginBottom={1}>
+        <Text color={colors.text} bold>
+          TASKS
+        </Text>
+        <Text color={colors.dimmed}>
+          {workingCount} WORKING {"\u00B7"} {totalCount} TOTAL
+        </Text>
       </Box>
-      <Text color={color ?? theme.colors.text}>{value}</Text>
-    </Box>
-  );
-}
 
-function StatusBadge({ status }: { status: Task["status"] }) {
-  const { theme } = useTheme();
-  const { colors } = theme;
-  const colorMap: Record<Task["status"], string> = {
-    completed: colors.success,
-    working: colors.warning,
-    failed: colors.error,
-    pending: colors.dimmed,
-  };
-  const labelMap: Record<Task["status"], string> = {
-    completed: "done",
-    working: "work",
-    failed: "fail",
-    pending: "wait",
-  };
-  return <Text color={colorMap[status]}>{`[${labelMap[status]}]`}</Text>;
-}
+      {/* Column headers */}
+      <Box paddingLeft={2}>
+        <Box width={10}>
+          <Text color={colors.dimmed}>ID</Text>
+        </Box>
+        <Box width={32}>
+          <Text color={colors.dimmed}>DESCRIPTION</Text>
+        </Box>
+        <Box width={14}>
+          <Text color={colors.dimmed}>STATUS</Text>
+        </Box>
+        <Box width={11}>
+          <Text color={colors.dimmed}>PRIORITY</Text>
+        </Box>
+        <Box width={10}>
+          <Text color={colors.dimmed}>ASSIGNEE</Text>
+        </Box>
+      </Box>
 
-function PriorityLabel({ priority }: { priority: Task["priority"] }) {
-  const { theme } = useTheme();
-  const { colors } = theme;
-  const colorMap: Record<Task["priority"], string> = {
-    high: colors.error,
-    medium: colors.warning,
-    low: colors.dimmed,
-  };
-  return <Text color={colorMap[priority]}>{priority}</Text>;
-}
+      {/* Separator */}
+      <Box paddingLeft={2}>
+        <Box width={10}>
+          <Text color={colors.border}>{"\u2500".repeat(8)}</Text>
+        </Box>
+        <Box width={32}>
+          <Text color={colors.border}>{"\u2500".repeat(30)}</Text>
+        </Box>
+        <Box width={14}>
+          <Text color={colors.border}>{"\u2500".repeat(12)}</Text>
+        </Box>
+        <Box width={11}>
+          <Text color={colors.border}>{"\u2500".repeat(9)}</Text>
+        </Box>
+        <Box width={10}>
+          <Text color={colors.border}>{"\u2500".repeat(8)}</Text>
+        </Box>
+      </Box>
 
-export function TasksView({ profiles }: Props) {
-  const { theme } = useTheme();
-  const { colors } = theme;
-
-  // TODO: Wire to TaskStore
-  const tasks = PLACEHOLDER_TASKS;
-
-  const total = tasks.length;
-  const working = tasks.filter((t) => t.status === "working").length;
-  const completed = tasks.filter((t) => t.status === "completed").length;
-  const failed = tasks.filter((t) => t.status === "failed").length;
-
-  return (
-    <Box flexDirection="column" flexGrow={1}>
-      <SectionHeader label="tasks" />
-
+      {/* Task rows */}
       {tasks.length === 0 ? (
-        <Text color={colors.dimmed}>No tasks.</Text>
+        <Box paddingLeft={2} marginTop={1}>
+          <Text color={colors.dimmed}>No tasks found.</Text>
+        </Box>
       ) : (
-        <Box flexDirection="column" paddingLeft={1} marginBottom={1}>
-          {/* Column headers */}
-          <Box gap={1} marginBottom={1}>
-            <Box width={26}><Text color={colors.dimmed} bold>name</Text></Box>
-            <Box width={8}><Text color={colors.dimmed} bold>status</Text></Box>
-            <Box width={10}><Text color={colors.dimmed} bold>priority</Text></Box>
-            <Text color={colors.dimmed} bold>assignee</Text>
-          </Box>
+        tasks.map((task, index) => {
+          const isSelected = index === selectedIndex;
+          const status = statusIndicator(task.status, colors);
+          const pColor = priorityColor(task.priority, colors);
 
-          {tasks.map((task) => (
-            <Box key={task.id} gap={1}>
-              <Box width={26}>
-                <Text color={colors.text}>
-                  {task.name.length > 24 ? task.name.slice(0, 23) + "…" : task.name}
+          return (
+            <Box
+              key={task.id}
+              paddingLeft={2}
+              backgroundColor={isSelected ? colors.bgSelected : undefined}
+            >
+              <Box width={10}>
+                <Text
+                  color={isSelected ? colors.primary : colors.dimmed}
+                  wrap="truncate"
+                >
+                  {task.id.slice(0, 8)}
                 </Text>
               </Box>
-              <Box width={8}><StatusBadge status={task.status} /></Box>
-              <Box width={10}><PriorityLabel priority={task.priority} /></Box>
-              <Text color={colors.dimmed}>{task.assignee}</Text>
+              <Box width={32}>
+                <Text
+                  color={colors.text}
+                  bold={isSelected}
+                  wrap="truncate"
+                >
+                  {task.description}
+                </Text>
+              </Box>
+              <Box width={14} gap={1}>
+                <Text color={status.color}>{status.icon}</Text>
+                <Text color={status.color}>{status.label}</Text>
+              </Box>
+              <Box width={11}>
+                <Text color={pColor}>
+                  {task.priority.toUpperCase()}
+                </Text>
+              </Box>
+              <Box width={10}>
+                <Text color={colors.dimmed}>
+                  {task.assignee ?? "\u2014"}
+                </Text>
+              </Box>
             </Box>
-          ))}
+          );
+        })
+      )}
+
+      {/* Message bar */}
+      {message && (
+        <Box paddingLeft={2} paddingTop={1}>
+          <Text color={colors.warning}>{message}</Text>
         </Box>
       )}
 
-      <SectionHeader label="summary" />
-      <Box flexDirection="column" paddingLeft={1}>
-        <StatusRow label="total" value={String(total)} />
-        <StatusRow label="working" value={String(working)} color={colors.warning} />
-        <StatusRow label="completed" value={String(completed)} color={colors.success} />
-        <StatusRow label="failed" value={String(failed)} color={colors.error} />
+      {/* Key hints */}
+      <Box paddingLeft={2} paddingTop={1} gap={2}>
+        <Text color={colors.dimmed}>
+          <Text color={colors.primary} bold>[s]</Text> cycle status{"  "}
+          <Text color={colors.primary} bold>[d]</Text> cancel{"  "}
+          <Text color={colors.primary} bold>[esc]</Text> back
+        </Text>
       </Box>
     </Box>
   );

@@ -230,17 +230,17 @@ export function Dashboard() {
       case "doctor":
         return <DoctorView profiles={profiles} />;
       case "tasks":
-        return <TasksView profiles={profiles} />;
+        return <TasksView focusedPane={focusedPane} inputEnabled={overlay === null} />;
       case "memory":
-        return <MemoryView profiles={profiles} />;
+        return <MemoryView focusedPane={focusedPane} inputEnabled={overlay === null} />;
       case "skills":
-        return <SkillsView profiles={profiles} />;
+        return <SkillsView focusedPane={focusedPane} inputEnabled={overlay === null} />;
       case "sync":
-        return <SyncView profiles={profiles} />;
+        return <SyncView profiles={profiles} focusedPane={focusedPane} inputEnabled={overlay === null} />;
       case "telemetry":
-        return <TelemetryView profiles={profiles} />;
+        return <TelemetryView profiles={profiles} focusedPane={focusedPane} inputEnabled={overlay === null} />;
       case "agents":
-        return <AgentsView profiles={profiles} />;
+        return <AgentsView profiles={profiles} focusedPane={focusedPane} inputEnabled={overlay === null} />;
       default:
         return (
           <SessionView
@@ -258,7 +258,7 @@ export function Dashboard() {
           />
         );
     }
-  }, [activeView, config, focusedPane, loading, overlay, profiles, reload, workspaceTyping]);
+  }, [activeView, activity, config, exit, focusedPane, loading, overlay, profiles, reload, workspaceTyping]);
 
   const overlayNode =
     overlay === "palette" ? (

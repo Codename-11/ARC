@@ -1,9 +1,12 @@
-import { Box, Text } from "ink";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { Box, Text, useInput } from "ink";
 import { useTheme, type ThemeColors } from "../theme.js";
 import type { ProfileEntry } from "../useProfiles.js";
 
 interface Props {
   profiles: ProfileEntry[];
+  focusedPane: "sidebar" | "content";
+  inputEnabled: boolean;
 }
 
 function SectionHeader({ label, fillWidth }: { label: string; fillWidth?: number }) {
@@ -12,7 +15,7 @@ function SectionHeader({ label, fillWidth }: { label: string; fillWidth?: number
   return (
     <Box gap={1} marginBottom={1}>
       <Text color={theme.colors.dimmed}>{label}</Text>
-      <Text color={theme.colors.border}>{"─".repeat(fill)}</Text>
+      <Text color={theme.colors.border}>{"\u2500".repeat(fill)}</Text>
     </Box>
   );
 }
@@ -49,22 +52,61 @@ const PLACEHOLDER_ITEMS: SyncItem[] = [
 function statusIcon(status: SyncStatus, colors: ThemeColors): { icon: string; color: string } {
   switch (status) {
     case "synced":
-      return { icon: "✔", color: colors.success };
+      return { icon: "\u2714", color: colors.success };
     case "pending":
-      return { icon: "●", color: colors.warning };
+      return { icon: "\u25CF", color: colors.warning };
     case "conflict":
-      return { icon: "✖", color: colors.error };
+      return { icon: "\u2716", color: colors.error };
   }
 }
 
-export function SyncView({ profiles }: Props) {
+export function SyncView({ profiles, focusedPane, inputEnabled }: Props) {
   const { theme } = useTheme();
   const { colors } = theme;
+  const isActive = focusedPane === "content";
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [message, setMessage] = useState<string | null>(null);
+
+  // --- Fix #3: Safe message timeout ---
+  const messageTimer = useRef<ReturnType<typeof setTimeout>>();
+  const showMessage = useCallback((text: string) => {
+    if (messageTimer.current) clearTimeout(messageTimer.current);
+    setMessage(text);
+    messageTimer.current = setTimeout(() => setMessage(null), 2500);
+  }, []);
+  useEffect(() => () => { if (messageTimer.current) clearTimeout(messageTimer.current); }, []);
+
+  // --- Fix #4: Clamp selectedIndex when profiles change ---
+  useEffect(() => {
+    setSelectedIndex((i) => Math.min(i, Math.max(0, profiles.length - 1)));
+  }, [profiles.length]);
 
   // TODO: Read real sync provider and timestamps from config/shared layer
   const provider = "local";
   const lastSync = "2026-04-04 09:32:15";
   const direction = "push";
+
+  useInput(
+    (input, key) => {
+      if (!isActive || !inputEnabled) return;
+
+      if (key.upArrow) {
+        setSelectedIndex((i) => Math.max(0, i - 1));
+        return;
+      }
+
+      if (key.downArrow) {
+        setSelectedIndex((i) => Math.min(profiles.length - 1, i + 1));
+        return;
+      }
+
+      if (input === "s") {
+        showMessage("Sync not yet wired");
+        return;
+      }
+    },
+    { isActive: isActive && inputEnabled },
+  );
 
   return (
     <Box flexDirection="column" gap={1}>
@@ -105,6 +147,21 @@ export function SyncView({ profiles }: Props) {
           />
           <StatusRow label="last sync" value={lastSync} color={colors.dimmed} />
         </Box>
+      </Box>
+
+      {/* Message bar */}
+      {message && (
+        <Box paddingLeft={1} paddingTop={1}>
+          <Text color={colors.warning}>{message}</Text>
+        </Box>
+      )}
+
+      {/* Key hints */}
+      <Box paddingLeft={1} paddingTop={1} gap={2}>
+        <Text color={colors.dimmed}>
+          <Text color={colors.primary} bold>[s]</Text> sync{"  "}
+          <Text color={colors.primary} bold>[esc]</Text> back
+        </Text>
       </Box>
     </Box>
   );

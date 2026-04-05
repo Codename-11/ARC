@@ -1,121 +1,209 @@
-import { Box, Text } from "ink";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { Box, Text, useInput } from "ink";
+import { Spinner } from "@inkjs/ui";
 import { useTheme } from "../theme.js";
-import type { ProfileEntry } from "../useProfiles.js";
-
-// TODO: Wire to SkillRegistry from @axiom-labs/arc-core
-interface Skill {
-  id: string;
-  name: string;
-  source: "file" | "mcp" | "built-in";
-  status: "loaded" | "error";
-  description?: string;
-}
-
-// TODO: Replace with live data from SkillRegistry
-const PLACEHOLDER_SKILLS: Skill[] = [
-  { id: "s-001", name: "commit", source: "built-in", status: "loaded", description: "Create conventional commits" },
-  { id: "s-002", name: "review-pr", source: "built-in", status: "loaded", description: "Review pull requests with inline feedback" },
-  { id: "s-003", name: "deploy-preview", source: "mcp", status: "loaded", description: "Deploy preview environments via MCP" },
-  { id: "s-004", name: "custom-lint", source: "file", status: "error", description: "Project-specific lint rules (missing config)" },
-];
+import { useSkills } from "../useSkills.js";
+import type { SkillSource } from "@axiom-labs/arc-core";
 
 interface Props {
-  profiles: ProfileEntry[];
+  focusedPane: "sidebar" | "content";
+  inputEnabled: boolean;
 }
 
-function SectionHeader({ label, fillWidth }: { label: string; fillWidth?: number }) {
+const BAR_SEGMENTS = 10;
+
+function successBar(rate: number, colors: Record<string, string>): { filled: string; empty: string; color: string } {
+  const pct = Math.round(rate * 100);
+  const segments = Math.round((pct / 100) * BAR_SEGMENTS);
+  const filled = "\u2588".repeat(segments);
+  const empty = "\u2591".repeat(BAR_SEGMENTS - segments);
+
+  let color: string;
+  if (pct >= 80) {
+    color = colors.success;
+  } else if (pct >= 50) {
+    color = colors.warning;
+  } else {
+    color = colors.dimmed;
+  }
+
+  return { filled, empty, color };
+}
+
+function sourceColor(source: SkillSource, colors: Record<string, string>): string {
+  switch (source) {
+    case "user":
+      return colors.text;
+    case "mcp":
+      return colors.warning;
+    case "generated":
+      return colors.success;
+    case "builtin":
+    default:
+      return colors.dimmed;
+  }
+}
+
+export function SkillsView({ focusedPane, inputEnabled }: Props) {
   const { theme } = useTheme();
-  const fill = fillWidth ?? Math.max(2, 24 - label.length);
-  return (
-    <Box gap={1} marginBottom={1}>
-      <Text color={theme.colors.dimmed}>{label}</Text>
-      <Text color={theme.colors.border}>{"─".repeat(fill)}</Text>
-    </Box>
+  const { colors } = theme;
+  const isActive = focusedPane === "content";
+  const { skills, loading, reload } = useSkills();
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [message, setMessage] = useState<string | null>(null);
+
+  // --- Fix #3: Safe message timeout ---
+  const messageTimer = useRef<ReturnType<typeof setTimeout>>();
+  const showMessage = useCallback((text: string) => {
+    if (messageTimer.current) clearTimeout(messageTimer.current);
+    setMessage(text);
+    messageTimer.current = setTimeout(() => setMessage(null), 2500);
+  }, []);
+  useEffect(() => () => { if (messageTimer.current) clearTimeout(messageTimer.current); }, []);
+
+  // Clamp selectedIndex when skills change
+  useEffect(() => {
+    setSelectedIndex((i) => Math.min(i, Math.max(0, skills.length - 1)));
+  }, [skills.length]);
+
+  useInput(
+    (input, key) => {
+      if (!isActive || !inputEnabled) return;
+
+      if (key.upArrow) {
+        setSelectedIndex((i) => Math.max(0, i - 1));
+        return;
+      }
+
+      if (key.downArrow) {
+        setSelectedIndex((i) => Math.min(skills.length - 1, i + 1));
+        return;
+      }
+
+      if (input === "l") {
+        reload();
+        showMessage("Reloading skills...");
+        return;
+      }
+    },
+    { isActive: isActive && inputEnabled },
   );
-}
 
-function StatusRow({ label, value, color }: { label: string; value: string; color?: string }) {
-  const { theme } = useTheme();
+  const totalCount = skills.length;
+
   return (
-    <Box gap={1}>
-      <Box width={18}>
-        <Text color={theme.colors.dimmed}>{label}</Text>
+    <Box flexDirection="column" marginTop={1}>
+      {/* Header */}
+      <Box paddingLeft={2} gap={2} marginBottom={1}>
+        <Text color={colors.text} bold>
+          SKILLS
+        </Text>
+        <Text color={colors.dimmed}>
+          {totalCount} LOADED
+        </Text>
       </Box>
-      <Text color={color ?? theme.colors.text}>{value}</Text>
-    </Box>
-  );
-}
 
-function SourceBadge({ source }: { source: Skill["source"] }) {
-  const { theme } = useTheme();
-  const { colors } = theme;
-  const colorMap: Record<Skill["source"], string> = {
-    "built-in": colors.primary,
-    mcp: colors.warning,
-    file: colors.dimmed,
-  };
-  return <Text color={colorMap[source]}>{`[${source}]`}</Text>;
-}
-
-function StatusIndicator({ status }: { status: Skill["status"] }) {
-  const { theme } = useTheme();
-  const { colors } = theme;
-  const icon = status === "loaded" ? "✔" : "✖";
-  const color = status === "loaded" ? colors.success : colors.error;
-  return <Text color={color}>{icon} {status}</Text>;
-}
-
-export function SkillsView({ profiles }: Props) {
-  const { theme } = useTheme();
-  const { colors } = theme;
-
-  // TODO: Wire to SkillRegistry
-  const skills = PLACEHOLDER_SKILLS;
-
-  const total = skills.length;
-  const loaded = skills.filter((s) => s.status === "loaded").length;
-  const errored = skills.filter((s) => s.status === "error").length;
-
-  return (
-    <Box flexDirection="column" flexGrow={1}>
-      <SectionHeader label="skills" />
-
-      {skills.length === 0 ? (
-        <Text color={colors.dimmed}>No skills registered.</Text>
+      {loading ? (
+        <Box paddingLeft={2}>
+          <Spinner label="Loading skills..." />
+        </Box>
       ) : (
-        <Box flexDirection="column" paddingLeft={1} marginBottom={1}>
+        <>
           {/* Column headers */}
-          <Box gap={1} marginBottom={1}>
-            <Box width={20}><Text color={colors.dimmed} bold>name</Text></Box>
-            <Box width={12}><Text color={colors.dimmed} bold>source</Text></Box>
-            <Box width={12}><Text color={colors.dimmed} bold>status</Text></Box>
-            <Text color={colors.dimmed} bold>description</Text>
+          <Box paddingLeft={2}>
+            <Box width={18}>
+              <Text color={colors.dimmed}>NAME</Text>
+            </Box>
+            <Box width={12}>
+              <Text color={colors.dimmed}>SOURCE</Text>
+            </Box>
+            <Box width={8}>
+              <Text color={colors.dimmed}>TOOLS</Text>
+            </Box>
+            <Box width={18}>
+              <Text color={colors.dimmed}>SUCCESS</Text>
+            </Box>
           </Box>
 
-          {skills.map((skill) => (
-            <Box key={skill.id} gap={1}>
-              <Box width={20}>
-                <Text color={colors.text}>{skill.name}</Text>
-              </Box>
-              <Box width={12}><SourceBadge source={skill.source} /></Box>
-              <Box width={12}><StatusIndicator status={skill.status} /></Box>
-              <Text color={colors.dimmed}>
-                {skill.description
-                  ? skill.description.length > 40
-                    ? skill.description.slice(0, 39) + "…"
-                    : skill.description
-                  : "—"}
-              </Text>
+          {/* Separator */}
+          <Box paddingLeft={2}>
+            <Box width={18}>
+              <Text color={colors.border}>{"\u2500".repeat(16)}</Text>
             </Box>
-          ))}
+            <Box width={12}>
+              <Text color={colors.border}>{"\u2500".repeat(10)}</Text>
+            </Box>
+            <Box width={8}>
+              <Text color={colors.border}>{"\u2500".repeat(6)}</Text>
+            </Box>
+            <Box width={18}>
+              <Text color={colors.border}>{"\u2500".repeat(16)}</Text>
+            </Box>
+          </Box>
+
+          {/* Skill rows */}
+          {skills.length === 0 ? (
+            <Box paddingLeft={2} marginTop={1}>
+              <Text color={colors.dimmed}>No skills loaded. Add .json files to ~/.arc/skills/</Text>
+            </Box>
+          ) : (
+            skills.map((skill, index) => {
+              const isSelected = index === selectedIndex;
+              const bar = successBar(skill.successRate, colors);
+              const pct = Math.round(skill.successRate * 100);
+              const sColor = sourceColor(skill.source, colors);
+
+              return (
+                <Box
+                  key={skill.name}
+                  paddingLeft={2}
+                  backgroundColor={isSelected ? colors.bgSelected : undefined}
+                >
+                  <Box width={18}>
+                    <Text
+                      color={isSelected ? colors.primary : colors.text}
+                      bold={isSelected}
+                      wrap="truncate"
+                    >
+                      {skill.name}
+                    </Text>
+                  </Box>
+                  <Box width={12}>
+                    <Text color={sColor}>
+                      {skill.source.toUpperCase()}
+                    </Text>
+                  </Box>
+                  <Box width={8}>
+                    <Text color={colors.text}>
+                      {skill.tools.length}
+                    </Text>
+                  </Box>
+                  <Box width={18} gap={0}>
+                    <Text color={bar.color}>{bar.filled}</Text>
+                    <Text color={colors.dimmed}>{bar.empty}</Text>
+                    <Text color={colors.dimmed}> {String(pct).padStart(3)}%</Text>
+                  </Box>
+                </Box>
+              );
+            })
+          )}
+        </>
+      )}
+
+      {/* Message bar */}
+      {message && (
+        <Box paddingLeft={2} paddingTop={1}>
+          <Text color={colors.warning}>{message}</Text>
         </Box>
       )}
 
-      <SectionHeader label="summary" />
-      <Box flexDirection="column" paddingLeft={1}>
-        <StatusRow label="total" value={String(total)} />
-        <StatusRow label="loaded" value={String(loaded)} color={colors.success} />
-        <StatusRow label="errored" value={String(errored)} color={errored > 0 ? colors.error : colors.dimmed} />
+      {/* Key hints */}
+      <Box paddingLeft={2} paddingTop={1} gap={2}>
+        <Text color={colors.dimmed}>
+          <Text color={colors.primary} bold>[l]</Text> reload{"  "}
+          <Text color={colors.primary} bold>[i]</Text> info{"  "}
+          <Text color={colors.primary} bold>[esc]</Text> back
+        </Text>
       </Box>
     </Box>
   );

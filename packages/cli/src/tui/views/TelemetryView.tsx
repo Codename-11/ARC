@@ -1,9 +1,13 @@
-import { Box, Text } from "ink";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { Box, Text, useInput } from "ink";
 import { useTheme, type ThemeColors } from "../theme.js";
+import { useTelemetry } from "../useTelemetry.js";
 import type { ProfileEntry } from "../useProfiles.js";
 
 interface Props {
   profiles: ProfileEntry[];
+  focusedPane: "sidebar" | "content";
+  inputEnabled: boolean;
 }
 
 function SectionHeader({ label, fillWidth }: { label: string; fillWidth?: number }) {
@@ -12,7 +16,7 @@ function SectionHeader({ label, fillWidth }: { label: string; fillWidth?: number
   return (
     <Box gap={1} marginBottom={1}>
       <Text color={theme.colors.dimmed}>{label}</Text>
-      <Text color={theme.colors.border}>{"─".repeat(fill)}</Text>
+      <Text color={theme.colors.border}>{"\u2500".repeat(fill)}</Text>
     </Box>
   );
 }
@@ -31,20 +35,6 @@ function StatusRow({ label, value, color }: { label: string; value: string; colo
 
 type TraceLevel = "info" | "warn" | "error";
 
-interface TraceEntry {
-  timestamp: string;
-  action: string;
-  session: string;
-  level: TraceLevel;
-}
-
-// TODO: Wire to real activity log from src/log.ts and telemetry exporters
-const PLACEHOLDER_TRACES: TraceEntry[] = [
-  { timestamp: "09:32:15", action: "profile.switch", session: "ses_a1b2", level: "info" },
-  { timestamp: "09:31:42", action: "shared.pull", session: "ses_a1b2", level: "info" },
-  { timestamp: "09:30:08", action: "swap.capture", session: "ses_c3d4", level: "warn" },
-];
-
 function levelColor(level: TraceLevel, colors: ThemeColors): string {
   switch (level) {
     case "info":
@@ -56,13 +46,59 @@ function levelColor(level: TraceLevel, colors: ThemeColors): string {
   }
 }
 
-export function TelemetryView({ profiles }: Props) {
+const MAX_VISIBLE = 20;
+
+export function TelemetryView({ profiles, focusedPane, inputEnabled }: Props) {
   const { theme } = useTheme();
   const { colors } = theme;
+  const isActive = focusedPane === "content";
+  const { events, reload } = useTelemetry();
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [message, setMessage] = useState<string | null>(null);
+
+  // --- Fix #3: Safe message timeout ---
+  const messageTimer = useRef<ReturnType<typeof setTimeout>>();
+  const showMessage = useCallback((text: string) => {
+    if (messageTimer.current) clearTimeout(messageTimer.current);
+    setMessage(text);
+    messageTimer.current = setTimeout(() => setMessage(null), 2500);
+  }, []);
+  useEffect(() => () => { if (messageTimer.current) clearTimeout(messageTimer.current); }, []);
+
+  const displayEvents = events;
+
+  // --- Fix #4: Clamp selectedIndex when events change ---
+  useEffect(() => {
+    setSelectedIndex((i) => Math.min(i, Math.max(0, displayEvents.length - 1)));
+  }, [displayEvents.length]);
+
+  useInput(
+    (input, key) => {
+      if (!isActive || !inputEnabled) return;
+
+      if (key.upArrow) {
+        setSelectedIndex((i) => Math.max(0, i - 1));
+        return;
+      }
+
+      // --- Fix #8: Cap navigation at visible range ---
+      if (key.downArrow) {
+        setSelectedIndex((i) => Math.min(i + 1, Math.min(displayEvents.length - 1, MAX_VISIBLE - 1)));
+        return;
+      }
+
+      if (input === "r") {
+        reload();
+        showMessage("Refreshing traces...");
+        return;
+      }
+    },
+    { isActive: isActive && inputEnabled },
+  );
 
   // TODO: Compute from real telemetry store
-  const totalTraces = PLACEHOLDER_TRACES.length;
-  const activeSessions = new Set(PLACEHOLDER_TRACES.map((t) => t.session)).size;
+  const totalTraces = displayEvents.length;
+  const activeSessions = new Set(displayEvents.map((t) => t.session)).size;
   const exporters = 0;
 
   return (
@@ -71,18 +107,32 @@ export function TelemetryView({ profiles }: Props) {
 
       {/* Recent traces */}
       <Box flexDirection="column">
-        {PLACEHOLDER_TRACES.map((trace, index) => (
-          <Box key={index} gap={2} paddingLeft={1}>
-            <Text color={colors.dimmed}>{trace.timestamp}</Text>
-            <Box width={20}>
-              <Text color={levelColor(trace.level, colors)}>{trace.action}</Text>
-            </Box>
-            <Text color={colors.dimmed}>{trace.session}</Text>
-            <Text color={levelColor(trace.level, colors)} bold={trace.level !== "info"}>
-              {trace.level}
-            </Text>
+        {displayEvents.length === 0 ? (
+          <Box paddingLeft={1}>
+            <Text color={colors.dimmed}>No traces recorded yet.</Text>
           </Box>
-        ))}
+        ) : (
+          displayEvents.slice(0, MAX_VISIBLE).map((trace, index) => {
+            const isSelected = index === selectedIndex;
+            return (
+              <Box
+                key={index}
+                gap={2}
+                paddingLeft={1}
+                backgroundColor={isSelected ? colors.bgSelected : undefined}
+              >
+                <Text color={colors.dimmed}>{trace.timestamp}</Text>
+                <Box width={20}>
+                  <Text color={levelColor(trace.level, colors)}>{trace.action}</Text>
+                </Box>
+                <Text color={colors.dimmed}>{trace.session}</Text>
+                <Text color={levelColor(trace.level, colors)} bold={trace.level !== "info"}>
+                  {trace.level}
+                </Text>
+              </Box>
+            );
+          })
+        )}
       </Box>
 
       {/* Summary */}
@@ -97,6 +147,21 @@ export function TelemetryView({ profiles }: Props) {
             color={exporters > 0 ? colors.success : colors.dimmed}
           />
         </Box>
+      </Box>
+
+      {/* Message bar */}
+      {message && (
+        <Box paddingLeft={1} paddingTop={1}>
+          <Text color={colors.warning}>{message}</Text>
+        </Box>
+      )}
+
+      {/* Key hints */}
+      <Box paddingLeft={1} paddingTop={1} gap={2}>
+        <Text color={colors.dimmed}>
+          <Text color={colors.primary} bold>[r]</Text> refresh{"  "}
+          <Text color={colors.primary} bold>[esc]</Text> back
+        </Text>
       </Box>
     </Box>
   );
