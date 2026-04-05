@@ -17,12 +17,11 @@
 </p>
 
 <p align="center">
-  <a href="https://arc-cli.dev">Documentation</a> ·
-  <a href="https://arc-cli.dev/guide/getting-started">Install</a> ·
-  <a href="https://arc-cli.dev/features/">Features</a> ·
-  <a href="https://arc-cli.dev/architecture/">Architecture</a> ·
-  <a href="https://arc-cli.dev/reference/cli">CLI Reference</a> ·
-  <a href="./docs/spec/SPEC.md">Spec</a>
+  <a href="https://arc-cli.dev/docs/guide/">Documentation</a> ·
+  <a href="https://arc-cli.dev/docs/guide/getting-started">Install</a> ·
+  <a href="https://arc-cli.dev/docs/features/">Features</a> ·
+  <a href="https://arc-cli.dev/docs/architecture/">Architecture</a> ·
+  <a href="https://arc-cli.dev/docs/reference/cli">CLI Reference</a>
 </p>
 
 ---
@@ -273,7 +272,7 @@ arc doctor                         # Run diagnostics
 arc status                         # Show all profiles and auth status
 ```
 
-See the [full command reference](./docs/index.md) for all commands.
+See the [full command reference](https://arc-cli.dev/docs/reference/cli) for all commands.
 
 ## Shell Integration
 
@@ -348,11 +347,11 @@ See [Contributing](https://arc-cli.dev/docs/guide/contributing) for the full dev
 
 ## License
 
-[MIT](LICENSE) — Copyright (c) 2025 [Axiom-Labs](https://axiom-labs.cloud)
+[MIT](LICENSE) — Copyright (c) 2026 [Axiom-Labs](https://axiom-labs.cloud)
 
 ---
 
 <p align="center">
-  Built with the help of AI coding assistants and humans, with &lt;3<br><br>
+  Built with the help of AI coding assistants and humans, with ❤️<br><br>
   <a href="https://ko-fi.com/L4L31Q8LJ1"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="ko-fi"></a>
 </p>
