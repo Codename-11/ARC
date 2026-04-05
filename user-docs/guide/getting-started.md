@@ -11,47 +11,34 @@
 
 ## Installation
 
-### Bootstrap (recommended)
-
-The bootstrap script clones the repo, installs dependencies, runs `arc setup`, and launches the interactive setup wizard.
-
-::: code-group
-
-```powershell [Windows (PowerShell)]
-irm https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/bootstrap.ps1 | iex
-```
-
-```bash [macOS / Linux]
-curl -fsSL https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/bootstrap.sh | bash
-```
-
-:::
-
-What the bootstrap does:
-
-1. Clones or updates the repo into `~/.arc-install/repo`
-2. Runs `npm install`
-3. Runs `arc setup` — installs shims into `~/.local/bin`, adds to user `PATH`
-4. Launches `arc` — the onboarding wizard walks you through creating your first profile
-
-::: tip
-On Windows, a new terminal is required after the first install for PATH changes to take effect.
-:::
-
-### npm
+### npm (recommended)
 
 ```bash
 npm install -g @axiom-labs/arc-cli
 arc setup
 ```
 
-The `arc setup` step is required on any platform — it installs local shims and adds shell integration. Open a new terminal afterward.
+The `arc setup` step installs local shims and adds shell integration. Open a new terminal afterward.
+
+::: tip
+On Windows, a new terminal is required after the first install for PATH changes to take effect.
+:::
+
+### From source
+
+If you prefer to build from source or want to contribute:
+
+```bash
+git clone https://github.com/Codename-11/ARC.git
+cd ARC
+pnpm install
+pnpm build
+node dist/index.js setup
+```
+
+See [Contributing](/guide/contributing) for the full development setup.
 
 ## Updating
-
-### Bootstrap install
-
-Re-run the same one-liner. The script is idempotent — it pulls latest code, reinstalls deps, and refreshes shims.
 
 ### npm install
 
@@ -64,7 +51,8 @@ arc update
 
 ```bash
 git pull
-pnpm install:local     # Rebuild + refresh shims
+pnpm install
+pnpm build
 ```
 
 ## First Profile

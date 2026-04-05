@@ -115,21 +115,7 @@ site/                # React landing site (Vite + Tailwind v4)
 
 ## Installation
 
-### Bootstrap (recommended on Windows)
-
-**PowerShell:**
-
-```powershell
-irm https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/bootstrap.ps1 | iex
-```
-
-**macOS / Linux:**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/Codename-11/ARC/master/scripts/bootstrap.sh | bash
-```
-
-### npm
+### npm (recommended)
 
 ```bash
 npm install -g @axiom-labs/arc-cli
@@ -137,7 +123,18 @@ arc setup
 arc
 ```
 
-See [Getting Started](./docs/getting-started.md) for requirements and platform notes.
+### From source
+
+If you prefer to build from source or want to contribute:
+
+```bash
+git clone https://github.com/Codename-11/ARC.git
+cd ARC && pnpm install
+pnpm build
+node dist/index.js setup
+```
+
+See [Getting Started](https://arc-cli.dev/docs/guide/getting-started) for requirements and platform notes.
 
 ## Quick Start
 
@@ -308,17 +305,16 @@ arc shell-init --shell powershell | Out-String | Invoke-Expression    # PowerShe
 
 ## Documentation
 
-| Guide | |
-|-------|-|
-| [Getting Started](./docs/getting-started.md) | Install, requirements, first profile |
-| [Profiles](./docs/profiles.md) | Create, switch, import, delete |
-| [Authentication](./docs/authentication.md) | OAuth, API key, Bedrock, Vertex, Foundry |
-| [Shell Integration](./docs/shell-integration.md) | Bash, zsh, fish, PowerShell |
-| [Advanced Usage](./docs/advanced.md) | Shared layer, credential hot-swap, exec, subshell |
-| [Configuration](./docs/configuration.md) | Data layout and config schema |
-| [Spec v2.0](./docs/spec/SPEC.md) | Full architecture and phase spec |
-| [Development](./docs/development.md) | Build, test, contribute |
-| [Troubleshooting](./docs/troubleshooting.md) | Common issues and fixes |
+| | |
+|---|---|
+| [Getting Started](https://arc-cli.dev/docs/guide/getting-started) | Install, requirements, first profile |
+| [Profiles](https://arc-cli.dev/docs/guide/profiles) | Create, switch, import, inherit, delete |
+| [Authentication](https://arc-cli.dev/docs/guide/authentication) | OAuth, API key, Bedrock, Vertex, Foundry |
+| [Features](https://arc-cli.dev/docs/features/) | Hooks, tasks, memory, skills, sessions, orchestration |
+| [Architecture](https://arc-cli.dev/docs/architecture/) | Adapters, hook pipeline, MCP, packages |
+| [CLI Reference](https://arc-cli.dev/docs/reference/cli) | Complete command reference |
+| [Configuration](https://arc-cli.dev/docs/reference/configuration) | Data layout and config schema |
+| [Contributing](https://arc-cli.dev/docs/guide/contributing) | Build, test, contribute |
 
 ## Development
 
@@ -348,11 +344,11 @@ pnpm --filter @axiom-labs/arc-mcp test
 pnpm --filter @axiom-labs/arc-dashboard dev
 ```
 
-See [Development](./docs/development.md) for the full guide.
+See [Contributing](https://arc-cli.dev/docs/guide/contributing) for the full development guide.
 
 ## License
 
-[MIT](LICENSE) — Copyright (c) 2025 [Bailey Dixon](https://github.com/Codename-11)
+[MIT](LICENSE) — Copyright (c) 2025 [Axiom-Labs](https://axiom-labs.cloud)
 
 ---
 
