@@ -27,6 +27,8 @@ Tracking file for planned features, enhancements, and ideas. Checked items are s
 - [x] **Tool-adapter architecture** — `RuntimeAdapter` interface with lifecycle methods; Claude, Codex, Gemini, OpenClaw, and Generic adapters (Phase 2, 5-6)
 - [x] **Profile inheritance** — `inherits` field + `resolveProfile()` engine for base + override resolution (Phase 9)
 - [x] **Project-local config** (`arc.json`) — preferred tool, profile, workspace overrides per repo (Phase 9)
+- [x] **Agent instructions** — `instructions` / `instructionsFile` fields on Profile, resolved at launch, injected as `ARC_AGENT_INSTRUCTIONS` env var; `arc instructions` CLI (show/set/edit/clear)
+- [x] **OpenAI-compatible providers** — `openai-compat` auth type + `ProviderConfig` on Profile (baseUrl, model, apiKeyEnvVar); 7 presets (OpenRouter, Ollama, LM Studio, Together, Groq, MiniMax, DeepSeek); `arc provider` CLI (set/show/clear/presets)
 - [ ] **Team/shared config** — repo-checked config with local secret overlays
 - [ ] **Backup/export/import** — move profiles and settings between machines
 - [x] **Managed updates** — self-update system with npm registry check and TUI update banner
@@ -53,7 +55,8 @@ Tracking file for planned features, enhancements, and ideas. Checked items are s
 - [x] OpenClaw adapter (plugin manifest, RuntimeAdapter, 3 lifecycle hooks)
 - [x] Hermes Agent adapter (MCP bridge, lifecycle, process management)
 - [x] Generic adapter factory (fallback for any unknown tool, health monitoring)
-- [x] 48 adapter registry + generic adapter tests
+- [x] OpenAI Compatible adapter (custom provider endpoints, 7 presets)
+- [x] 50+ adapter registry + generic adapter tests
 
 ### Logging & Lifecycle (Phases 3-4)
 - [x] Structured JSONL log at `~/.arc/logs/structured.jsonl`

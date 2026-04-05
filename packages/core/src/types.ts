@@ -1,4 +1,4 @@
-export type AuthType = "oauth" | "api-key" | "bedrock" | "vertex" | "foundry";
+export type AuthType = "oauth" | "api-key" | "bedrock" | "vertex" | "foundry" | "openai-compat";
 
 export type AgentTool = string;
 
@@ -20,6 +20,18 @@ export interface HookConfig {
   options?: Record<string, unknown>;
 }
 
+/** OpenAI-compatible provider configuration. */
+export interface ProviderConfig {
+  /** API base URL (e.g. https://openrouter.ai/api/v1, http://localhost:11434/v1) */
+  baseUrl: string;
+  /** Model identifier (e.g. anthropic/claude-3.5-sonnet, llama3) */
+  model?: string;
+  /** Env var name that holds the API key. Defaults to OPENAI_API_KEY. */
+  apiKeyEnvVar?: string;
+  /** Provider display name for UI (e.g. "OpenRouter", "Ollama", "LM Studio") */
+  displayName?: string;
+}
+
 export interface Profile {
   authType: AuthType;
   tool?: AgentTool;
@@ -38,6 +50,12 @@ export interface Profile {
   enforcement?: EnforcementMode;
   /** Per-hook configuration overrides. Keys are hook names. */
   hooks?: Record<string, HookConfig>;
+  /** Custom instructions / system prompt injected into agent context. */
+  instructions?: string;
+  /** Path to an instructions file (read at launch time). Takes precedence over inline instructions. */
+  instructionsFile?: string;
+  /** OpenAI-compatible provider configuration for custom endpoints. */
+  provider?: ProviderConfig;
 }
 
 export interface ArcSettings {

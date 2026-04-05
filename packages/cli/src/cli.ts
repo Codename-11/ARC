@@ -51,7 +51,7 @@ export function createProgram(): Command {
     .description("Create a new profile")
     .option(
       "--auth-type <type>",
-      "Auth type (oauth, api-key, bedrock, vertex, foundry)"
+      "Auth type (oauth, api-key, bedrock, vertex, foundry, openai-compat)"
     )
     .option("--tool <tool>", "Agent tool binary (claude, gemini, codex, ...)")
     .option("--description <desc>", "Profile description")
@@ -360,7 +360,7 @@ Examples:
     .description("Create a new profile")
     .option(
       "--auth-type <type>",
-      "Auth type (oauth, api-key, bedrock, vertex, foundry)"
+      "Auth type (oauth, api-key, bedrock, vertex, foundry, openai-compat)"
     )
     .option("--tool <tool>", "Agent tool binary (claude, gemini, codex, ...)")
     .option("--description <desc>", "Profile description")
@@ -451,6 +451,89 @@ Examples:
       saveConfig(config);
       success(`Launch flags for "${name}": ${flags.join(" ")}`);
       showInfo("These flags will be prepended on every `arc launch`.");
+    });
+
+  // === Agent Instructions ===
+
+  const instructions = program
+    .command("instructions")
+    .alias("inst")
+    .description("Manage agent instructions / system prompts per profile");
+
+  instructions
+    .command("show [name]")
+    .description("Show resolved instructions for a profile (default: active)")
+    .action(async (name?: string) => {
+      const mod = await import("./commands/instructions.js");
+      await mod.handleInstructionsShow(name);
+    });
+
+  instructions
+    .command("set <name>")
+    .description("Set inline instructions for a profile")
+    .option("--from-file <path>", "Read instructions from a file instead of inline")
+    .option("--file <path>", "Set instructionsFile path (read at launch time)")
+    .action(async (name: string, opts: { fromFile?: string; file?: string }) => {
+      const mod = await import("./commands/instructions.js");
+      await mod.handleInstructionsSet(name, opts);
+    });
+
+  instructions
+    .command("edit <name>")
+    .description("Open instructions in $EDITOR")
+    .action(async (name: string) => {
+      const mod = await import("./commands/instructions.js");
+      await mod.handleInstructionsEdit(name);
+    });
+
+  instructions
+    .command("clear <name>")
+    .description("Remove instructions from a profile")
+    .action(async (name: string) => {
+      const mod = await import("./commands/instructions.js");
+      await mod.handleInstructionsClear(name);
+    });
+
+  // === Provider Configuration ===
+
+  const provider = program
+    .command("provider")
+    .description("Configure custom OpenAI-compatible providers for profiles");
+
+  provider
+    .command("set <name>")
+    .description("Set provider config on a profile")
+    .option("--base-url <url>", "API base URL (e.g. https://openrouter.ai/api/v1)")
+    .option("--model <model>", "Model identifier (e.g. anthropic/claude-3.5-sonnet)")
+    .option("--api-key-var <var>", "Env var name for the API key (default: OPENAI_API_KEY)")
+    .option("--display-name <name>", "Provider display name (e.g. OpenRouter, Ollama)")
+    .action(async (name: string, opts: { baseUrl?: string; model?: string; apiKeyVar?: string; displayName?: string }) => {
+      const mod = await import("./commands/provider.js");
+      await mod.handleProviderSet(name, opts);
+    });
+
+  provider
+    .command("show [name]")
+    .description("Show provider config for a profile (default: active)")
+    .action(async (name?: string) => {
+      const mod = await import("./commands/provider.js");
+      await mod.handleProviderShow(name);
+    });
+
+  provider
+    .command("clear <name>")
+    .description("Remove provider config from a profile")
+    .action(async (name: string) => {
+      const mod = await import("./commands/provider.js");
+      await mod.handleProviderClear(name);
+    });
+
+  provider
+    .command("presets")
+    .description("List known provider presets (OpenRouter, Ollama, LM Studio, etc.)")
+    .action(async () => {
+      const mod = await import("./commands/provider.js");
+      await mod.handleProviderPresets();
     });
 
   // === Shared Layer ===

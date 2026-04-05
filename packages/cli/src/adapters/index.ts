@@ -170,6 +170,17 @@ function createBasicAdapter(config: {
             authType: "foundry",
             method: "foundry",
           };
+        case "openai-compat": {
+          // Check for API key via env var name from provider config, or OPENAI_API_KEY
+          const keyVar = profile.provider?.apiKeyEnvVar ?? "OPENAI_API_KEY";
+          const hasKey = profile.envOverrides?.[keyVar] !== undefined
+            || await retrieveSecret(path.basename(profile.configDir)).then(Boolean).catch(() => false);
+          return {
+            authenticated: hasKey,
+            authType: "openai-compat",
+            method: "api-key",
+          };
+        }
       }
     },
     async buildProfileEnv(profile: Profile): Promise<Record<string, string | undefined>> {
@@ -180,6 +191,11 @@ function createBasicAdapter(config: {
       };
       if (config.configEnvVar) {
         env[config.configEnvVar] = profile.configDir;
+      }
+      // Inject provider config as env vars for OpenAI-compatible endpoints
+      if (profile.provider) {
+        if (profile.provider.baseUrl) env["OPENAI_BASE_URL"] = profile.provider.baseUrl;
+        if (profile.provider.model) env["OPENAI_MODEL"] = profile.provider.model;
       }
       for (const [key, value] of Object.entries(profile.envOverrides ?? {})) {
         env[key] = value;
@@ -590,12 +606,122 @@ const codexAdapter = createBasicAdapter({
   lifecycle: codexLifecycle,
 });
 
+// ─── OpenAI-compatible adapter ──────────────────────────────────────
+
+const openaiCompatProcessHandles = new Map<number, ManagedProcessHandle>();
+
+const openaiCompatLifecycle: LifecycleOverrides = {
+  async launch(profile: Profile, options: LaunchOptions): Promise<AgentProcess> {
+    // Determine binary: use envOverrides.OPENAI_COMPAT_BINARY or fall back to "codex"
+    const binary = profile.envOverrides?.["OPENAI_COMPAT_BINARY"] || "codex";
+    const args = [...options.args];
+
+    // Inject provider config into env
+    const env: NodeJS.ProcessEnv = { ...process.env, ...options.env };
+
+    if (profile.provider) {
+      if (profile.provider.baseUrl) {
+        env["OPENAI_BASE_URL"] = profile.provider.baseUrl;
+      }
+      if (profile.provider.model) {
+        // Pass as --model arg for Codex; also set env for tools that read it
+        args.unshift("--model", profile.provider.model);
+        env["OPENAI_MODEL"] = profile.provider.model;
+      }
+    }
+
+    if (options.beforeSpawn) {
+      await options.beforeSpawn();
+    }
+
+    const command = process.platform === "win32" ? "cmd" : binary;
+    const spawnArgs = process.platform === "win32" ? ["/c", binary, ...args] : args;
+
+    const handle = spawnManagedProcess({
+      command,
+      args: spawnArgs,
+      env,
+      cwd: options.cwd,
+      component: "openai-compat",
+    });
+
+    openaiCompatProcessHandles.set(handle.pid, handle);
+    handle.child.once("exit", () => {
+      openaiCompatProcessHandles.delete(handle.pid);
+    });
+
+    return {
+      pid: handle.pid,
+      tool: "openai-compat",
+      profile: "default",
+      startedAt: new Date(),
+    };
+  },
+
+  async terminate(agentProcess: AgentProcess): Promise<void> {
+    openaiCompatProcessHandles.delete(agentProcess.pid);
+    await terminateProcess(agentProcess.pid, "openai-compat");
+  },
+
+  isRunning(agentProcess: AgentProcess): boolean {
+    const alive = isProcessRunning(agentProcess.pid);
+    writeLogEvent({
+      level: "debug",
+      component: "openai-compat",
+      action: alive ? "process:alive" : "process:dead",
+      message: `pid=${agentProcess.pid}`,
+      data: { pid: agentProcess.pid },
+    });
+    return alive;
+  },
+
+  onOutput(agentProcess: AgentProcess, handler: (event: OutputEvent) => void): void {
+    const handle = openaiCompatProcessHandles.get(agentProcess.pid);
+    if (!handle?.child.stdout) return;
+
+    const rl = createInterface({ input: handle.child.stdout });
+    rl.on("line", (line) => {
+      handler({
+        type: "raw",
+        content: line,
+        timestamp: new Date(),
+      });
+    });
+  },
+};
+
+const openaiCompatAdapter = createBasicAdapter({
+  id: "openai-compat",
+  displayName: "OpenAI Compatible",
+  dirName: ".openai-compat",
+  markerFiles: ["config.json", ".env"],
+  installHint:
+    "Configure with: arc create <name> --tool openai-compat --auth-type openai-compat\n" +
+    "Then set provider: arc provider set <name> --base-url <url> --model <model>",
+  configEnvVar: "OPENAI_COMPAT_HOME",
+  capabilities: {
+    hooks: false,
+    sdkControl: false,
+    pluginSystem: false,
+    mcpSupport: false,
+    jsonOutput: false,
+    sandboxing: false,
+    processWrap: true,
+    remoteSupport: false,
+    permissionTier: "interactive",
+  },
+  lifecycle: openaiCompatLifecycle,
+});
+
+// ─── Adapter registry ───────────────────────────────────────────────
+
 const adapters = new Map<string, RuntimeAdapter>([
   [claudeAdapter.id, claudeAdapter],
   [geminiAdapter.id, geminiAdapter],
   [codexAdapter.id, codexAdapter],
   [openclawAdapter.id, openclawAdapter],
   [hermesAdapter.id, hermesAdapter],
+  [openaiCompatAdapter.id, openaiCompatAdapter],
 ]);
 
 export function listAdapters(): RuntimeAdapter[] {

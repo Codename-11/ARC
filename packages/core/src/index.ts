@@ -37,6 +37,7 @@ export type {
   AuthType,
   AgentTool,
   Profile,
+  ProviderConfig,
   ArcSettings,
   ArcConfig,
   SharedManifest,

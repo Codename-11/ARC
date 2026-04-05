@@ -5,7 +5,7 @@ import { getArcDir, getConfigPath } from "./paths.js";
 import { deepMerge } from "./shared-fs.js";
 import type { ArcConfig, Profile } from "./types.js";
 
-const AUTH_TYPES = new Set(["oauth", "api-key", "bedrock", "vertex", "foundry"]);
+const AUTH_TYPES = new Set(["oauth", "api-key", "bedrock", "vertex", "foundry", "openai-compat"]);
 
 export function defaultConfig(): ArcConfig {
   return { version: 1, activeProfile: "default", profiles: {} };
@@ -170,4 +170,24 @@ export function resolveProfile(config: ArcConfig, profileName: string): Profile 
   }
 
   return merged as unknown as Profile;
+}
+
+/**
+ * Resolve the effective instructions text for a profile.
+ *
+ * Priority: instructionsFile (read from disk) > inline instructions > undefined.
+ * Returns undefined if no instructions are configured.
+ */
+export function resolveInstructions(profile: Profile): string | undefined {
+  if (profile.instructionsFile) {
+    const resolved = path.isAbsolute(profile.instructionsFile)
+      ? profile.instructionsFile
+      : path.resolve(profile.configDir, profile.instructionsFile);
+    try {
+      return fs.readFileSync(resolved, "utf-8");
+    } catch {
+      // File missing or unreadable — fall through to inline
+    }
+  }
+  return profile.instructions;
 }

@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { loadConfig } from "../config.js";
 import { buildProfileEnv } from "../auth.js";
-import { resolveEffectiveProfile } from "@axiom-labs/arc-core";
+import { resolveEffectiveProfile, resolveInstructions } from "@axiom-labs/arc-core";
 import { error, info, warn, cmd } from "../display.js";
 import { logAction } from "../log.js";
 import { getAdapter } from "../adapters/index.js";
@@ -210,6 +210,19 @@ export async function handleLaunch(
   }
 
   const profileEnv = await buildProfileEnv(profile, profileName);
+
+  // ─── Resolve and inject agent instructions ─────────────────────────
+  const instructionsText = resolveInstructions(profile);
+  if (instructionsText) {
+    profileEnv["ARC_AGENT_INSTRUCTIONS"] = instructionsText;
+    writeLogEvent({
+      level: "info",
+      component: "launch",
+      action: "instructions:resolved",
+      message: `Agent instructions loaded (${instructionsText.length} chars)`,
+      data: { profile: profileName, source: profile.instructionsFile ? "file" : "inline" },
+    });
+  }
 
   if (!findBinary(tool)) {
     error(`Binary "${tool}" not found on PATH.`);

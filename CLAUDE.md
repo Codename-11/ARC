@@ -30,7 +30,9 @@ ARC (Agent Runtime Control) is a CLI + TUI for managing multiple agent profiles 
 - **Deployment:** Root `Dockerfile` + `nginx.conf` — multi-stage build merging `site/` at `/` and `user-docs/` at `/docs/` into single nginx container
 - **Web Dashboard:** 13 view components (Overview, Sessions, Traces, Risk, Tasks, Skills, Memory, Agents, Factory + Profiles, Diagnostics, Sync, Plugins)
 - **Orchestration layer:** Hook pipeline (8 hooks in priority order), roundtable multi-agent discussions, task delegation protocol, interagent routing, source classification
-- **Adapters:** Claude Code (SDK + plugin + hooks), Codex CLI, Gemini CLI, OpenClaw (native plugin), Hermes Agent (MCP bridge), Generic (fallback for any tool)
+- **Adapters:** Claude Code (SDK + plugin + hooks), Codex CLI, Gemini CLI, OpenClaw (native plugin), Hermes Agent (MCP bridge), OpenAI Compatible (custom providers), Generic (fallback for any tool)
+- **Agent instructions:** `instructions` / `instructionsFile` fields on Profile; resolved at launch, injected as `ARC_AGENT_INSTRUCTIONS` env var; `arc instructions` CLI for show/set/edit/clear
+- **Custom providers:** `openai-compat` auth type + `ProviderConfig` (baseUrl, model, apiKeyEnvVar) on Profile; 7 presets (OpenRouter, Ollama, LM Studio, Together, Groq, MiniMax, DeepSeek); `arc provider` CLI for set/show/clear/presets
 
 ## Key Conventions
 
