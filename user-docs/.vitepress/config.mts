@@ -63,6 +63,13 @@ export default defineConfig({
           ],
         },
         {
+          text: 'Agent Runtimes',
+          items: [
+            { text: 'OpenClaw', link: '/guide/openclaw' },
+            { text: 'Hermes Agent', link: '/guide/hermes' },
+          ],
+        },
+        {
           text: 'Integration',
           items: [
             { text: 'Shell Integration', link: '/guide/shell-integration' },
