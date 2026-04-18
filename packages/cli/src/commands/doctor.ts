@@ -226,6 +226,22 @@ async function checkProfiles(): Promise<void> {
 
 // ── Main Handler ────────────────────────────────────
 
+/**
+ * Diagnostic: env.deprecated_no_flicker
+ * Flags the deprecated CLAUDE_CODE_NO_FLICKER env var. v2.1.110+ of Claude Code
+ * uses `/tui fullscreen` instead; leaving this var set can cause odd rendering.
+ */
+function checkDeprecatedEnv(): void {
+  if (process.env["CLAUDE_CODE_NO_FLICKER"] !== undefined) {
+    warning(
+      "CLAUDE_CODE_NO_FLICKER is deprecated (v2.1.110+ uses /tui fullscreen)"
+    );
+    console.log(
+      `    ${pc.dim("Repair: Remove CLAUDE_CODE_NO_FLICKER from your shell profile")}`
+    );
+  }
+}
+
 function checkNodeVersion(): void {
   const version = process.version.replace(/^v/, "");
   const major = parseInt(version.split(".")[0], 10);
@@ -250,6 +266,7 @@ export async function handleDoctor(): Promise<void> {
   checkConfigFile();
   checkPath();
   checkShellIntegration();
+  checkDeprecatedEnv();
 
   await checkProfiles();
 

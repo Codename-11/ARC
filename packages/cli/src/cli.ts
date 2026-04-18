@@ -208,6 +208,8 @@ export function createProgram(): Command {
     .command("launch [name]")
     .description("Launch agent tool with a profile")
     .option("-d, --dashboard", "Start web dashboard alongside agent")
+    .option("--native", "Run the tool with full TTY handoff (ARC exits, tool paints its own TUI)")
+    .option("--worker", "Run the tool under ARC supervision (stdout captured for orchestration)")
     .passThroughOptions()
     .allowUnknownOption()
     .allowExcessArguments()
@@ -216,8 +218,19 @@ export function createProgram(): Command {
       `
 All flags after the profile name are forwarded to the agent tool.
 
+Launch modes:
+  --native   Full TTY handoff (default). ARC exits; tool paints its own TUI
+             (e.g. Claude's statusLine). Best for daily interactive use.
+  --worker   Run under ARC supervision. Stdout captured for monitoring /
+             orchestration (roundtable, pipelines). Suppresses native TUI chrome.
+
+If neither flag is given, the profile's \`launchMode\` setting is used
+(fallback: native).
+
 Examples:
   $ arc launch work
+  $ arc launch work --native
+  $ arc launch work --worker
   $ arc launch work --model sonnet
   $ arc launch work --dashboard
   $ arc launch work --dangerously-skip-permissions
@@ -228,11 +241,18 @@ Examples:
     .action(
       async (
         name: string | undefined,
-        opts: { dashboard?: boolean },
+        opts: { dashboard?: boolean; native?: boolean; worker?: boolean },
         cmd: Command
       ) => {
+        // Re-inject parsed launch-mode flags into the args array so handleLaunch can see them.
+        // (Commander strips recognized options, but handleLaunch's CLI-flag extractor expects
+        // them in the raw-args stream.)
+        const extraArgs: string[] = [];
+        if (opts.native) extraArgs.push("--native");
+        if (opts.worker) extraArgs.push("--worker");
+        const mergedArgs = extraArgs.length > 0 ? [...cmd.args, ...extraArgs] : cmd.args;
         const mod = await import("./commands/launch.js");
-        await mod.handleLaunch(name, cmd.args, { dashboard: opts.dashboard });
+        await mod.handleLaunch(name, mergedArgs, { dashboard: opts.dashboard });
       }
     );
 

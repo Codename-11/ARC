@@ -50,7 +50,16 @@ function getInstallHint(tool: string): string {
 export async function handleLaunch(
   name: string | undefined,
   rawArgs: string[],
-  opts?: { beforeSpawn?: () => void | Promise<void>; dashboard?: boolean }
+  opts?: {
+    beforeSpawn?: () => void | Promise<void>;
+    dashboard?: boolean;
+    /**
+     * Force a specific launch mode regardless of profile setting or CLI flags.
+     * Used by orchestrators (Phase 5+ roundtable, pipelines) to guarantee
+     * `worker` mode so stdout can be captured.
+     */
+    launchMode?: "native" | "worker";
+  }
 ): Promise<void> {
   const config = loadConfig();
   let profileName: string;
@@ -76,6 +85,20 @@ export async function handleLaunch(
     passthrough = passthrough.slice(1);
   }
 
+  // Extract launch-mode flags from passthrough so they are not forwarded to the agent
+  let cliLaunchMode: "native" | "worker" | undefined;
+  passthrough = passthrough.filter((arg) => {
+    if (arg === "--native") {
+      cliLaunchMode = "native";
+      return false;
+    }
+    if (arg === "--worker") {
+      cliLaunchMode = "worker";
+      return false;
+    }
+    return true;
+  });
+
   // Resolve profile through workspace-aware pipeline (arc.json > explicit > activeProfile)
   let profile: Profile;
   try {
@@ -90,6 +113,11 @@ export async function handleLaunch(
 
   const tool = profile.tool ?? "claude";
   const enforcement = profile.enforcement ?? "log";
+
+  // Resolve effective launch mode: caller override > CLI flag > profile setting > default native.
+  // Orchestrators (roundtable, pipelines) pass `opts.launchMode = "worker"` to force supervision.
+  const effectiveLaunchMode: "native" | "worker" =
+    opts?.launchMode ?? cliLaunchMode ?? profile.launchMode ?? "native";
 
   // ─── Session auto-resume detection ──────────────────────────────────
   // Lightweight: detect whether the user's launch args suggest resume intent
@@ -380,30 +408,35 @@ export async function handleLaunch(
   });
 
   let agentProcess: AgentProcess | null = null;
-  try {
-    agentProcess = await adapter.launch(profile, {
-      args: allArgs,
-      env: profileEnv,
-      cwd: process.cwd(),
-      beforeSpawn: opts?.beforeSpawn ? async () => { await opts!.beforeSpawn!(); } : undefined,
-    });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    if (msg === "not implemented") {
-      // Adapter still has stub lifecycle — fall back to spawnSync
-      agentProcess = null;
-    } else {
-      // Real error from a real adapter
-      recordLaunch({
-        profile: profileName,
-        tool,
-        timestamp: new Date().toISOString(),
-        outcome: "failed",
+  if (effectiveLaunchMode === "worker") {
+    // Worker mode: hand off to the adapter for managed supervision.
+    try {
+      agentProcess = await adapter.launch(profile, {
+        args: allArgs,
+        env: profileEnv,
+        cwd: process.cwd(),
+        beforeSpawn: opts?.beforeSpawn ? async () => { await opts!.beforeSpawn!(); } : undefined,
+        launchMode: "worker",
       });
-      error(`Failed to launch ${tool}: ${msg}`);
-      process.exit(1);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg === "not implemented") {
+        // Adapter still has stub lifecycle — fall back to spawnSync
+        agentProcess = null;
+      } else {
+        // Real error from a real adapter
+        recordLaunch({
+          profile: profileName,
+          tool,
+          timestamp: new Date().toISOString(),
+          outcome: "failed",
+        });
+        error(`Failed to launch ${tool}: ${msg}`);
+        process.exit(1);
+      }
     }
   }
+  // Native mode falls straight through to the spawnSync path below for full TTY handoff.
 
   // ─── Finalization helper ──────────────────────────────────────────
   // Completes session tracking and flushes telemetry. Wrapped in try/catch
@@ -514,10 +547,11 @@ export async function handleLaunch(
     process.exit(0);
   }
 
-  // ─── Legacy spawnSync path (stubbed adapters: Claude, Gemini) ────
+  // ─── Native TTY handoff path (default mode + adapter-stub fallback) ─
   // Use spawnSync with stdio:"inherit" — the parent blocks completely and
-  // the child process owns the terminal.  No stdin competition, no async
-  // race conditions, no DEP0190 warning.
+  // the child process owns the terminal, so the tool can paint its own TUI
+  // (e.g. Claude's statusLine).  No stdin competition, no async race
+  // conditions, no DEP0190 warning.
   // On Windows, tools are often .cmd shims that need `cmd /c` to resolve.
   if (opts?.beforeSpawn) {
     await opts.beforeSpawn();

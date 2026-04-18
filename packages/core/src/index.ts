@@ -6,6 +6,7 @@ export * from "./import-utils.js";
 export * from "./keyring.js";
 export * from "./secrets/index.js";
 export * from "./history.js";
+export * from "./agent-client/index.js";
 export * from "./lifecycle.js";
 export * from "./logging.js";
 export * from "./paths.js";

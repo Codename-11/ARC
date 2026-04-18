@@ -358,6 +358,25 @@ export function ProfilesView({
         onShowInfo?.(selected.name);
         return;
       }
+
+      // [m] toggle launch mode (native <-> worker)
+      if (input === "m") {
+        try {
+          const config = loadConfig();
+          const profile = config.profiles[selected.name];
+          if (!profile) return;
+          const current = profile.launchMode ?? "native";
+          const next: "native" | "worker" = current === "native" ? "worker" : "native";
+          profile.launchMode = next;
+          saveConfig(config);
+          showMessage(`Launch mode: ${next}`);
+          reload();
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          showMessage(`Toggle failed: ${msg}`);
+        }
+        return;
+      }
     },
     { isActive: isActive && inputEnabled }
   );
@@ -386,6 +405,10 @@ export function ProfilesView({
           {isSyncSource && (
             <Text color={colors.primary} bold>{"\u2605"} sync source — shared layer auto-pulls from this profile</Text>
           )}
+          {/* Launch mode indicator */}
+          <Text color={colors.dimmed}>
+            launch: <Text color={colors.text}>[{selectedConfig?.launchMode ?? "native"}]</Text>
+          </Text>
           {/* Shared layer status */}
           {selectedManifest ? (
             <Box gap={2}>
@@ -461,7 +484,7 @@ export function ProfilesView({
       {!loading && action === "idle" && (
         <Box paddingLeft={2} paddingTop={1} gap={2}>
           <Text color={colors.dimmed}>
-            <Text color={colors.primary} bold>{"\u21B5"}</Text> launch  <Text color={colors.primary} bold>s</Text> switch  <Text color={colors.primary} bold>i</Text> info  <Text color={colors.primary} bold>d</Text> delete  <Text color={colors.primary} bold>h</Text> sync  <Text color={colors.primary} bold>shift+h</Text> push  <Text color={colors.primary} bold>shift+s</Text> source  <Text color={colors.primary} bold>f</Text> flags  <Text color={colors.primary} bold>c</Text> create  <Text color={colors.primary} bold>shift+c</Text> clone
+            <Text color={colors.primary} bold>{"\u21B5"}</Text> launch  <Text color={colors.primary} bold>s</Text> switch  <Text color={colors.primary} bold>i</Text> info  <Text color={colors.primary} bold>m</Text> mode  <Text color={colors.primary} bold>d</Text> delete  <Text color={colors.primary} bold>h</Text> sync  <Text color={colors.primary} bold>shift+h</Text> push  <Text color={colors.primary} bold>shift+s</Text> source  <Text color={colors.primary} bold>f</Text> flags  <Text color={colors.primary} bold>c</Text> create  <Text color={colors.primary} bold>shift+c</Text> clone
           </Text>
         </Box>
       )}

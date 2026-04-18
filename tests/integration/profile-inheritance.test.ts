@@ -261,7 +261,9 @@ describe("Profile Inheritance – Launch Pipeline", () => {
     }) as any);
 
     try {
-      await launchModule.handleLaunch("child", ["child"]);
+      // Force worker mode so adapter.launch() is invoked (native mode bypasses the adapter
+      // and goes straight to spawnSync, which wouldn't exercise inheritance resolution).
+      await launchModule.handleLaunch("child", ["child"], { launchMode: "worker" });
     } catch (e: any) {
       // Expected: legacy spawnSync path calls process.exit
       if (!e.message.includes("process.exit")) throw e;

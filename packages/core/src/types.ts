@@ -56,6 +56,14 @@ export interface Profile {
   instructionsFile?: string;
   /** OpenAI-compatible provider configuration for custom endpoints. */
   provider?: ProviderConfig;
+  /**
+   * Launch mode for this profile.
+   * - `native` (default): full TTY handoff via spawnSync with inherited stdio. ARC exits,
+   *   the tool paints its own TUI (e.g. Claude's statusLine). Use for daily interactive work.
+   * - `worker`: run under ARC supervision via the adapter's managed lifecycle — stdout is
+   *   captured for monitoring. Use for orchestration, roundtable, and programmatic flows.
+   */
+  launchMode?: "native" | "worker";
 }
 
 export interface ArcSettings {

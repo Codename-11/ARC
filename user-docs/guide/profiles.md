@@ -75,6 +75,48 @@ When a profile with `inherits` is launched, ARC runs `resolveProfile()` to merge
 1. Base profile settings (tool, auth, env, launch args)
 2. Child profile overrides (anything explicitly set)
 
+## Launch Modes
+
+Each profile can run its underlying tool in one of two modes, selectable per-profile or per-launch.
+
+### Native (default)
+
+Full TTY handoff. ARC spawns the tool with inherited stdio and exits, letting the tool paint its own TUI — Claude's `statusLine`, Gemini's ANSI chrome, Codex's REPL, etc. This is the right mode for daily interactive work.
+
+```bash
+arc launch work              # uses profile's launchMode (default: native)
+arc launch work --native     # force native mode for this launch
+```
+
+In native mode ARC does no process supervision, no stdout capture, and no stream parsing. You get the tool's native experience; ARC just handled env isolation, credentials, and hook pre-launch checks.
+
+### Worker
+
+Run the tool under ARC supervision via the adapter's managed lifecycle. Stdout is captured and parsed so ARC can feed orchestrators (roundtable, PLAN/EXEC/VERIFY pipelines, dashboard chat). This **suppresses the tool's native TUI chrome** — it's meant for programmatic use, not direct interactive sessions.
+
+```bash
+arc launch work --worker     # one-off worker mode
+```
+
+To make worker mode the default for a profile, either set `launchMode: "worker"` in `~/.arc/config.json` or press `m` on the profile in the TUI Profiles view to toggle.
+
+### When to use each
+
+| Scenario | Mode |
+|---|---|
+| Daily coding with Claude / Gemini / Codex | **native** |
+| Running a roundtable or multi-agent pipeline | **worker** (orchestrator forces this) |
+| Dashboard AI chat / programmatic prompts | **worker** |
+| CI / headless automation | **worker** |
+| Debugging the tool's own TUI (statusLine, theming) | **native** |
+
+### Resolution order
+
+1. `opts.launchMode` passed by an orchestrator (always wins)
+2. `--native` / `--worker` CLI flag
+3. `profile.launchMode` in `~/.arc/config.json`
+4. Default: `native`
+
 ## Workspace Selection
 
 ARC supports per-repository profile auto-selection via `arc.json` in the project root:
