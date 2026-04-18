@@ -294,6 +294,11 @@ export class WebSocketServer {
             }
             client.sessionId = parsed.sessionId;
             this.sessions.set(parsed.sessionId, client);
+            if (process.env.ARC_DASHBOARD_LOG !== "off") {
+              process.stderr.write(
+                `\x1b[36m[dash] WS session registered: ${parsed.sessionId}\x1b[0m\n`,
+              );
+            }
             return;
           }
         } catch {

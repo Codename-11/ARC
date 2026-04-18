@@ -241,7 +241,11 @@ export function createDashboardServer(
 
   // ---- HTTP server --------------------------------------------------------
 
+  const logRequests = process.env.ARC_DASHBOARD_LOG !== "off";
+
   const server = http.createServer((req, res) => {
+    const requestStart = Date.now();
+
     // CORS headers.
     res.setHeader("Access-Control-Allow-Origin", corsOrigin);
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
@@ -257,6 +261,23 @@ export function createDashboardServer(
     const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
     const pathname = url.pathname;
     const method = (req.method ?? "GET").toUpperCase();
+
+    // Access log — skip noisy static assets unless ARC_DASHBOARD_LOG=verbose.
+    if (logRequests) {
+      const verbose = process.env.ARC_DASHBOARD_LOG === "verbose";
+      const isNoisy = pathname.startsWith("/scripts/") || pathname.startsWith("/styles/") || pathname.startsWith("/components/") || pathname === "/favicon.ico";
+      if (verbose || !isNoisy) {
+        res.on("finish", () => {
+          const ms = Date.now() - requestStart;
+          const status = res.statusCode;
+          const color = status >= 500 ? "\x1b[31m" : status >= 400 ? "\x1b[33m" : "\x1b[90m";
+          const reset = "\x1b[0m";
+          process.stderr.write(
+            `${color}[dash] ${method.padEnd(6)} ${status} ${pathname}${reset} (${ms}ms)\n`,
+          );
+        });
+      }
+    }
 
     // Auth check: mutation endpoints require a valid Bearer token.
     if (MUTATION_METHODS.has(method) && pathname.startsWith("/api/")) {
@@ -320,7 +341,26 @@ export function createDashboardServer(
 
   // Wire WebSocket upgrade.
   server.on("upgrade", (req, socket, head) => {
-    wsServer.handleUpgrade(req, socket, head);
+    const pathname = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`).pathname;
+    if (logRequests) {
+      process.stderr.write(`\x1b[36m[dash] UPGRADE ${pathname}\x1b[0m\n`);
+    }
+    try {
+      wsServer.handleUpgrade(req, socket, head);
+    } catch (err) {
+      process.stderr.write(
+        `\x1b[31m[dash] WS upgrade failed: ${err instanceof Error ? err.message : err}\x1b[0m\n`,
+      );
+      socket.destroy();
+    }
+  });
+
+  // Surface underlying TCP errors on the HTTP server itself.
+  server.on("clientError", (err, socket) => {
+    if (logRequests) {
+      process.stderr.write(`\x1b[31m[dash] clientError: ${err.message}\x1b[0m\n`);
+    }
+    try { socket.end("HTTP/1.1 400 Bad Request\r\n\r\n"); } catch {}
   });
 
   // ---- start / stop -------------------------------------------------------
