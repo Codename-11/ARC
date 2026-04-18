@@ -399,11 +399,14 @@ Update checkboxes in-place as phases complete. Add a `Completed YYYY-MM-DD` mark
 ### Phase 1 — Agent client (CLI-spawn) foundation
 - [x] **Completed 2026-04-18** — commit `6ff876b`. `packages/core/src/agent-client/` with Claude/Codex/Gemini clients, MCP injection per mcpMode variant, stream parsers, 48 unit tests. Unverified CLI flags flagged for Phase 4 smoke test.
 
+### Phase 0.7 — Bare launch + clearable profile
+- [x] **Completed 2026-04-18** — commit `443a78c`. `activeProfile: null` valid, `arc run <tool>`, `arc launch --bare`, tool-name inference, `arc profile switch none` / `clear-active`, TUI `x` key to clear, empty-state copy in Dash/Session.
+
 ### Phase 2 — Tool registry + agent loop
-- [ ] Not started
+- [x] **Completed 2026-04-18** — commit `443a78c`. 16 ARC tools wired (11 read, 4 write, 1 dangerous), 3 permission modes, runAgent generator, 43 tests. Tool_result round-trip to LLM deferred to Phase 4 persistent sessions (noted in `loop.ts`).
 
 ### Phase 3 — Knowledge endowment
-- [ ] Not started
+- [x] **Completed 2026-04-18** — commit `443a78c`. `ARC_KNOWLEDGE` (architecture + 52-entry command catalog + 16-term glossary), `FEATURES_INDEX` (33 entries), `buildSystemPrompt()` composes 6 sections under 4K tokens (~1284 typical). 27 tests.
 
 ### Phase 4 — CLI `arc chat`
 - [ ] Not started
