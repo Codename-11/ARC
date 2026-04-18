@@ -210,6 +210,7 @@ export function createProgram(): Command {
     .option("-d, --dashboard", "Start web dashboard alongside agent")
     .option("--native", "Run the tool with full TTY handoff (ARC exits, tool paints its own TUI)")
     .option("--worker", "Run the tool under ARC supervision (stdout captured for orchestration)")
+    .option("--bare", "Skip profile resolution and env injection — spawn the named tool natively")
     .passThroughOptions()
     .allowUnknownOption()
     .allowExcessArguments()
@@ -236,12 +237,13 @@ Examples:
   $ arc launch work --dangerously-skip-permissions
   $ arc launch work -p "explain this code"
   $ arc launch -- --model sonnet      (use -- when omitting profile name)
+  $ arc launch --bare claude          (native launch, no profile env)
 `
     )
     .action(
       async (
         name: string | undefined,
-        opts: { dashboard?: boolean; native?: boolean; worker?: boolean },
+        opts: { dashboard?: boolean; native?: boolean; worker?: boolean; bare?: boolean },
         cmd: Command
       ) => {
         // Re-inject parsed launch-mode flags into the args array so handleLaunch can see them.
@@ -252,7 +254,42 @@ Examples:
         if (opts.worker) extraArgs.push("--worker");
         const mergedArgs = extraArgs.length > 0 ? [...cmd.args, ...extraArgs] : cmd.args;
         const mod = await import("./commands/launch.js");
-        await mod.handleLaunch(name, mergedArgs, { dashboard: opts.dashboard });
+        await mod.handleLaunch(name, mergedArgs, {
+          dashboard: opts.dashboard,
+          bare: opts.bare,
+        });
+      }
+    );
+
+  program
+    .command("run <tool> [args...]")
+    .description("Run a native agent tool (claude/codex/gemini/…) with no profile env injection")
+    .passThroughOptions()
+    .allowUnknownOption()
+    .allowExcessArguments()
+    .addHelpText(
+      "after",
+      `
+Thin alias for 'arc launch --bare <tool>'. Ambient environment only —
+no CLAUDE_CONFIG_DIR, GEMINI_CLI_HOME, CODEX_HOME, or ARC env vars set.
+
+Examples:
+  $ arc run claude --version
+  $ arc run gemini --help
+  $ arc run codex -- some-flag
+`
+    )
+    .action(
+      async (
+        tool: string,
+        _args: string[],
+        _opts: Record<string, never>,
+        cmd: Command
+      ) => {
+        // `cmd.args` = [tool, ...rest]; pass the rest through to the binary.
+        const rest = cmd.args.slice(1);
+        const mod = await import("./commands/run.js");
+        await mod.handleRun(tool, rest);
       }
     );
 
@@ -412,10 +449,25 @@ Examples:
   profile
     .command("switch <name>")
     .alias("use")
-    .description("Switch active profile")
+    .description("Switch active profile (use 'none' or 'off' to clear)")
+    .addHelpText("after", `
+Examples:
+  $ arc profile switch work
+  $ arc profile switch none           (clear active profile)
+  $ arc profile switch off            (same — native launches via 'arc run <tool>')
+`)
     .action(async (name: string) => {
       const mod = await import("./commands/profile.js");
       await mod.handleSwitch(name);
+    });
+
+  profile
+    .command("clear-active")
+    .alias("clear")
+    .description("Clear the active profile — tools launch natively via 'arc run'")
+    .action(async () => {
+      const mod = await import("./commands/profile.js");
+      await mod.handleClearActive();
     });
 
   profile
@@ -662,8 +714,8 @@ Examples:
       }
 
       const profileName = name ?? config.activeProfile;
-      if (!config.profiles[profileName]) {
-        showError(`Profile "${profileName}" not found.`);
+      if (!profileName || !config.profiles[profileName]) {
+        showError(profileName ? `Profile "${profileName}" not found.` : "No active profile — pass a name.");
         process.exit(1);
       }
 
@@ -683,10 +735,10 @@ Examples:
 
       const config = loadConfig();
       const profileName = name ?? config.activeProfile;
-      const profile = config.profiles[profileName];
+      const profile = profileName ? config.profiles[profileName] : undefined;
 
-      if (!profile) {
-        showError(`Profile "${profileName}" not found.`);
+      if (!profile || !profileName) {
+        showError(profileName ? `Profile "${profileName}" not found.` : "No active profile — pass a name.");
         process.exit(1);
       }
 

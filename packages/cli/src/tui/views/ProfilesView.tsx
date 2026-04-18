@@ -66,7 +66,8 @@ export function ProfilesView({
 
             if (config.activeProfile === deleteTarget) {
               const remaining = Object.keys(config.profiles);
-              config.activeProfile = remaining[0] ?? "default";
+              // When no profiles remain, clear active entirely.
+              config.activeProfile = remaining[0] ?? null;
             }
 
             saveConfig(config);
@@ -377,6 +378,26 @@ export function ProfilesView({
         }
         return;
       }
+
+      // [x] clear active profile (tools launch natively via `arc run`)
+      if (input === "x") {
+        try {
+          const config = loadConfig();
+          if (config.activeProfile === null) {
+            showMessage("No active profile — already cleared");
+          } else {
+            const previous = config.activeProfile;
+            config.activeProfile = null;
+            saveConfig(config);
+            showMessage(`Cleared active profile (was ${previous})`);
+            reload();
+          }
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          showMessage(`Clear failed: ${msg}`);
+        }
+        return;
+      }
     },
     { isActive: isActive && inputEnabled }
   );
@@ -484,7 +505,7 @@ export function ProfilesView({
       {!loading && action === "idle" && (
         <Box paddingLeft={2} paddingTop={1} gap={2}>
           <Text color={colors.dimmed}>
-            <Text color={colors.primary} bold>{"\u21B5"}</Text> launch  <Text color={colors.primary} bold>s</Text> switch  <Text color={colors.primary} bold>i</Text> info  <Text color={colors.primary} bold>m</Text> mode  <Text color={colors.primary} bold>d</Text> delete  <Text color={colors.primary} bold>h</Text> sync  <Text color={colors.primary} bold>shift+h</Text> push  <Text color={colors.primary} bold>shift+s</Text> source  <Text color={colors.primary} bold>f</Text> flags  <Text color={colors.primary} bold>c</Text> create  <Text color={colors.primary} bold>shift+c</Text> clone
+            <Text color={colors.primary} bold>{"\u21B5"}</Text> launch  <Text color={colors.primary} bold>s</Text> switch  <Text color={colors.primary} bold>x</Text> clear  <Text color={colors.primary} bold>i</Text> info  <Text color={colors.primary} bold>m</Text> mode  <Text color={colors.primary} bold>d</Text> delete  <Text color={colors.primary} bold>h</Text> sync  <Text color={colors.primary} bold>shift+h</Text> push  <Text color={colors.primary} bold>shift+s</Text> source  <Text color={colors.primary} bold>f</Text> flags  <Text color={colors.primary} bold>c</Text> create  <Text color={colors.primary} bold>shift+c</Text> clone
           </Text>
         </Box>
       )}

@@ -158,6 +158,21 @@ async function checkProfiles(): Promise<void> {
     return;
   }
 
+  // Surface active-profile state first (info row, not a failure).
+  if (config.activeProfile === null) {
+    console.log(
+      `  ${pc.blue("\u2139")} active profile: ${pc.dim("(none)")} \u2014 that's fine; use ${pc.bold(pc.cyan("arc run <tool>"))} to launch tools natively`
+    );
+  } else if (!config.profiles[config.activeProfile]) {
+    console.log(
+      `  ${pc.yellow("\u26A0")} active profile ${JSON.stringify(config.activeProfile)} references a missing profile`
+    );
+  } else {
+    console.log(
+      `  ${pc.green("\u2714")} active profile: ${config.activeProfile}`
+    );
+  }
+
   const names = Object.keys(config.profiles);
   if (names.length === 0) {
     console.log(`  ${pc.dim("No profiles configured.")}`);

@@ -572,6 +572,11 @@ export async function handleAuthWhoami(
   const config = loadConfig();
   const resolvedName = profileName ?? config.activeProfile;
 
+  if (!resolvedName) {
+    error("No active profile — pass a profile name.");
+    process.exit(1);
+  }
+
   const raw = config.profiles[resolvedName];
   if (!raw) {
     error(`Profile "${resolvedName}" not found.`);

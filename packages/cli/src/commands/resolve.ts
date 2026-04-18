@@ -11,6 +11,9 @@ export async function handleResolveConfigDir(): Promise<void> {
   }
 
   const resolved = profileName ?? config.activeProfile;
+  if (!resolved) {
+    process.exit(1);
+  }
   const profile = config.profiles[resolved];
 
   if (!profile) {

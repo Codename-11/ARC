@@ -52,7 +52,8 @@ describe("CLI auth: config and profile operations", () => {
     it("returns default config when no config.json exists", () => {
       const config = loadConfig();
       expect(config.version).toBe(1);
-      expect(config.activeProfile).toBe("default");
+      // New installs start with null activeProfile (bare-mode default).
+      expect(config.activeProfile).toBeNull();
       expect(Object.keys(config.profiles)).toHaveLength(0);
     });
 
@@ -160,15 +161,15 @@ describe("CLI auth: config and profile operations", () => {
       );
       const config = loadConfig();
       expect(config.activeProfile).toBe("main");
-      expect(config.profiles[config.activeProfile]).toBeDefined();
-      expect(config.profiles[config.activeProfile].tool).toBe("claude");
+      const activeKey = config.activeProfile as string;
+      expect(config.profiles[activeKey]).toBeDefined();
+      expect(config.profiles[activeKey].tool).toBe("claude");
     });
 
     it("active profile may not exist in profiles map", () => {
-      // Default config has activeProfile "default" but no profile entry
+      // Default config now has activeProfile null (bare mode); no entry.
       const config = loadConfig();
-      expect(config.activeProfile).toBe("default");
-      expect(config.profiles[config.activeProfile]).toBeUndefined();
+      expect(config.activeProfile).toBeNull();
     });
   });
 
@@ -188,7 +189,8 @@ describe("CLI auth: config and profile operations", () => {
         "dev",
       );
       const config = loadConfig();
-      const activeProfile = config.profiles[config.activeProfile];
+      const activeKey = config.activeProfile as string;
+      const activeProfile = config.profiles[activeKey];
       expect(activeProfile).toBeDefined();
       expect(activeProfile.tool).toBe("gemini");
     });

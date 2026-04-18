@@ -101,7 +101,13 @@ export async function handleList(): Promise<void> {
 
 export async function handleShow(name?: string): Promise<void> {
   const config = loadConfig();
-  const resolved = resolveProfileName(config, name);
+  let resolved: string;
+  try {
+    resolved = resolveProfileName(config, name);
+  } catch (err: unknown) {
+    error(err instanceof Error ? err.message : String(err));
+    process.exit(1);
+  }
   const rawProfile = config.profiles[resolved];
   if (!rawProfile) {
     error(`Profile "${resolved}" not found.`);
@@ -132,6 +138,12 @@ export async function handleShow(name?: string): Promise<void> {
 }
 
 export async function handleSwitch(name: string): Promise<void> {
+  // Treat "none" / "off" / "" as a request to clear the active profile.
+  const lowered = (name ?? "").toLowerCase();
+  if (!name || lowered === "none" || lowered === "off") {
+    await handleClearActive();
+    return;
+  }
   const config = loadConfig();
   if (!config.profiles[name]) {
     error(`Profile "${name}" not found.`);
@@ -140,6 +152,19 @@ export async function handleSwitch(name: string): Promise<void> {
   config.activeProfile = name;
   saveConfig(config);
   success(`Switched to profile "${name}".`);
+}
+
+export async function handleClearActive(): Promise<void> {
+  const config = loadConfig();
+  if (config.activeProfile === null) {
+    info("No active profile — nothing to clear.");
+    return;
+  }
+  const previous = config.activeProfile;
+  config.activeProfile = null;
+  saveConfig(config);
+  success(`Cleared active profile (was "${previous}").`);
+  info("Launch tools natively with 'arc run <tool>' or pass --profile to commands.");
 }
 
 export async function handleDelete(name: string, opts?: { force?: boolean }): Promise<void> {
@@ -174,8 +199,13 @@ export async function handleDelete(name: string, opts?: { force?: boolean }): Pr
   delete config.profiles[name];
   if (config.activeProfile === name) {
     const remaining = Object.keys(config.profiles);
-    config.activeProfile = remaining[0]!;
-    info(`Active profile switched to "${remaining[0]}".`);
+    if (remaining.length > 0) {
+      config.activeProfile = remaining[0]!;
+      info(`Active profile switched to "${remaining[0]}".`);
+    } else {
+      config.activeProfile = null;
+      info("No profiles remain — active profile cleared.");
+    }
   }
   saveConfig(config);
   success(`Profile "${name}" deleted.`);

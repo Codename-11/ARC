@@ -60,6 +60,9 @@ importers:
       vitest:
         specifier: ^4.1.2
         version: 4.1.2(@types/node@25.5.2)(vite@8.0.3(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@25.5.2)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0))
+      zod:
+        specifier: ^3.25.0
+        version: 3.25.76
     optionalDependencies:
       '@inquirer/prompts':
         specifier: ^8
@@ -92,7 +95,11 @@ importers:
         specifier: workspace:*
         version: link:../mcp
 
-  packages/core: {}
+  packages/core:
+    dependencies:
+      zod:
+        specifier: ^3.25.0
+        version: 3.25.76
 
   packages/dashboard:
     dependencies:

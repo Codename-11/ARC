@@ -120,11 +120,16 @@ export async function getRuntimeHealthReport(): Promise<HealthReport> {
   }
 
   checks.push({ id: "profiles-present", label: "Profiles configured", status: Object.keys(config.profiles).length > 0 ? "pass" : "fail", summary: Object.keys(config.profiles).length > 0 ? `${Object.keys(config.profiles).length} profiles configured` : "No profiles configured" });
-  checks.push({ id: "active-profile", label: "Active profile", status: config.profiles[config.activeProfile] ? "pass" : "fail", summary: config.profiles[config.activeProfile] ? `Active profile is ${config.activeProfile}` : `Active profile ${config.activeProfile} is missing`, profile: config.activeProfile });
+  const activeKey = config.activeProfile;
+  if (activeKey === null) {
+    checks.push({ id: "active-profile", label: "Active profile", status: "pass", summary: "No active profile (bare mode) — tools launch natively via 'arc run'" });
+  } else {
+    checks.push({ id: "active-profile", label: "Active profile", status: config.profiles[activeKey] ? "pass" : "fail", summary: config.profiles[activeKey] ? `Active profile is ${activeKey}` : `Active profile ${activeKey} is missing`, profile: activeKey });
+  }
   const logDirWritable = canWriteLogDir();
   checks.push({ id: "log-dir", label: "Log directory", status: logDirWritable ? "pass" : "fail", summary: logDirWritable ? `Log directory writable at ${getLogsDir()}` : `Log directory not writable at ${getLogsDir()}` });
   for (const [name, profile] of Object.entries(config.profiles)) {
     checks.push(...(await buildProfileChecks(name, profile)));
   }
-  return buildHealthReport(checks, config.activeProfile);
+  return buildHealthReport(checks, activeKey ?? undefined);
 }

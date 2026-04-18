@@ -25,12 +25,90 @@ import type { AgentProcess } from "@axiom-labs/arc-core";
 
 const isWindows = process.platform === "win32";
 
+/**
+ * Known native agent tool binaries used for bare-mode inference.
+ * When the first positional arg to `arc launch` matches one of these AND no
+ * profile exists by that name, we auto-infer `--bare` and launch the tool
+ * natively (no profile env injection).
+ */
+export const KNOWN_AGENT_TOOLS = new Set<string>([
+  "claude",
+  "codex",
+  "gemini",
+  "hermes",
+  "openclaw",
+]);
+
+/**
+ * Pure helper — decide whether the caller's first positional arg should
+ * trigger bare-mode inference. Exposed for tests; kept free of I/O.
+ */
+export function shouldInferBare(
+  name: string | undefined,
+  profileNames: readonly string[],
+  explicitBare: boolean
+): boolean {
+  if (explicitBare) return true;
+  if (typeof name !== "string") return false;
+  if (!KNOWN_AGENT_TOOLS.has(name)) return false;
+  return !profileNames.includes(name);
+}
+
 /** Check whether a command binary is available on PATH. */
 export function findBinary(name: string): boolean {
   const result = isWindows
     ? spawnSync("cmd", ["/c", "where", name], { stdio: "ignore" })
     : spawnSync("which", [name], { stdio: "ignore" });
   return result.status === 0;
+}
+
+/**
+ * Bare launch: spawn a native tool with the ambient environment only.
+ * No profile resolution, no env injection (CLAUDE_CONFIG_DIR etc.), no
+ * hook pipeline, no session/telemetry tracking. This is the "arc is
+ * optional orchestration" path — the user just wants `claude` to run.
+ */
+export async function handleBareLaunch(
+  tool: string,
+  args: string[],
+  opts?: { beforeSpawn?: () => void | Promise<void> }
+): Promise<void> {
+  if (!findBinary(tool)) {
+    error(`Binary "${tool}" not found on PATH.`);
+    warn(getInstallHint(tool));
+    process.exit(1);
+  }
+
+  logAction("launch", `(bare) ${tool}`);
+  try {
+    writeLogEvent({
+      level: "info",
+      component: "launch",
+      action: "bare:launch",
+      message: `Bare launch of ${tool}`,
+      data: { profile: null, tool, args },
+    });
+  } catch {
+    // Non-fatal
+  }
+
+  const flagStr = args.length > 0 ? ` [${args.join(" ")}]` : "";
+  info(`Launching ${tool} (bare mode)${flagStr}`);
+
+  if (opts?.beforeSpawn) {
+    await opts.beforeSpawn();
+  }
+
+  const result = isWindows
+    ? spawnSync("cmd", ["/c", tool, ...args], { stdio: "inherit" })
+    : spawnSync(tool, args, { stdio: "inherit" });
+
+  if (result.error) {
+    error(`Failed to launch ${tool}: ${result.error.message}`);
+    process.exit(1);
+  }
+
+  process.exit(result.status ?? 0);
 }
 
 /** Suggest an install command for known agent tool binaries. */
@@ -59,9 +137,45 @@ export async function handleLaunch(
      * `worker` mode so stdout can be captured.
      */
     launchMode?: "native" | "worker";
+    /**
+     * Bare mode: skip profile resolution and env injection entirely. Just
+     * spawn the named tool with ambient env. `name` is then treated as the
+     * tool binary (claude / codex / gemini / …).
+     */
+    bare?: boolean;
+    /** Override the tool name in bare mode when it differs from `name`. */
+    tool?: string;
   }
 ): Promise<void> {
   const config = loadConfig();
+
+  // ─── Bare-mode / tool-name inference ────────────────────────────────
+  // 1. Explicit opts.bare=true always wins.
+  // 2. Otherwise, if the first positional arg matches a known native tool
+  //    AND no profile exists by that name, infer bare mode.
+  const profileNames = Object.keys(config.profiles);
+  const explicitBare = opts?.bare === true;
+  const bare = shouldInferBare(name, profileNames, explicitBare);
+  if (bare && !explicitBare) {
+    // Emit informational notice (stderr so stdout stays clean for piping).
+    warn(`no profile named "${name}" \u2014 launching native tool.`);
+  }
+
+  if (bare) {
+    const toolName = opts?.tool ?? name;
+    if (!toolName) {
+      error("Bare launch requires a tool name (e.g. 'arc run claude').");
+      process.exit(1);
+    }
+    // In bare mode, if `name` was consumed as the tool, the rest is passthrough.
+    let barePassthrough = name === toolName ? rawArgs.slice(1) : rawArgs;
+    if (barePassthrough.length > 0 && barePassthrough[0] === "--") {
+      barePassthrough = barePassthrough.slice(1);
+    }
+    await handleBareLaunch(toolName, barePassthrough, { beforeSpawn: opts?.beforeSpawn });
+    return;
+  }
+
   let profileName: string;
   let passthrough: string[];
 
@@ -70,12 +184,21 @@ export async function handleLaunch(
     profileName = name;
     passthrough = rawArgs.slice(1);
   } else if (name) {
-    // Commander consumed something as name but it's not a valid profile.
-    // Treat everything (including the consumed "name") as passthrough.
+    // Commander consumed something as name but it's not a valid profile,
+    // and it's not a known tool either. Fall back to active profile.
+    if (config.activeProfile === null) {
+      error(`No profile named "${name}" and no active profile set.`);
+      warn("Use 'arc run <tool>' for native launch, or switch to a profile with 'arc profile switch <name>'.");
+      process.exit(1);
+    }
     profileName = config.activeProfile;
     passthrough = rawArgs;
   } else {
     // No name provided — active profile, everything is passthrough
+    if (config.activeProfile === null) {
+      error("No active profile. Use 'arc run <tool>' for native launch, or 'arc profile switch <name>'.");
+      process.exit(1);
+    }
     profileName = config.activeProfile;
     passthrough = rawArgs;
   }

@@ -55,6 +55,24 @@ pnpm install
 pnpm build
 ```
 
+## Your First Launch
+
+### Fast path — no profile
+
+If you just want to run a tool through ARC without any configuration:
+
+```bash
+arc run claude
+arc run gemini
+arc run codex
+```
+
+`arc run <tool>` is a native passthrough — no profile env, no ARC overlay. Useful if you have ARC installed but haven't set up a profile yet. See [Launch without a profile](/guide/profiles#launch-without-a-profile) for details.
+
+### Full path — with a profile
+
+For isolated credentials, shared layer, hooks, and everything else ARC provides, create a profile.
+
 ## First Profile
 
 ### Option 1: Onboarding Wizard

@@ -15,6 +15,8 @@ Tracking file for planned features, enhancements, and ideas. Checked items are s
 - [x] **Workspace-aware profile auto-selection** — `arc.json` in repo root specifies preferred profile/tool; workspace overrides applied on launch (Phase 9)
 - [x] **Workspace shell syntax highlighting** — tokenized input with color-coded `/commands` (green), `@profiles` (blue), `#tags` (dimmed); invalid tokens show in red
 - [x] **Workspace shell auto-complete** — suggestion overlay for `/` commands and `@profile` mentions; Tab/Enter accepts, arrows navigate, Escape dismisses
+- [x] **Launch modes (native / worker)** — `launchMode` field on Profile, `arc launch --native` / `--worker` CLI flags, `m` key toggle in ProfilesView, doctor check for deprecated `CLAUDE_CODE_NO_FLICKER`
+- [x] **Bare launch / clearable active profile** — `arc run <tool>`, `arc launch --bare <tool>`, tool-name inference when no matching profile exists, `arc profile switch none` / `arc profile clear-active`, `activeProfile: null` renders as `(none)`
 - [ ] **Quick profile switch overlay** — global `Ctrl+S` or palette action that shows a focused profile picker from any view
 - [x] **Doctor repair actions** — inline install hints, re-auth instructions, and PATH/shell fix hints on actionable diagnostics
 - [ ] **Profile search/filter** — `/` search in Profiles view and queue for scaling to 10+ profiles
@@ -32,6 +34,14 @@ Tracking file for planned features, enhancements, and ideas. Checked items are s
 - [ ] **Team/shared config** — repo-checked config with local secret overlays
 - [x] **Backup/export/import** — `arc backup create/restore/list` (gzipped archive of `~/.arc/`, credentials excluded by default) + `arc profile export` / `arc profile import-file` (single-profile JSON transport with inlined instructions)
 - [x] **Managed updates** — self-update system with npm registry check and TUI update banner
+- [x] **Agent client foundation** — internal CLI-spawn agent client at `packages/core/src/agent-client/` (Claude/Codex/Gemini), MCP config injection per `mcpMode`, stream parsers. Building block for upcoming chat + roundtable orchestrator (see `docs/plans/ai-and-roundtable.md` Phase 1)
+- [ ] **Tool registry + agent loop** — `packages/core/src/agent/` tool registry with read-only/supervised/autonomous permission modes; ARC tool set wired to existing handlers (list_profiles, clone_profile, configure_provider, etc.). Plan Phase 2
+- [ ] **Knowledge endowment** — `packages/core/src/knowledge/` system prompt composition (static architecture + command reference + runtime state). Plan Phase 3
+- [ ] **`arc chat` CLI** — terminal REPL using active profile's agent client, streaming output, permission-gated tool calls. Plan Phase 4
+- [ ] **Roundtable orchestrator** — driver loop over the existing roundtable hook; adaptive pacing ported from Agent-Forge. Plan Phase 5
+- [ ] **`arc roundtable` CLI + team MCP tools** — `arc roundtable <topic> --agents a,b,c` with streaming transcript; `arc_chat` / `arc_roundtable` / `team_*` MCP tools. Plan Phase 6
+- [ ] **Dashboard chat view** — per-session WS streaming, tool-call visualization, permission-mode toggle, confirmation modal. Plan Phase 7
+- [ ] **Dashboard roundtable + pipelines view** — configure + run multi-agent flows from the browser with live transcript. Plan Phase 8
 
 ## Priority 4 — Observability & Polish
 

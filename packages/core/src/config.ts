@@ -8,7 +8,9 @@ import type { ArcConfig, Profile } from "./types.js";
 const AUTH_TYPES = new Set(["oauth", "api-key", "bedrock", "vertex", "foundry", "openai-compat"]);
 
 export function defaultConfig(): ArcConfig {
-  return { version: 1, activeProfile: "default", profiles: {} };
+  // New installs start with no active profile — tools launched through
+  // ARC without an explicit profile default to native (bare) mode.
+  return { version: 1, activeProfile: null, profiles: {} };
 }
 
 export function validateConfig(config: unknown): config is ArcConfig {
@@ -17,7 +19,11 @@ export function validateConfig(config: unknown): config is ArcConfig {
   }
 
   const obj = config as Record<string, unknown>;
-  if (obj["version"] !== 1 || typeof obj["activeProfile"] !== "string") {
+  if (obj["version"] !== 1) {
+    return false;
+  }
+  // activeProfile is either a string (named profile) or null (none).
+  if (obj["activeProfile"] !== null && typeof obj["activeProfile"] !== "string") {
     return false;
   }
 
@@ -98,11 +104,22 @@ export function saveConfig(config: ArcConfig): void {
 }
 
 export function getActiveProfile(config: ArcConfig): Profile | undefined {
+  if (config.activeProfile === null) return undefined;
   return config.profiles[config.activeProfile];
 }
 
+/**
+ * Resolve a profile name for a command.
+ * Throws when no `name` is provided and no active profile is set.
+ */
 export function resolveProfileName(config: ArcConfig, name?: string): string {
-  return name ?? config.activeProfile;
+  if (name) return name;
+  if (config.activeProfile === null) {
+    throw new Error(
+      "No active profile. Use 'arc profile switch <name>' or pass --profile."
+    );
+  }
+  return config.activeProfile;
 }
 
 const MAX_INHERITANCE_DEPTH = 10;

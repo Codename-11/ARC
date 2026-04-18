@@ -522,10 +522,17 @@ export function SessionView({
           </Box>
         </Box>
       ) : (
-        <Box marginBottom={1}>
-          <Text color={colors.dimmed}>No active profile. Press </Text>
-          <Text color={colors.primary} bold>c</Text>
-          <Text color={colors.dimmed}> to create one.</Text>
+        <Box marginBottom={1} flexDirection="column">
+          <Box>
+            <Text color={colors.dimmed}>No active profile. Use </Text>
+            <Text color={colors.primary} bold>arc run claude</Text>
+            <Text color={colors.dimmed}> for native launch,</Text>
+          </Box>
+          <Box>
+            <Text color={colors.dimmed}>or switch to a profile (press </Text>
+            <Text color={colors.primary} bold>c</Text>
+            <Text color={colors.dimmed}> to create one).</Text>
+          </Box>
         </Box>
       )}
 

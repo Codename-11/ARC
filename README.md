@@ -137,6 +137,16 @@ See [Getting Started](https://arc-cli.dev/docs/guide/getting-started) for requir
 
 ## Quick Start
 
+**Fastest path — no profile:**
+
+```bash
+arc run claude         # Native passthrough — no env injection, no overlay
+arc run gemini
+arc run codex
+```
+
+**Full path — with a profile:**
+
 ```bash
 arc                    # Open TUI — onboarding wizard on first run
 ```
@@ -145,7 +155,8 @@ The onboarding wizard auto-detects installed tools (Claude, Gemini, Codex) and o
 
 ```bash
 arc create work --tool claude --auth-type oauth
-arc launch work
+arc launch work                     # native by default (full TTY handoff)
+arc launch work --worker            # under ARC supervision for hooks/orchestration
 arc use personal
 arc status
 ```
@@ -172,13 +183,19 @@ arc use <name>                     # Switch active profile
 arc profile show [name]            # Show profile details
 arc profile delete <name>          # Delete a profile
 arc profile import                 # Import existing tool config
+arc profile switch none            # Clear the active profile
+arc profile clear-active           # Same — activeProfile becomes null
 arc which                          # Show resolved profile source
 ```
 
 ### Launch
 
 ```bash
-arc launch [name]                  # Launch agent tool with profile
+arc run <tool>                     # Native passthrough (no profile, no overlay)
+arc launch [name]                  # Launch agent tool with profile (native by default)
+arc launch [name] --native         # Force full TTY handoff
+arc launch [name] --worker         # Force ARC-supervised mode (for orchestration)
+arc launch --bare <tool>           # Same as `arc run`
 arc launch [name] -- --model opus  # Pass flags through to the tool
 ```
 

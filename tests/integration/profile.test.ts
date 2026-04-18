@@ -34,7 +34,8 @@ describe("Profile CRUD", () => {
     const { loadConfig } = await import("@axiom-labs/arc-core");
     const config = loadConfig();
     expect(config.version).toBe(1);
-    expect(config.activeProfile).toBe("default");
+    // New installs start with null activeProfile (bare-mode default).
+    expect(config.activeProfile).toBeNull();
     expect(config.profiles).toEqual({});
   });
 

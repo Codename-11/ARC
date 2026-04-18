@@ -8,6 +8,10 @@ import { success, error, info, warn } from "../display.js";
 function getProfile(name?: string) {
   const config = loadConfig();
   const profileName = name ?? config.activeProfile;
+  if (!profileName) {
+    error("No active profile. Use 'arc profile switch <name>' or pass a profile name.");
+    process.exit(1);
+  }
   const profile = config.profiles[profileName];
   if (!profile) {
     error(`Profile "${profileName}" not found.`);

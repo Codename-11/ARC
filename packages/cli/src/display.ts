@@ -131,6 +131,20 @@ export function profileTable(
   ].join("\n");
 }
 
+// ── Active Profile Rendering ───────────────────────
+
+/**
+ * Format the active profile name for display.
+ * Returns `(none)` (dimmed) when no profile is active — this is the
+ * canonical "bare-mode" marker used across CLI output and TUI.
+ */
+export function formatActiveProfile(name: string | null | undefined): string {
+  if (!name) {
+    return pc.dim("(none)");
+  }
+  return name;
+}
+
 // ── Redaction ──────────────────────────────────────
 
 export function redact(value: string): string {

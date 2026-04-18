@@ -138,7 +138,7 @@ function LeftColumn({ profiles, colors, isDark }: {
         )}
         <StatusRow
           label="active"
-          value={activeProfile?.name ?? "none"}
+          value={activeProfile?.name ?? "(none)"}
           color={activeProfile ? colors.text : colors.dimmed}
         />
         {activeToolLabel && (
@@ -146,6 +146,12 @@ function LeftColumn({ profiles, colors, isDark }: {
         )}
         {activeProfile?.credential?.accountTier && (
           <StatusRow label="account" value={activeProfile.credential.accountTier} />
+        )}
+        {!activeProfile && profiles.length > 0 && (
+          <Box marginTop={1} flexDirection="column">
+            <Text color={colors.dimmed}>Press <Text color={colors.primary} bold>c</Text> to create a profile,</Text>
+            <Text color={colors.dimmed}>or run <Text color={colors.primary} bold>arc run &lt;tool&gt;</Text> for native mode.</Text>
+          </Box>
         )}
       </Box>
     </Box>

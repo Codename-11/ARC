@@ -72,7 +72,14 @@ export interface ArcSettings {
 
 export interface ArcConfig {
   version: 1;
-  activeProfile: string;
+  /**
+   * Name of the active profile, or null when no profile is active.
+   * A null active profile means `arc launch` / tool commands with no explicit
+   * profile argument will fall back to bare mode (native tool launch, no env
+   * injection). Use `arc profile switch <name>` or `arc profile clear-active`
+   * to change this.
+   */
+  activeProfile: string | null;
   profiles: Record<string, Profile>;
   profileOrder?: string[];
   theme?: "dark" | "light";

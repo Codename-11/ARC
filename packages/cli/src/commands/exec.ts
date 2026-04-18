@@ -17,10 +17,11 @@ export async function handleExec(
   if (name && config.profiles[name]) {
     profileName = name;
     passthrough = rawArgs.slice(1);
-  } else if (name) {
-    profileName = config.activeProfile;
-    passthrough = rawArgs;
   } else {
+    if (config.activeProfile === null) {
+      error("No active profile. Use 'arc profile switch <name>' or pass a profile argument.");
+      process.exit(1);
+    }
     profileName = config.activeProfile;
     passthrough = rawArgs;
   }
