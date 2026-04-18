@@ -47,9 +47,9 @@ const features: Feature[] = [
   {
     icon: <ListTodo size={18} strokeWidth={1.5} />,
     label: "ORCHESTRATION",
-    title: "Tasks & Sessions",
+    title: "Chat, Tasks & Roundtables",
     description:
-      "Task CRUD with cron scheduling and agent-to-agent messaging. Session suspend/resume with resume-intent detection.",
+      "Chat with your active profile via arc chat — streaming tool use, permission gates, session persistence. Tasks with cron scheduling, agent-to-agent messaging, and a roundtable orchestrator for multi-agent decisions.",
   },
   {
     icon: <LayoutDashboard size={18} strokeWidth={1.5} />,

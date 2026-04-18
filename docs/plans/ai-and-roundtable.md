@@ -409,13 +409,13 @@ Update checkboxes in-place as phases complete. Add a `Completed YYYY-MM-DD` mark
 - [x] **Completed 2026-04-18** — commit `443a78c`. `ARC_KNOWLEDGE` (architecture + 52-entry command catalog + 16-term glossary), `FEATURES_INDEX` (33 entries), `buildSystemPrompt()` composes 6 sections under 4K tokens (~1284 typical). 27 tests.
 
 ### Phase 4 — CLI `arc chat`
-- [ ] Not started
+- [x] **Completed 2026-04-18** — commit `a14bedc`. `arc chat` REPL with streaming output, `--profile` / `--mode` / `--once` / `--no-tools` / `--session` / `--new` flags. Slash commands (`/exit`, `/save`, `/new`, `/mode`, `/clear`, `/sessions`, `/resume`, `/help`). `ChatSession` primitive + per-profile store at `~/.arc/profiles/<name>/chat-sessions/`. Supervised-mode confirm gate, read-only / supervised / autonomous permission modes. O(n²) context replay noted as known limitation.
 
 ### Phase 5 — Roundtable orchestrator
-- [ ] Not started
+- [x] **Completed 2026-04-18** — commit `a14bedc`. `RoundtableOrchestrator` driving the existing roundtable hook, adaptive pacing + EMA latency, synthesizer-driven consensus score (tolerant JSON parsing). `StagedWorkflowManager` PLAN/EXEC/VERIFY and `AgentWatchdog` ported from Agent-Forge. `launchMode: "worker"` forced for every participating agent.
 
 ### Phase 6 — `arc roundtable` CLI + MCP tools
-- [ ] Not started
+- [x] **Completed 2026-04-18** — `arc roundtable` CLI (streaming + JSON), `arc_chat` + `arc_roundtable` MCP tools, 6-tool team contract (`team_say/read/status/done/plan/ask`) with in-memory shared bus. MCP server now exposes 13 tools. 4 new integration tests (49 tests pass). Limitation: team tools use process-wide bus — MCP SDK doesn't surface per-call session id.
 
 ### Phase 7 — Dashboard chat view
 - [ ] Not started

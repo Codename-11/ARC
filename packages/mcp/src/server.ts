@@ -7,6 +7,9 @@ import { registerAuditCompletion } from "./tools/audit-completion.js";
 import { registerExpandIntent } from "./tools/expand-intent.js";
 import { registerDeriveCompletion } from "./tools/derive-completion.js";
 import { registerExplainTrace } from "./tools/explain-trace.js";
+import { registerChatTool } from "./tools/chat.js";
+import { registerRoundtableTool } from "./tools/roundtable.js";
+import { registerTeamTools } from "./tools/team/index.js";
 
 const SERVER_NAME = "arc-supervision";
 const SERVER_VERSION = "0.1.0";
@@ -28,6 +31,11 @@ export function createArcMcpServer(): McpServer {
   registerExpandIntent(server);
   registerDeriveCompletion(server);
   registerExplainTrace(server);
+
+  // Phase 6 — AI chat + roundtable + team coordination
+  registerChatTool(server);
+  registerRoundtableTool(server);
+  registerTeamTools(server);
 
   return server;
 }

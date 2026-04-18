@@ -60,3 +60,10 @@ export interface Route {
   paramNames: string[];
   handler: RouteHandler;
 }
+
+// ---------------------------------------------------------------------------
+// Chat (Phase 7)
+// ---------------------------------------------------------------------------
+
+/** Permission mode passed in `POST /api/chat/message`. */
+export type ChatPermissionMode = "read-only" | "supervised" | "autonomous";

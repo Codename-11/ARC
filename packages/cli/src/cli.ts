@@ -344,6 +344,49 @@ REPL commands:
     );
 
   program
+    .command("roundtable <topic>")
+    .description("Run a multi-agent roundtable discussion across profiles")
+    .option("--agents <list>", "Comma-separated profile names (e.g. work-claude,work-codex)")
+    .option("--rounds <n>", "Number of discussion rounds", "2")
+    .option("--synthesizer <name>", "Profile that writes the final summary (default: first agent)")
+    .option("--roles <list>", "Comma-separated roles matching --agents order (advocate|critic|neutral)")
+    .option("--format <mode>", "Output mode (plain|json)", "plain")
+    .option("--no-pacing", "Disable adaptive delivery pacing (faster, for tests)")
+    .addHelpText(
+      "after",
+      `
+Examples:
+  $ arc roundtable "should we rewrite X?" --agents work-claude,work-codex,work-gemini
+  $ arc roundtable "approach for auth?" --agents a,b --rounds 3 --synthesizer b
+  $ arc roundtable "risk review" --agents a,b,c --roles advocate,critic,neutral
+  $ arc roundtable "ship it?" --agents a,b --format json
+`,
+    )
+    .action(
+      async (
+        topic: string,
+        opts: {
+          agents?: string;
+          rounds?: string;
+          synthesizer?: string;
+          roles?: string;
+          format?: string;
+          pacing?: boolean;
+        },
+      ) => {
+        const mod = await import("./commands/roundtable.js");
+        await mod.handleRoundtable(topic, {
+          agents: opts.agents,
+          rounds: opts.rounds,
+          synthesizer: opts.synthesizer,
+          roles: opts.roles,
+          format: opts.format as "plain" | "json" | undefined,
+          pacing: opts.pacing,
+        });
+      },
+    );
+
+  program
     .command("set-key [name]")
     .description("Store an API key for a profile")
     .option("--from-env <var>", "Read key from environment variable")

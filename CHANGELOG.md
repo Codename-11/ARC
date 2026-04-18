@@ -6,6 +6,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-04-18
+
+### Added
+
+- **`arc chat` CLI** — interactive REPL with streaming responses, tool use, and permission modes (`read-only` / `supervised` / `autonomous`). REPL slash commands: `/exit`, `/save`, `/new`, `/mode`, `/clear`, `/sessions`, `/resume`, `/help`. One-shot mode via `--once "<prompt>"`.
+- **`ChatSession` per-profile persistence** — sessions stored at `~/.arc/profiles/<name>/chat-sessions/<id>.json` with atomic writes; `--session <id>` / `/resume <id>` to pick up where you left off.
+- **Roundtable orchestrator** — `RoundtableOrchestrator` class drives the existing roundtable hook over multiple profiles with adaptive delivery pacing (EMA latency) and a designated synthesizer returning a consensus score. Ported from Agent-Forge.
+- **Staged workflow state machine** — `StagedWorkflowManager` implements PLAN → EXEC → VERIFY with per-phase completion patterns and timeouts.
+- **Agent stall watchdog** — `AgentWatchdog` nudges agents at 3 min, marks them stalled at 5 min, and runs a decision protocol (ported from Agent-Forge).
+- **Agent client abstraction** — `packages/core/src/agent-client/` one-shot CLI invocation for Claude / Codex / Gemini with MCP config injection per `mcpMode` variant and per-tool stream parsers.
+- **Tool registry + agent loop** — `packages/core/src/agent/` with three permission modes and ~16 ARC tools (11 read, 4 write, 1 dangerous) wired to existing handlers.
+- **Knowledge endowment** — `packages/core/src/knowledge/` with static ARC catalog (architecture + 52-entry command reference + 16-term glossary), 33-entry feature index, and `buildSystemPrompt()` runtime composer under 4K tokens (~1.3K typical).
+- **Launch modes** — `launchMode: "native" | "worker"` field on Profile (default `native`). `--native` / `--worker` CLI overrides. TUI `m` key in ProfilesView toggles. Doctor check for deprecated `CLAUDE_CODE_NO_FLICKER` env var.
+- **Bare launch** — `arc run <tool>` and `arc launch --bare <tool>` skip the ARC overlay entirely (no env injection, no hook pipeline). Tool-name inference falls through to bare when no matching profile exists.
+- **Clearable active profile** — `arc profile switch none` and `arc profile clear-active` set `activeProfile` to `null`. Rendered as `(none)` in CLI and TUI.
+- **Agent instructions** — `instructions` / `instructionsFile` fields on Profile, injected as `ARC_AGENT_INSTRUCTIONS` env var at launch. `arc instructions` CLI: `show` / `set` / `edit` / `clear`.
+- **OpenAI-compatible providers** — `openai-compat` auth type + `ProviderConfig` (`baseUrl`, `model`, `apiKeyEnvVar`, `displayName`) on Profile; 7 presets (OpenRouter, Ollama, LM Studio, Together, Groq, MiniMax, DeepSeek). `arc provider` CLI: `set` / `show` / `clear` / `presets`.
+- **Backup / export / import** — `arc backup create/restore/list` for a gzipped `~/.arc/` archive (credentials excluded by default); `arc profile export` / `arc profile import-file` for single-profile transport with inlined instructions.
+- **Profile cloning** — `cloneProfile()` core function + `arc profile clone <src> <dst> [--no-copy-dir]` CLI + `Shift+C` inline clone in ProfilesView.
+- **Launch history** — `~/.arc/history.json` records each launch (profile, tool, timestamp, outcome, exitCode); DashView shows recent launches + activity log entries.
+- **Toast notifications** — `ToastProvider` + `useToast()` with auto-dismiss (2.5 s); mounted globally in the Dashboard.
+- **Interactive sidebar queue** — Enter on a profile row in the Sidebar quick-launches without switching views.
+
+### Documentation
+
+- `user-docs/guide/chat.md` — Chat Guide (quickstart, permission modes, REPL commands, session persistence, known limitations).
+- `user-docs/guide/roundtable.md` — Running Roundtables (concepts, programmatic API, adaptive pacing, worker-mode requirement).
+- `user-docs/guide/multi-agent-pipelines.md` — PLAN → EXEC → VERIFY state machine with completion patterns and timeouts.
+- `user-docs/architecture/index.md` — extended "Agent Client + Chat + Orchestration" section.
+
+### Coming in 0.4.x / 0.5.x
+
+- `arc roundtable` CLI with streaming transcript and per-agent color coding (Phase 6).
+- MCP tools: `arc_chat`, `arc_roundtable`, and the 6-tool `team_*` contract (Phase 6).
+- Dashboard chat view with per-session WebSocket streaming and tool-call visualization (Phase 7).
+- Dashboard roundtable + pipelines views (Phase 8).
+
 ## [0.2.0] - 2026-04-03
 
 All 25 phases of the [v2.0 spec](./docs/spec/SPEC.md) are now implemented. ARC has evolved from a profile manager into a unified agent runtime control plane, absorbing the [Axiom-Supervisor](https://github.com/Codename-11/axiom-supervisor) project.
@@ -186,6 +223,7 @@ All 25 phases of the [v2.0 spec](./docs/spec/SPEC.md) are now implemented. ARC h
 - **Light mode contrast** — WCAG AA compliant dimmed/border colors, explicit `colors.text` on import hint
 - **React hooks violation** — `useScreenSize()` moved above conditional returns in DashView
 
-[Unreleased]: https://github.com/Codename-11/ARC/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Codename-11/ARC/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/Codename-11/ARC/compare/v0.2.0...v0.4.0
 [0.2.0]: https://github.com/Codename-11/ARC/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Codename-11/ARC/releases/tag/v0.1.0

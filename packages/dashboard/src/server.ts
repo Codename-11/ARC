@@ -224,6 +224,13 @@ export function createDashboardServer(
   router.add("POST", "/api/memory", api.addMemory);
   router.add("POST", "/api/agents", api.addAgent);
 
+  // Chat routes (Phase 7)
+  router.add("GET", "/api/chat/sessions", api.chatListSessions);
+  router.add("GET", "/api/chat/sessions/:id", api.chatGetSession);
+  router.add("POST", "/api/chat/message", api.chatMessage);
+  router.add("POST", "/api/chat/confirm", api.chatConfirm);
+  router.add("DELETE", "/api/chat/sessions/:id", api.chatDeleteSession);
+
   // ---- HTTP server --------------------------------------------------------
 
   const server = http.createServer((req, res) => {

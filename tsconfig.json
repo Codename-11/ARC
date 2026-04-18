@@ -27,7 +27,8 @@
     "packages/cli/src/**/*.ts",
     "packages/cli/src/**/*.tsx",
     "tests/**/*.ts",
-    "tests/**/*.tsx"
+    "tests/**/*.tsx",
+    "packages/*/tests/**/*.ts"
   ],
   "exclude": [
     "node_modules",

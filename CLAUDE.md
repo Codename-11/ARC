@@ -29,15 +29,17 @@ ARC (Agent Runtime Control) is a CLI + TUI for managing multiple agent profiles 
 - **Landing site:** `site/` — React 19 + Vite + Tailwind v4, Nothing-design marketing page
 - **Deployment:** Root `Dockerfile` + `nginx.conf` — multi-stage build merging `site/` at `/` and `user-docs/` at `/docs/` into single nginx container
 - **Web Dashboard:** 13 view components (Overview, Sessions, Traces, Risk, Tasks, Skills, Memory, Agents, Factory + Profiles, Diagnostics, Sync, Plugins)
-- **Orchestration layer:** Hook pipeline (8 hooks in priority order), roundtable multi-agent discussions, task delegation protocol, interagent routing, source classification
+- **Orchestration layer:** Hook pipeline (8 hooks in priority order), roundtable multi-agent discussions, task delegation protocol, interagent routing, source classification, `arc chat` REPL, `RoundtableOrchestrator`, `StagedWorkflowManager` (PLAN/EXEC/VERIFY), `AgentWatchdog` (stall detection)
 - **Adapters:** Claude Code (SDK + plugin + hooks), Codex CLI, Gemini CLI, OpenClaw (native plugin), Hermes Agent (MCP bridge), OpenAI Compatible (custom providers), Generic (fallback for any tool)
 - **Agent instructions:** `instructions` / `instructionsFile` fields on Profile; resolved at launch, injected as `ARC_AGENT_INSTRUCTIONS` env var; `arc instructions` CLI for show/set/edit/clear
 - **Custom providers:** `openai-compat` auth type + `ProviderConfig` (baseUrl, model, apiKeyEnvVar) on Profile; 7 presets (OpenRouter, Ollama, LM Studio, Together, Groq, MiniMax, DeepSeek); `arc provider` CLI for set/show/clear/presets
 - **Launch modes:** `launchMode: "native" | "worker"` on Profile (default `native`). Native uses full TTY handoff so the tool paints its own TUI; worker uses `spawnManagedProcess` for ARC-supervised orchestration. CLI flags `--native` / `--worker` override. TUI: `m` in ProfilesView toggles. Roundtable forces worker regardless.
 - **Bare launch:** `arc run <tool>` and `arc launch --bare <tool>` skip ARC overlay entirely (no env injection, no hook pipeline). Tool-name inference falls through to bare when no matching profile exists. `activeProfile` may be `null` — cleared via `arc profile switch none` or `arc profile clear-active`, rendered as `(none)`.
-- **Agent client (internal):** `packages/core/src/agent-client/` — CLI-spawn clients for Claude/Codex/Gemini with MCP config injection per `mcpMode` variant and per-tool stream parsers. Foundation for upcoming `arc chat` + roundtable orchestrator. See `docs/plans/ai-and-roundtable.md`.
-- **Agent loop + tool registry (internal):** `packages/core/src/agent/` — tool registry with read-only/supervised/autonomous permission modes, agent loop for tool-use dispatch.
-- **Knowledge (internal):** `packages/core/src/knowledge/` — static + runtime system prompt composition (ARC architecture, command reference, live state).
+- **Agent client:** `packages/core/src/agent-client/` — CLI-spawn clients for Claude/Codex/Gemini with MCP config injection per `mcpMode` variant and per-tool stream parsers. Substrate for `arc chat` + `RoundtableOrchestrator`. See `docs/plans/ai-and-roundtable.md`.
+- **Agent loop + tool registry:** `packages/core/src/agent/` — tool registry with read-only/supervised/autonomous permission modes, `runAgent` generator for tool-use dispatch, ~16 ARC tools wired to existing handlers (list_profiles, clone_profile, switch_active_profile, query_logs, etc.).
+- **Knowledge:** `packages/core/src/knowledge/` — static ARC catalog (architecture + 52-entry command reference + 16-term glossary) + 33-entry feature index + `buildSystemPrompt()` runtime composer under 4K tokens.
+- **Chat:** `packages/core/src/chat/` — `ChatSession` primitive + per-profile store at `~/.arc/profiles/<name>/chat-sessions/` (atomic writes, resume support). Consumed by `arc chat` CLI (`packages/cli/src/commands/chat.ts`).
+- **Orchestration:** `packages/core/src/orchestration/` — `RoundtableOrchestrator` (driver over the roundtable hook with adaptive pacing + synthesizer), `StagedWorkflowManager` (PLAN → EXEC → VERIFY with completion patterns + per-phase timeouts), `AgentWatchdog` (3-min nudge / 5-min stall), `AgentDeliveryPolicy` + EMA latency tracking (ported from Agent-Forge).
 
 ## Key Conventions
 

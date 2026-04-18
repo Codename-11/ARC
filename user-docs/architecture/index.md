@@ -98,25 +98,32 @@ All state is stored in `~/.arc/` as JSON files. Credentials use the OS keyring. 
 
 See [Configuration](/reference/configuration) for the full data layout.
 
-## Agent Client + Roundtable (internal)
+## Agent Client + Chat + Orchestration
 
-ARC includes an internal **agent-client** layer that spawns a profile's CLI tool (`claude`, `codex`, `gemini`) with a prompt and captures structured output. This is the substrate for programmatic orchestration — the CLI tool's own tool use, streaming, and MCP integration flow through unchanged.
+ARC includes an **agent-client** layer that spawns a profile's CLI tool (`claude`, `codex`, `gemini`) with a prompt and captures structured output. This is the substrate for programmatic orchestration — the CLI tool's own tool use, streaming, and MCP integration flow through unchanged.
 
 Modules:
 
 | Module | Purpose |
 |--------|---------|
 | `packages/core/src/agent-client/` | One-shot CLI spawn with per-tool stream parsers and MCP config injection |
-| `packages/core/src/agent/` | Tool registry + agent loop for tool-use dispatch |
-| `packages/core/src/knowledge/` | Static + runtime system prompt composition (ARC feature knowledge) |
-| `packages/core/src/hooks/roundtable.ts` | Multi-agent discussion state machine (turns, roles, synthesis) |
+| `packages/core/src/agent/` | Tool registry + agent loop for tool-use dispatch, three permission modes (read-only / supervised / autonomous) |
+| `packages/core/src/knowledge/` | Static ARC catalog + runtime system prompt composer (architecture, 52-entry command catalog, 33-entry feature index, live state) |
+| `packages/core/src/chat/` | `ChatSession` primitive + per-profile persistent store at `~/.arc/profiles/<name>/chat-sessions/` |
+| `packages/core/src/orchestration/` | Adaptive delivery policy, staged PLAN/EXEC/VERIFY workflow, stall watchdog, roundtable orchestrator |
+| `packages/core/src/hooks/roundtable.ts` | Multi-agent discussion state machine (turns, roles, synthesis) — driven proactively by the orchestrator |
 
-These modules are internal building blocks — not user-facing yet. The shipped `roundtable` hook drives in-session discussions when the trigger phrases are used; the orchestrator that loops over agents programmatically is tracked separately.
+Shipped 0.4.0:
+
+- **`arc chat`** — terminal REPL over a chosen profile with streaming responses, ~16 ARC tools, and read-only / supervised / autonomous permission modes. See [Chat with ARC](/guide/chat).
+- **`RoundtableOrchestrator`** (programmatic) — drives the existing roundtable hook over multiple profiles with adaptive pacing and a synthesizer. See [Running roundtables](/guide/roundtable).
+- **`StagedWorkflowManager`** (programmatic) — PLAN → EXEC → VERIFY state machine. See [Multi-agent pipelines](/guide/multi-agent-pipelines).
 
 Coming soon:
 
-- `arc chat` — terminal REPL over a chosen profile with read-only / supervised / autonomous permission modes
-- `arc roundtable <topic> --agents a,b,c` — one-shot multi-agent discussion from the CLI
-- Dashboard chat panel and roundtable configurator
+- `arc roundtable <topic> --agents a,b,c` — CLI wrapper around the orchestrator (Phase 6).
+- MCP tools: `arc_chat`, `arc_roundtable`, and the 6-tool `team_*` contract (Phase 6).
+- Dashboard chat panel with per-session WebSocket streaming (Phase 7).
+- Dashboard roundtable + pipelines views (Phase 8).
 
 See [docs/plans/ai-and-roundtable.md](https://github.com/Codename-11/ARC/blob/master/docs/plans/ai-and-roundtable.md) for the full design.

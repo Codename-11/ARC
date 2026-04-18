@@ -84,13 +84,15 @@ describe("MCP HTTP Server — basic connectivity", () => {
   it("connects via HTTP and lists tools", async () => {
     const { tools } = await client.listTools();
     const names = tools.map((t) => t.name).sort();
-    expect(names).toEqual([
+    // Phase 6 added arc_chat, arc_roundtable, and 6 team_* tools; the 5
+    // supervision tools must still be present.
+    expect(names).toEqual(expect.arrayContaining([
       "arc_audit_completion",
       "arc_classify_risk",
       "arc_derive_completion",
       "arc_expand_intent",
       "arc_explain_trace",
-    ]);
+    ]));
   });
 
   it("calls arc_classify_risk over HTTP", async () => {
@@ -195,7 +197,7 @@ describe("MCP HTTP Server — auth enforcement (requireAuth: true)", () => {
     const { client, transport } = await connectClient(baseUrl, { authToken });
     try {
       const { tools } = await client.listTools();
-      expect(tools.length).toBe(5);
+      expect(tools.length).toBeGreaterThanOrEqual(5);
 
       const result = await callToolJSON(client, "arc_classify_risk", {
         action: "read a file",
@@ -226,7 +228,7 @@ describe("MCP HTTP Server — localhost auth bypass (default)", () => {
     const { client, transport } = await connectClient(baseUrl);
     try {
       const { tools } = await client.listTools();
-      expect(tools.length).toBe(5);
+      expect(tools.length).toBeGreaterThanOrEqual(5);
     } finally {
       try { await transport.close(); } catch { /* ok */ }
     }

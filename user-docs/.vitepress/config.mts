@@ -77,6 +77,14 @@ export default defineConfig({
           ],
         },
         {
+          text: 'Chat & Orchestration',
+          items: [
+            { text: 'Chat with ARC', link: '/guide/chat' },
+            { text: 'Roundtables', link: '/guide/roundtable' },
+            { text: 'Multi-Agent Pipelines', link: '/guide/multi-agent-pipelines' },
+          ],
+        },
+        {
           text: 'Integration',
           items: [
             { text: 'Shell Integration', link: '/guide/shell-integration' },

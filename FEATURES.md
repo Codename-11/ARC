@@ -34,14 +34,16 @@ Tracking file for planned features, enhancements, and ideas. Checked items are s
 - [ ] **Team/shared config** — repo-checked config with local secret overlays
 - [x] **Backup/export/import** — `arc backup create/restore/list` (gzipped archive of `~/.arc/`, credentials excluded by default) + `arc profile export` / `arc profile import-file` (single-profile JSON transport with inlined instructions)
 - [x] **Managed updates** — self-update system with npm registry check and TUI update banner
-- [x] **Agent client foundation** — internal CLI-spawn agent client at `packages/core/src/agent-client/` (Claude/Codex/Gemini), MCP config injection per `mcpMode`, stream parsers. Building block for upcoming chat + roundtable orchestrator (see `docs/plans/ai-and-roundtable.md` Phase 1)
-- [ ] **Tool registry + agent loop** — `packages/core/src/agent/` tool registry with read-only/supervised/autonomous permission modes; ARC tool set wired to existing handlers (list_profiles, clone_profile, configure_provider, etc.). Plan Phase 2
-- [ ] **Knowledge endowment** — `packages/core/src/knowledge/` system prompt composition (static architecture + command reference + runtime state). Plan Phase 3
-- [ ] **`arc chat` CLI** — terminal REPL using active profile's agent client, streaming output, permission-gated tool calls. Plan Phase 4
-- [ ] **Roundtable orchestrator** — driver loop over the existing roundtable hook; adaptive pacing ported from Agent-Forge. Plan Phase 5
-- [ ] **`arc roundtable` CLI + team MCP tools** — `arc roundtable <topic> --agents a,b,c` with streaming transcript; `arc_chat` / `arc_roundtable` / `team_*` MCP tools. Plan Phase 6
-- [ ] **Dashboard chat view** — per-session WS streaming, tool-call visualization, permission-mode toggle, confirmation modal. Plan Phase 7
-- [ ] **Dashboard roundtable + pipelines view** — configure + run multi-agent flows from the browser with live transcript. Plan Phase 8
+- [x] **Agent client foundation** — internal CLI-spawn agent client at `packages/core/src/agent-client/` (Claude/Codex/Gemini), MCP config injection per `mcpMode`, stream parsers. Plan Phase 1
+- [x] **Tool registry + agent loop** — `packages/core/src/agent/` with ~16 ARC tools spanning read / write / dangerous tiers; three permission modes (read-only / supervised / autonomous); `runAgent` generator. Plan Phase 2
+- [x] **Knowledge endowment** — `packages/core/src/knowledge/` system prompt composition (ARC architecture + 52-entry command catalog + 33-entry feature index + 16-term glossary + runtime state). Plan Phase 3
+- [x] **`arc chat` CLI** — terminal REPL using active profile's agent client with streaming output, permission-gated tool calls, per-profile session persistence at `~/.arc/profiles/<name>/chat-sessions/`, REPL slash commands. Plan Phase 4 (0.4.0)
+- [x] **Roundtable orchestrator** — `RoundtableOrchestrator` driving the existing roundtable hook with adaptive pacing (EMA latency) and synthesizer-driven consensus score. Plan Phase 5 (0.4.0)
+- [x] **Staged workflow state machine** — `StagedWorkflowManager` PLAN → EXEC → VERIFY with completion patterns and per-phase timeouts (ported from Agent-Forge)
+- [x] **Agent stall watchdog** — nudge at 3 min, mark stalled at 5 min, decision protocol (ported from Agent-Forge)
+- [x] **`arc roundtable` CLI + team MCP tools** — `arc roundtable <topic> --agents a,b,c` with streaming transcript; `arc_chat` / `arc_roundtable` / 6 `team_*` MCP tools. Plan Phase 6 (0.4.0)
+- [x] **Dashboard chat view** — per-session WS streaming, tool-call visualization, permission-mode toggle, confirmation modal. Plan Phase 7 (0.4.0)
+- [ ] **Dashboard roundtable + pipelines view** — configure + run multi-agent flows from the browser with live transcript. Plan Phase 8 (ships in 0.4.x)
 
 ## Priority 4 — Observability & Polish
 

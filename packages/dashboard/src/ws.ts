@@ -30,6 +30,13 @@ const OPCODE_PONG = 0x0a;
 
 export class WebSocketClient {
   public alive = true;
+  /**
+   * Session id registered by the client via a `hello` message. Used by
+   * `WebSocketServer.broadcastTo` for per-session routing. Remains `null`
+   * for legacy clients that don't opt in to session negotiation — those
+   * clients still receive `broadcast()` messages.
+   */
+  public sessionId: string | null = null;
 
   constructor(public readonly socket: Duplex) {
     socket.on("data", (buf: Buffer) => this.handleData(buf));
@@ -159,6 +166,12 @@ export type ConnectionHandler = (client: WebSocketClient) => void;
 
 export class WebSocketServer {
   private clients = new Set<WebSocketClient>();
+  /**
+   * Registered-session routing table. A client registers itself by sending
+   * `{ type: "hello", sessionId }` as its first text frame. Used by
+   * `broadcastTo` to target a single logical session.
+   */
+  private sessions = new Map<string, WebSocketClient>();
   private connectionHandler: ConnectionHandler | null = null;
 
   // ---- Public API ---------------------------------------------------------
@@ -176,6 +189,27 @@ export class WebSocketServer {
         client.send(message);
       }
     }
+  }
+
+  /**
+   * Send a JSON event to the single client registered under `sessionId`.
+   * Silently drops the event if no client has registered that session
+   * (e.g. the tab was closed before the response arrived).
+   *
+   * This is the per-session counterpart to `broadcast` — used for
+   * chat streaming where only the originating tab should see chunks.
+   * See `docs/plans/ai-and-roundtable.md` — AD-5.
+   */
+  broadcastTo(sessionId: string, event: string, data: unknown): void {
+    const client = this.sessions.get(sessionId);
+    if (!client || !client.alive) return;
+    const message = JSON.stringify({ event, data, timestamp: new Date().toISOString() });
+    client.send(message);
+  }
+
+  /** Return the client registered under `sessionId`, or null. */
+  getSessionClient(sessionId: string): WebSocketClient | null {
+    return this.sessions.get(sessionId) ?? null;
   }
 
   /** Return all currently connected clients. */
@@ -223,15 +257,52 @@ export class WebSocketServer {
     const client = new WebSocketClient(socket);
     this.clients.add(client);
 
+    // Allow the connection handler to set its own onMessage first, then
+    // wrap it so we can intercept the initial `hello` frame for session
+    // registration. Anything that's not a hello falls through to the
+    // user's handler (if any).
+    this.connectionHandler?.(client);
+
+    const userHandler = client.onMessage;
+    client.onMessage = (raw: string): void => {
+      if (client.sessionId === null) {
+        try {
+          const parsed = JSON.parse(raw) as { type?: string; sessionId?: string };
+          if (
+            parsed &&
+            parsed.type === "hello" &&
+            typeof parsed.sessionId === "string" &&
+            parsed.sessionId.length > 0
+          ) {
+            // Evict any prior client under the same id (stale tab).
+            const prior = this.sessions.get(parsed.sessionId);
+            if (prior && prior !== client) {
+              prior.sessionId = null;
+            }
+            client.sessionId = parsed.sessionId;
+            this.sessions.set(parsed.sessionId, client);
+            return;
+          }
+        } catch {
+          // Not JSON or not a hello — fall through to user handler.
+        }
+      }
+      userHandler?.(raw);
+    };
+
     client.onClose = () => {
+      if (client.sessionId && this.sessions.get(client.sessionId) === client) {
+        this.sessions.delete(client.sessionId);
+      }
       this.clients.delete(client);
     };
 
     socket.on("close", () => {
+      if (client.sessionId && this.sessions.get(client.sessionId) === client) {
+        this.sessions.delete(client.sessionId);
+      }
       this.clients.delete(client);
     });
-
-    this.connectionHandler?.(client);
   }
 
   /** Disconnect all clients and stop heartbeat. */
@@ -240,6 +311,7 @@ export class WebSocketServer {
       client.close();
     }
     this.clients.clear();
+    this.sessions.clear();
     if (this.heartbeatTimer) {
       clearInterval(this.heartbeatTimer);
       this.heartbeatTimer = null;
