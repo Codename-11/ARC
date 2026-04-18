@@ -102,8 +102,8 @@ function agentRow(agent, idx) {
     .join('');
   return `
     <div class="pipe-agent" data-idx="${idx}">
-      <select class="chat-control__select" data-idx="${idx}">${options}</select>
-      <button class="btn btn--ghost" data-action="remove-agent" data-idx="${idx}">×</button>
+      <select class="chat-control__select" data-idx="${idx}" aria-label="Agent profile">${options}</select>
+      <button class="btn btn--ghost" data-action="remove-agent" data-idx="${idx}" aria-label="Remove agent" title="Remove agent">×</button>
     </div>`;
 }
 
@@ -141,15 +141,20 @@ function renderAgents() {
   const el = document.getElementById('pipe-agents');
   if (!el) return;
   el.innerHTML = state.agents.map((a, i) => agentRow(a, i)).join('') ||
-    '<div class="rt-empty">No agents — press + ADD AGENT.</div>';
+    '<div class="rt-empty">No agents — press <span class="kbd">+ Add agent</span> above.</div>';
   wireAgentHandlers();
 }
 
 function renderLog() {
   const el = document.getElementById('pipe-log');
   if (!el) return;
-  el.innerHTML = state.phaseLog.map(transcriptRow).join('') ||
-    '<div class="rt-empty">No phase activity yet.</div>';
+  const emptyBlock = `
+    <div class="empty--inline" style="margin: auto 0">
+      <span class="empty-glyph" aria-hidden="true">▸ ▸ ▸</span>
+      <div class="empty__title">Awaiting run</div>
+      <div class="empty__desc">Phase timings appear here once the pipeline starts</div>
+    </div>`;
+  el.innerHTML = state.phaseLog.map(transcriptRow).join('') || emptyBlock;
   el.scrollTop = el.scrollHeight;
 }
 
@@ -175,8 +180,14 @@ async function refreshHistory() {
     const res = await fetch('/api/pipeline/history');
     if (!res.ok) return;
     const list = await res.json();
+    const emptyBlock = `
+      <div class="empty--inline">
+        <span class="empty-glyph" aria-hidden="true">▸</span>
+        <div class="empty__title">No past pipelines</div>
+        <div class="empty__desc">PLAN → EXEC → VERIFY flows appear here</div>
+      </div>`;
     el.innerHTML = Array.isArray(list)
-      ? list.map(historyRow).join('') || '<div class="rt-empty">No past pipelines.</div>'
+      ? list.map(historyRow).join('') || emptyBlock
       : '';
     el.querySelectorAll('[data-history-id]').forEach((row) => {
       row.addEventListener('click', () => loadHistory(row.getAttribute('data-history-id')));
@@ -363,29 +374,36 @@ async function render() {
 
   const phaseToggles = PHASES.map(phaseToggle).join('');
 
+  const sidebarSkeleton = Array.from({ length: 3 }).map(() => `
+    <div class="skeleton">
+      <div class="skeleton__line"></div>
+      <div class="skeleton__line skeleton__line--tiny"></div>
+    </div>`).join('');
+
   return `
     <div class="main__header">
       <h1 class="main__title">Pipelines</h1>
       <span class="main__subtitle">PLAN → EXEC → VERIFY</span>
     </div>
+    <div id="pipe-banner" class="is-hidden"></div>
     <div class="rt-layout">
-      <aside class="rt-history-sidebar">
+      <aside class="rt-history-sidebar" aria-label="Pipeline history">
         <div class="chat-sidebar__header">
           <span class="chat-sidebar__title">HISTORY</span>
         </div>
-        <div id="pipe-history" class="rt-history"></div>
+        <div id="pipe-history" class="rt-history">${sidebarSkeleton}</div>
       </aside>
       <section class="rt-main">
         <div class="rt-config">
-          <div class="pipe-toggles">${phaseToggles}</div>
+          <div class="pipe-toggles" role="group" aria-label="Phase configuration">${phaseToggles}</div>
           <div class="rt-config__row">
-            <button id="pipe-add-agent" class="btn btn--ghost">+ ADD AGENT</button>
-            <button id="pipe-start" class="btn">RUN PIPELINE</button>
+            <button id="pipe-add-agent" class="btn btn--secondary" aria-label="Add agent">+ Add agent</button>
+            <button id="pipe-start" class="btn btn--primary" aria-label="Run pipeline">Run pipeline</button>
           </div>
           <div id="pipe-agents" class="rt-agents"></div>
         </div>
-        <div id="pipe-tracker" class="pipe-tracker"></div>
-        <div id="pipe-log" class="pipe-log"></div>
+        <div id="pipe-tracker" class="pipe-tracker" role="group" aria-label="Phase progress"></div>
+        <div id="pipe-log" class="pipe-log" role="log" aria-live="polite"></div>
       </section>
     </div>`;
 }

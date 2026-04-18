@@ -2,6 +2,25 @@
 
 const BASE = '';
 
+let cachedToken = null;
+async function getToken() {
+  if (cachedToken) return cachedToken;
+  try {
+    const res = await fetch('/api/auth/token');
+    if (!res.ok) return null;
+    const body = await res.json();
+    cachedToken = body.token || null;
+    return cachedToken;
+  } catch {
+    return null;
+  }
+}
+
+async function authHeaders(extra = {}) {
+  const token = await getToken();
+  return token ? { ...extra, Authorization: `Bearer ${token}` } : extra;
+}
+
 async function fetchJson(path) {
   const res = await fetch(`${BASE}${path}`);
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
@@ -11,7 +30,7 @@ async function fetchJson(path) {
 async function postJson(path, body) {
   const res = await fetch(`${BASE}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: await authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
@@ -19,7 +38,10 @@ async function postJson(path, body) {
 }
 
 async function deleteJson(path) {
-  const res = await fetch(`${BASE}${path}`, { method: 'DELETE' });
+  const res = await fetch(`${BASE}${path}`, {
+    method: 'DELETE',
+    headers: await authHeaders(),
+  });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   return res.json();
 }
@@ -27,7 +49,7 @@ async function deleteJson(path) {
 async function patchJson(path, body) {
   const res = await fetch(`${BASE}${path}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: await authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);

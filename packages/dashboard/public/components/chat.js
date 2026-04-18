@@ -50,6 +50,31 @@ function ensureHello() {
   }
 }
 
+/**
+ * Wait (up to `timeoutMs`) until the WS is open AND the hello frame has been
+ * sent. Callers that POST to an endpoint which streams back via
+ * `broadcastTo(sessionId, ...)` must await this first — otherwise the
+ * server's first chunks race the hello registration and get dropped.
+ *
+ * This is the client-side half of the hello-race fix; the server-side half
+ * (`packages/dashboard/src/ws.ts`) also falls back to `broadcast` as a
+ * last-resort safety net.
+ */
+function waitForHello(timeoutMs = 5000) {
+  ensureHello();
+  if (window.__arcDashboardHelloSent) return Promise.resolve();
+  return new Promise((resolve) => {
+    const started = Date.now();
+    const check = () => {
+      ensureHello();
+      if (window.__arcDashboardHelloSent) return resolve();
+      if (Date.now() - started >= timeoutMs) return resolve(); // give up; server will fall back to broadcast
+      setTimeout(check, 50);
+    };
+    check();
+  });
+}
+
 // Re-send hello whenever the WS (re)connects.
 ws.on('connected', () => {
   window.__arcDashboardHelloSent = false;
@@ -164,13 +189,22 @@ function sessionItem(s, activeId) {
     <div class="${cls}" data-session-id="${escapeHtml(s.id)}">
       <div class="chat-session__summary">${escapeHtml(s.summary)}</div>
       <div class="chat-session__meta">${escapeHtml(String(s.messageCount))} msgs</div>
-      <button class="chat-session__delete" data-action="delete-session" data-id="${escapeHtml(s.id)}" title="Delete">×</button>
+      <button class="chat-session__delete" data-action="delete-session" data-id="${escapeHtml(s.id)}" title="Delete session" aria-label="Delete session">×</button>
     </div>`;
 }
 
 function renderMessages() {
   const list = document.getElementById('chat-messages');
   if (!list) return;
+  if (state.messages.length === 0) {
+    list.innerHTML = `
+      <div class="empty--inline" style="margin: auto 0">
+        <span class="empty-glyph" aria-hidden="true">◉</span>
+        <div class="empty__title">Ready when you are</div>
+        <div class="empty__desc">Ask a question about ARC — press <span class="kbd">Enter</span> to send</div>
+      </div>`;
+    return;
+  }
   list.innerHTML = state.messages.map(messageRow).join('');
   list.scrollTop = list.scrollHeight;
 }
@@ -179,7 +213,13 @@ function renderSessionList(sessions) {
   const el = document.getElementById('chat-sessions');
   if (!el) return;
   const items = sessions.map((s) => sessionItem(s, state.chatSessionId)).join('');
-  el.innerHTML = items || '<div class="chat-sessions__empty">No saved sessions</div>';
+  const emptyBlock = `
+    <div class="chat-sessions__empty empty--inline">
+      <span class="empty-glyph" aria-hidden="true">◌</span>
+      <div class="empty__title">No saved sessions</div>
+      <div class="empty__desc">Start a new chat to see your history here</div>
+    </div>`;
+  el.innerHTML = items || emptyBlock;
   el.querySelectorAll('.chat-session').forEach((row) => {
     row.addEventListener('click', async (e) => {
       if (e.target.closest('[data-action="delete-session"]')) return;
@@ -261,12 +301,16 @@ async function sendMessage(text) {
     alert('Pick a profile first');
     return;
   }
-  ensureHello();
 
   state.messages.push({ role: 'user', content: text });
   state.streaming = { role: 'assistant', content: '', toolCalls: [] };
   state.messages.push(state.streaming);
   renderMessages();
+
+  // Must resolve the hello handshake *before* POSTing, otherwise the server
+  // starts streaming chunks via broadcastTo(sessionId, ...) and they get
+  // dropped because our session isn't registered yet.
+  await waitForHello();
 
   try {
     const res = await authFetch('/api/chat/message', {
@@ -360,14 +404,14 @@ function showConfirmModal(tokenId, prompt) {
   overlay.id = 'chat-confirm-modal';
   overlay.className = 'modal-overlay chat-confirm';
   overlay.innerHTML = `
-    <div class="modal chat-confirm__box">
-      <div class="modal__title">ALLOW TOOL?</div>
+    <div class="modal chat-confirm__box" role="dialog" aria-modal="true" aria-labelledby="chat-confirm-title">
+      <div class="modal__title" id="chat-confirm-title">ALLOW TOOL?</div>
       <div class="modal__body">
         <pre class="chat-confirm__prompt">${escapeHtml(prompt)}</pre>
       </div>
       <div class="modal__actions">
-        <button class="btn btn--ghost" data-confirm="deny">DENY</button>
-        <button class="btn" data-confirm="allow">APPROVE</button>
+        <button class="btn btn--secondary" data-confirm="deny">DENY</button>
+        <button class="btn btn--primary" data-confirm="allow">APPROVE</button>
       </div>
     </div>`;
   document.body.appendChild(overlay);
@@ -483,40 +527,52 @@ async function render() {
     refreshSessionList();
   }, 0);
 
+  const skeletonRows = Array.from({ length: 3 }).map(() => `
+    <div class="skeleton">
+      <div class="skeleton__line"></div>
+      <div class="skeleton__line skeleton__line--short"></div>
+    </div>`).join('');
+
+  const modeHint = 'read-only: safe tools only. supervised: ask before write/exec. autonomous: no prompts.';
+
   return `
     <div class="main__header">
       <h1 class="main__title">Chat</h1>
       <span class="main__subtitle">IN-APP ASSISTANT</span>
     </div>
+    <div id="chat-banner" class="is-hidden"></div>
     <div class="chat-layout">
-      <aside class="chat-sidebar">
+      <aside class="chat-sidebar" aria-label="Chat sessions">
         <div class="chat-sidebar__header">
           <span class="chat-sidebar__title">SESSIONS</span>
-          <button id="chat-new" class="btn btn--ghost">+ NEW</button>
+          <button id="chat-new" class="btn btn--ghost" aria-label="New chat session">+ NEW</button>
         </div>
-        <div id="chat-sessions" class="chat-sessions"></div>
+        <div id="chat-sessions" class="chat-sessions">${skeletonRows}</div>
       </aside>
       <section class="chat-main">
         <div class="chat-controls">
           <label class="chat-control">
             <span class="chat-control__label">PROFILE</span>
-            <select id="chat-profile" class="chat-control__select">
+            <select id="chat-profile" class="chat-control__select" aria-label="Active profile">
               ${profileOptions || '<option value="">(none)</option>'}
             </select>
           </label>
           <label class="chat-control">
-            <span class="chat-control__label">MODE</span>
-            <select id="chat-mode" class="chat-control__select">
+            <span class="chat-control__label">
+              MODE
+              <span class="help-icon" tabindex="0" data-hint="${escapeHtml(modeHint)}" aria-label="Mode help">?</span>
+            </span>
+            <select id="chat-mode" class="chat-control__select" aria-label="Permission mode">
               <option value="read-only" ${state.mode === 'read-only' ? 'selected' : ''}>read-only</option>
               <option value="supervised" ${state.mode === 'supervised' ? 'selected' : ''}>supervised</option>
               <option value="autonomous" ${state.mode === 'autonomous' ? 'selected' : ''}>autonomous</option>
             </select>
           </label>
         </div>
-        <div id="chat-messages" class="chat-messages"></div>
+        <div id="chat-messages" class="chat-messages" role="log" aria-live="polite"></div>
         <div class="chat-input-row">
-          <textarea id="chat-input" class="chat-input" rows="2" placeholder="Ask about ARC... (Enter to send, Shift+Enter for newline)"></textarea>
-          <button id="chat-send" class="btn">SEND</button>
+          <textarea id="chat-input" class="chat-input" rows="2" placeholder="Ask about ARC... (Enter to send, Shift+Enter for newline)" aria-label="Chat message"></textarea>
+          <button id="chat-send" class="btn" aria-label="Send message">SEND</button>
         </div>
       </section>
     </div>`;

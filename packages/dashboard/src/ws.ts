@@ -193,18 +193,31 @@ export class WebSocketServer {
 
   /**
    * Send a JSON event to the single client registered under `sessionId`.
-   * Silently drops the event if no client has registered that session
-   * (e.g. the tab was closed before the response arrived).
    *
-   * This is the per-session counterpart to `broadcast` — used for
-   * chat streaming where only the originating tab should see chunks.
+   * If no client has registered that session (e.g. the tab sent a POST
+   * before its `hello` was acked, or the tab was closed), we log a
+   * warning and fall back to `broadcast` so the currently-open dashboard
+   * tab(s) still receive the event. Without the fallback a racey first
+   * message produces a completely silent UI, which has been the #1
+   * source of "chat doesn't start" reports.
+   *
    * See `docs/plans/ai-and-roundtable.md` — AD-5.
    */
   broadcastTo(sessionId: string, event: string, data: unknown): void {
     const client = this.sessions.get(sessionId);
-    if (!client || !client.alive) return;
     const message = JSON.stringify({ event, data, timestamp: new Date().toISOString() });
-    client.send(message);
+    if (client && client.alive) {
+      client.send(message);
+      return;
+    }
+    // Miss — session not registered (hello race) or client gone.
+    // Log once per event type + sessionId to keep stderr quiet under load.
+    process.stderr.write(
+      `[arc-dashboard] broadcastTo('${sessionId}', '${event}') — no registered client; falling back to broadcast\n`,
+    );
+    for (const c of this.clients) {
+      if (c.alive) c.send(message);
+    }
   }
 
   /** Return the client registered under `sessionId`, or null. */

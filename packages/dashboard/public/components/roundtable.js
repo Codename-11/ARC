@@ -95,17 +95,18 @@ function agentRow(agent, idx) {
       <select class="rt-agent__role chat-control__select" data-field="role" data-idx="${idx}">
         ${roleOptions}
       </select>
-      <button class="btn btn--ghost rt-agent__remove" data-action="remove-agent" data-idx="${idx}">×</button>
+      <button class="btn btn--ghost rt-agent__remove" data-action="remove-agent" data-idx="${idx}" aria-label="Remove agent" title="Remove agent">×</button>
     </div>`;
 }
 
 function turnBlock(evt) {
   const role = evt.role || '';
+  const rolePillClass = ROLES.includes(role) ? `role-pill--${role}` : 'role-pill--neutral';
   return `
     <div class="rt-turn rt-turn--${escapeHtml(role)}">
       <div class="rt-turn__header">
         <span class="rt-turn__agent">${escapeHtml(evt.agent || '')}</span>
-        <span class="rt-turn__role">${escapeHtml(role.toUpperCase())}</span>
+        <span class="role-pill ${rolePillClass}">${escapeHtml(role.toUpperCase() || 'AGENT')}</span>
         <span class="rt-turn__round">ROUND ${escapeHtml(String(evt.round ?? '?'))}</span>
         <span class="rt-turn__latency">${escapeHtml(String(Math.round((evt.latencyMs ?? 0))))}ms</span>
       </div>
@@ -118,10 +119,12 @@ function synthesisBlock(s) {
   return `
     <div class="rt-synthesis">
       <div class="rt-synthesis__header">
-        <span class="rt-synthesis__label">SYNTHESIS</span>
+        <span class="rt-synthesis__label">
+          <span class="role-pill role-pill--synthesizer">SYNTHESIS</span>
+        </span>
         <span class="rt-synthesis__score">CONSENSUS ${pct}%</span>
       </div>
-      <div class="rt-synthesis__bar">
+      <div class="rt-synthesis__bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100">
         <div class="rt-synthesis__bar-fill" style="width: ${pct}%;"></div>
       </div>
       <div class="rt-synthesis__summary">${escapeHtml(s.summary || '')}</div>
@@ -136,8 +139,13 @@ function renderTranscript() {
     if (evt.type === 'turn-complete') parts.push(turnBlock(evt));
   }
   if (state.synthesis) parts.push(synthesisBlock(state.synthesis));
-  el.innerHTML = parts.join('') ||
-    '<div class="rt-empty">No activity yet — configure agents above and press START.</div>';
+  const emptyBlock = `
+    <div class="empty--inline" style="margin: auto 0">
+      <span class="empty-glyph" aria-hidden="true">◇ ◈ ◇</span>
+      <div class="empty__title">Ready to deliberate</div>
+      <div class="empty__desc">Configure agents above, set a topic, then press <span class="kbd">Start roundtable</span></div>
+    </div>`;
+  el.innerHTML = parts.join('') || emptyBlock;
   el.scrollTop = el.scrollHeight;
 }
 
@@ -145,7 +153,7 @@ function renderAgents() {
   const el = document.getElementById('rt-agents');
   if (!el) return;
   el.innerHTML = state.agents.map((a, i) => agentRow(a, i)).join('') ||
-    '<div class="rt-empty">No agents yet — press + ADD AGENT.</div>';
+    '<div class="rt-empty">No agents yet — press <span class="kbd">+ Add agent</span> above.</div>';
   wireAgentHandlers();
 }
 
@@ -190,7 +198,13 @@ async function refreshHistory() {
     if (!res.ok) return;
     const list = await res.json();
     const rows = Array.isArray(list) ? list.map(historyRow).join('') : '';
-    el.innerHTML = rows || '<div class="rt-empty">No past roundtables.</div>';
+    const emptyBlock = `
+      <div class="empty--inline">
+        <span class="empty-glyph" aria-hidden="true">◇</span>
+        <div class="empty__title">No past roundtables</div>
+        <div class="empty__desc">Configure agents below and press Start</div>
+      </div>`;
+    el.innerHTML = rows || emptyBlock;
     el.querySelectorAll('[data-history-id]').forEach((row) => {
       row.addEventListener('click', async () => {
         const id = row.getAttribute('data-history-id');
@@ -395,39 +409,55 @@ async function render() {
     refreshHistory();
   }, 0);
 
+  const synthHint = 'Which agent summarises the discussion at the end. Defaults to the first agent.';
+  const roundsHint = 'How many turns each agent gets. 2–3 is usually enough.';
+
+  const sidebarSkeleton = Array.from({ length: 3 }).map(() => `
+    <div class="skeleton">
+      <div class="skeleton__line"></div>
+      <div class="skeleton__line skeleton__line--tiny"></div>
+    </div>`).join('');
+
   return `
     <div class="main__header">
       <h1 class="main__title">Roundtable</h1>
       <span class="main__subtitle">MULTI-AGENT DELIBERATION</span>
     </div>
+    <div id="rt-banner" class="is-hidden"></div>
     <div class="rt-layout">
-      <aside class="rt-history-sidebar">
+      <aside class="rt-history-sidebar" aria-label="Roundtable history">
         <div class="chat-sidebar__header">
           <span class="chat-sidebar__title">HISTORY</span>
         </div>
-        <div id="rt-history" class="rt-history"></div>
+        <div id="rt-history" class="rt-history">${sidebarSkeleton}</div>
       </aside>
       <section class="rt-main">
         <div class="rt-config">
           <label class="chat-control">
             <span class="chat-control__label">TOPIC</span>
-            <input id="rt-topic" class="chat-input rt-topic" placeholder="What should we discuss?" />
+            <input id="rt-topic" class="chat-input rt-topic" placeholder="What should we discuss?" aria-label="Topic" />
           </label>
           <div class="rt-config__row">
             <label class="chat-control">
-              <span class="chat-control__label">ROUNDS</span>
-              <input id="rt-rounds" type="number" min="1" max="10" value="${state.rounds}" class="chat-control__select rt-rounds" />
+              <span class="chat-control__label">
+                ROUNDS
+                <span class="help-icon" tabindex="0" data-hint="${escapeHtml(roundsHint)}" aria-label="Rounds help">?</span>
+              </span>
+              <input id="rt-rounds" type="number" min="1" max="10" value="${state.rounds}" class="chat-control__select rt-rounds" aria-label="Number of rounds" />
             </label>
             <label class="chat-control">
-              <span class="chat-control__label">SYNTHESIZER</span>
-              <select id="rt-synthesizer" class="chat-control__select"></select>
+              <span class="chat-control__label">
+                SYNTHESIZER
+                <span class="help-icon" tabindex="0" data-hint="${escapeHtml(synthHint)}" aria-label="Synthesizer help">?</span>
+              </span>
+              <select id="rt-synthesizer" class="chat-control__select" aria-label="Synthesizer profile"></select>
             </label>
-            <button id="rt-add-agent" class="btn btn--ghost">+ ADD AGENT</button>
-            <button id="rt-start" class="btn">START ROUNDTABLE</button>
+            <button id="rt-add-agent" class="btn btn--secondary" aria-label="Add agent">+ Add agent</button>
+            <button id="rt-start" class="btn btn--primary" aria-label="Start roundtable">Start roundtable</button>
           </div>
           <div id="rt-agents" class="rt-agents"></div>
         </div>
-        <div id="rt-transcript" class="rt-transcript"></div>
+        <div id="rt-transcript" class="rt-transcript" role="log" aria-live="polite"></div>
       </section>
     </div>`;
 }
