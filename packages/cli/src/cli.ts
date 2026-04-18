@@ -294,6 +294,56 @@ Examples:
     );
 
   program
+    .command("chat")
+    .description("Interactive chat with your active profile's agent (with ARC tool use)")
+    .option("--profile <name>", "Profile to use (default: active)")
+    .option("--mode <mode>", "Permission mode (read-only|supervised|autonomous)", "supervised")
+    .option("--once <prompt>", "One-shot mode: send prompt, stream response, exit")
+    .option("--no-tools", "Disable ARC tool use (plain chat only)")
+    .option("--session <id>", "Resume a previous chat session")
+    .option("--new", "Force a new session (default when --session is absent)")
+    .addHelpText(
+      "after",
+      `
+Examples:
+  $ arc chat                                     (interactive REPL)
+  $ arc chat --once "list my profiles"           (one-shot)
+  $ arc chat --mode read-only                    (no writes)
+  $ arc chat --session abc-123                   (resume)
+  $ arc chat --no-tools                          (plain chat only)
+
+REPL commands:
+  /exit /quit          End the session
+  /save                Save the session to disk
+  /new                 Start a new session
+  /mode <m>            Switch permission mode
+  /sessions            List saved sessions
+  /resume <id>         Resume a saved session
+  /help                Show command list
+`,
+    )
+    .action(
+      async (opts: {
+        profile?: string;
+        mode?: string;
+        once?: string;
+        tools?: boolean;
+        session?: string;
+        new?: boolean;
+      }) => {
+        const mod = await import("./commands/chat.js");
+        await mod.handleChat({
+          profile: opts.profile,
+          mode: opts.mode as "read-only" | "supervised" | "autonomous" | undefined,
+          once: opts.once,
+          noTools: opts.tools === false,
+          session: opts.session,
+          new: opts.new,
+        });
+      },
+    );
+
+  program
     .command("set-key [name]")
     .description("Store an API key for a profile")
     .option("--from-env <var>", "Read key from environment variable")
