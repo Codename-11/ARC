@@ -391,13 +391,13 @@ See **Decisions** section at the top of this doc.
 Update checkboxes in-place as phases complete. Add a `Completed YYYY-MM-DD` marker at the bottom of each phase.
 
 ### Phase 0 — Scaffolding
-- [ ] Not started
+- [x] **Completed 2026-04-18** — folded into Phase 1 commit `6ff876b`
 
 ### Phase 0.5 — Launch hygiene (native vs orchestrated)
-- [ ] Not started
+- [x] **Completed 2026-04-18** — commit `6ff876b`. `launchMode` field, `--native`/`--worker` flags, doctor check, `m` toggle in ProfilesView, docs section in user-docs/guide/profiles.md
 
 ### Phase 1 — Agent client (CLI-spawn) foundation
-- [ ] Not started
+- [x] **Completed 2026-04-18** — commit `6ff876b`. `packages/core/src/agent-client/` with Claude/Codex/Gemini clients, MCP injection per mcpMode variant, stream parsers, 48 unit tests. Unverified CLI flags flagged for Phase 4 smoke test.
 
 ### Phase 2 — Tool registry + agent loop
 - [ ] Not started
