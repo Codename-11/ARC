@@ -1,10 +1,10 @@
-import { Box, Text, useInput } from "ink";
+import { Box, Text } from "ink";
 import { useTheme } from "../theme.js";
 import type { ProfileEntry } from "../useProfiles.js";
 
 export type ViewName = "dash" | "workspace" | "profiles" | "about" | "doctor" | "settings" | "tasks" | "memory" | "skills" | "sync" | "telemetry" | "agents";
 
-const NAV_ITEMS: { view: ViewName; label: string }[] = [
+export const NAV_ITEMS: { view: ViewName; label: string }[] = [
   { view: "dash", label: "Dash" },
   { view: "workspace", label: "Work" },
   { view: "profiles", label: "Profiles" },
@@ -19,45 +19,51 @@ const NAV_ITEMS: { view: ViewName; label: string }[] = [
   { view: "agents", label: "Agents" },
 ];
 
+/** Max number of profile rows rendered in the sidebar queue. */
+export const SIDEBAR_PROFILE_LIMIT = 5;
+
+/**
+ * Returns the count of selectable profile rows in the sidebar (capped).
+ */
+export function sidebarProfileCount(profiles: ProfileEntry[]): number {
+  return Math.min(profiles.length, SIDEBAR_PROFILE_LIMIT);
+}
+
+/**
+ * Total selectable rows in the sidebar (nav items + visible profile rows).
+ */
+export function sidebarSelectableCount(profiles: ProfileEntry[]): number {
+  return NAV_ITEMS.length + sidebarProfileCount(profiles);
+}
+
+/**
+ * Index at which profile rows begin in the combined selection list.
+ */
+export const SIDEBAR_PROFILES_START = NAV_ITEMS.length;
+
 interface SidebarProps {
   activeView: ViewName;
-  onViewChange: (view: ViewName) => void;
   profiles: ProfileEntry[];
   focusedPane: "sidebar" | "content";
-  inputEnabled: boolean;
+  /**
+   * 0-indexed position in the combined [nav..., profiles...] list.
+   * Drives the visual highlight when sidebar is focused.
+   */
+  selectedIndex: number;
 }
 
 export function Sidebar({
   activeView,
-  onViewChange,
   profiles,
   focusedPane,
-  inputEnabled,
+  selectedIndex,
 }: SidebarProps) {
   const { theme } = useTheme();
   const { colors } = theme;
   const isFocused = focusedPane === "sidebar";
-  const navIndex = Math.max(0, NAV_ITEMS.findIndex((item) => item.view === activeView));
   const activeProfile = profiles.find((profile) => profile.active);
   const readyCount = profiles.filter((profile) => profile.credential?.authenticated).length;
-
-  useInput(
-    (_, key) => {
-      if (!isFocused || !inputEnabled) return;
-
-      if (key.upArrow) {
-        const previous = NAV_ITEMS[Math.max(0, navIndex - 1)];
-        if (previous) onViewChange(previous.view);
-        return;
-      }
-
-      if (key.downArrow) {
-        const next = NAV_ITEMS[Math.min(NAV_ITEMS.length - 1, navIndex + 1)];
-        if (next) onViewChange(next.view);
-      }
-    },
-    { isActive: isFocused && inputEnabled }
-  );
+  const visibleProfiles = profiles.slice(0, SIDEBAR_PROFILE_LIMIT);
 
   return (
     <Box flexDirection="column" flexGrow={1} paddingX={0} paddingY={0}>
@@ -77,7 +83,7 @@ export function Sidebar({
       <Box flexDirection="column">
         {NAV_ITEMS.map((item, index) => {
           const isActive = item.view === activeView;
-          const isHighlighted = isFocused && index === navIndex;
+          const isHighlighted = isFocused && index === selectedIndex;
 
           let textColor = colors.dimmed;
           if (isActive) textColor = colors.primary;
@@ -115,22 +121,38 @@ export function Sidebar({
       {/* Queue */}
       <Box flexDirection="column" paddingX={1} marginTop={1}>
         <Text color={colors.border}>{"─".repeat(14)}</Text>
-        {profiles.length === 0 ? (
+        {visibleProfiles.length === 0 ? (
           <Text color={colors.dimmed}>no profiles</Text>
         ) : (
-          profiles.slice(0, 5).map((profile) => (
-            <Box key={profile.name}>
-              <Text color={profile.active ? colors.accent : colors.dimmed}>
-                {profile.active ? "● " : "○ "}
-              </Text>
-              <Text
-                color={profile.active ? colors.text : colors.dimmed}
-                bold={profile.active}
+          visibleProfiles.map((profile, index) => {
+            const combinedIndex = SIDEBAR_PROFILES_START + index;
+            const isHighlighted = isFocused && combinedIndex === selectedIndex;
+            return (
+              <Box
+                key={profile.name}
+                backgroundColor={isHighlighted ? colors.bgSelected : undefined}
               >
-                {profile.name}
-              </Text>
-            </Box>
-          ))
+                <Text color={isHighlighted ? colors.text : colors.dimmed}>
+                  {isHighlighted ? "›" : " "}
+                </Text>
+                <Text color={profile.active ? colors.accent : colors.dimmed}>
+                  {profile.active ? "● " : " ○ "}
+                </Text>
+                <Text
+                  color={
+                    isHighlighted
+                      ? colors.text
+                      : profile.active
+                        ? colors.text
+                        : colors.dimmed
+                  }
+                  bold={profile.active}
+                >
+                  {profile.name}
+                </Text>
+              </Box>
+            );
+          })
         )}
       </Box>
     </Box>

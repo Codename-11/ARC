@@ -4,12 +4,12 @@ import { Box, Text, useInput } from "ink";
 import { Spinner } from "@inkjs/ui";
 import { useTheme } from "../theme.js";
 import { ProfileList } from "../components/ProfileList.js";
-import { saveConfig, loadConfig } from "../../config.js";
+import { saveConfig, loadConfig, cloneProfile } from "../../config.js";
 import { syncSharedToProfile, unsyncSharedFromProfile, getSharedManifest, pullProfileToShared } from "../../shared.js";
-import { RENDER_DEFER_MS } from "../createProfile.js";
+import { RENDER_DEFER_MS, validateName } from "../createProfile.js";
 import type { ProfileEntry } from "../useProfiles.js";
 
-type Action = "idle" | "launching" | "confirm-delete" | "edit-flags";
+type Action = "idle" | "launching" | "confirm-delete" | "edit-flags" | "clone";
 
 interface Props {
   profiles: ProfileEntry[];
@@ -40,6 +40,8 @@ export function ProfilesView({
   const [message, setMessage] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [flagsInput, setFlagsInput] = useState("");
+  const [cloneSource, setCloneSource] = useState<string | null>(null);
+  const [cloneInput, setCloneInput] = useState("");
 
   const showMessage = useCallback((msg: string) => {
     setMessage(msg);
@@ -95,6 +97,54 @@ export function ProfilesView({
           showMessage("Delete cancelled");
         }
 
+        return;
+      }
+
+      // ── Clone mode ──
+      if (action === "clone") {
+        if (key.escape) {
+          setAction("idle");
+          setCloneInput("");
+          setCloneSource(null);
+          showMessage("Clone cancelled");
+          return;
+        }
+        if (key.return) {
+          const src = cloneSource;
+          const dst = cloneInput.trim();
+          if (!src) {
+            setAction("idle");
+            setCloneInput("");
+            setCloneSource(null);
+            return;
+          }
+          try {
+            const config = loadConfig();
+            const nameError = validateName(dst, Object.keys(config.profiles));
+            if (nameError) {
+              showMessage(nameError);
+              return;
+            }
+            const updated = cloneProfile(config, src, dst, { copyConfigDir: true });
+            saveConfig(updated);
+            showMessage(`Cloned ${src} → ${dst}`);
+            reload();
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            showMessage(`Clone failed: ${msg}`);
+          }
+          setAction("idle");
+          setCloneInput("");
+          setCloneSource(null);
+          return;
+        }
+        if (key.backspace || key.delete) {
+          setCloneInput((v) => v.slice(0, -1));
+          return;
+        }
+        if (!key.ctrl && !key.meta && input.length === 1) {
+          setCloneInput((v) => v + input);
+        }
         return;
       }
 
@@ -187,6 +237,14 @@ export function ProfilesView({
           const msg = err instanceof Error ? err.message : String(err);
           showMessage(`Switch failed: ${msg}`);
         }
+        return;
+      }
+
+      // [C] clone profile (uppercase — lowercase `c` still means create)
+      if (input === "C") {
+        setCloneSource(selected.name);
+        setCloneInput("");
+        setAction("clone");
         return;
       }
 
@@ -353,6 +411,20 @@ export function ProfilesView({
         </Box>
       )}
 
+      {/* Clone mode */}
+      {action === "clone" && (
+        <Box paddingLeft={2} paddingTop={1} flexDirection="column">
+          <Box gap={1}>
+            <Text color={colors.dimmed}>Clone {cloneSource} as:</Text>
+            <Text color={colors.text}>{cloneInput}</Text>
+            <Text color={colors.primary}>{"\u258C"}</Text>
+          </Box>
+          <Box gap={2} marginTop={0}>
+            <Text color={colors.dimmed}>enter save  esc cancel</Text>
+          </Box>
+        </Box>
+      )}
+
       {/* Edit flags mode */}
       {action === "edit-flags" && (
         <Box paddingLeft={2} paddingTop={1} flexDirection="column">
@@ -389,7 +461,7 @@ export function ProfilesView({
       {!loading && action === "idle" && (
         <Box paddingLeft={2} paddingTop={1} gap={2}>
           <Text color={colors.dimmed}>
-            <Text color={colors.primary} bold>{"\u21B5"}</Text> launch  <Text color={colors.primary} bold>s</Text> switch  <Text color={colors.primary} bold>i</Text> info  <Text color={colors.primary} bold>d</Text> delete  <Text color={colors.primary} bold>h</Text> sync  <Text color={colors.primary} bold>shift+h</Text> push  <Text color={colors.primary} bold>shift+s</Text> source  <Text color={colors.primary} bold>f</Text> flags  <Text color={colors.primary} bold>c</Text> create
+            <Text color={colors.primary} bold>{"\u21B5"}</Text> launch  <Text color={colors.primary} bold>s</Text> switch  <Text color={colors.primary} bold>i</Text> info  <Text color={colors.primary} bold>d</Text> delete  <Text color={colors.primary} bold>h</Text> sync  <Text color={colors.primary} bold>shift+h</Text> push  <Text color={colors.primary} bold>shift+s</Text> source  <Text color={colors.primary} bold>f</Text> flags  <Text color={colors.primary} bold>c</Text> create  <Text color={colors.primary} bold>shift+c</Text> clone
           </Text>
         </Box>
       )}

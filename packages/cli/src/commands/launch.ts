@@ -3,13 +3,14 @@ import fs from "node:fs";
 import path from "node:path";
 import { loadConfig } from "../config.js";
 import { buildProfileEnv } from "../auth.js";
-import { resolveEffectiveProfile, resolveInstructions } from "@axiom-labs/arc-core";
+import { resolveEffectiveProfile } from "@axiom-labs/arc-core";
 import { error, info, warn, cmd } from "../display.js";
 import { logAction } from "../log.js";
 import { getAdapter } from "../adapters/index.js";
 import { waitForProcessExit } from "@axiom-labs/arc-core";
 import { createDefaultHookBus } from "@axiom-labs/arc-core";
 import { writeLogEvent, queryLogEvents } from "@axiom-labs/arc-core";
+import { recordLaunch } from "@axiom-labs/arc-core";
 import { SessionStore, isResumeIntent } from "@axiom-labs/arc-core";
 import { TelemetryProvider, JsonFileExporter, startSessionSpan } from "@axiom-labs/arc-core";
 import { CircuitBreaker } from "@axiom-labs/arc-core";
@@ -211,19 +212,6 @@ export async function handleLaunch(
 
   const profileEnv = await buildProfileEnv(profile, profileName);
 
-  // ─── Resolve and inject agent instructions ─────────────────────────
-  const instructionsText = resolveInstructions(profile);
-  if (instructionsText) {
-    profileEnv["ARC_AGENT_INSTRUCTIONS"] = instructionsText;
-    writeLogEvent({
-      level: "info",
-      component: "launch",
-      action: "instructions:resolved",
-      message: `Agent instructions loaded (${instructionsText.length} chars)`,
-      data: { profile: profileName, source: profile.instructionsFile ? "file" : "inline" },
-    });
-  }
-
   if (!findBinary(tool)) {
     error(`Binary "${tool}" not found on PATH.`);
     warn(getInstallHint(tool));
@@ -384,6 +372,13 @@ export async function handleLaunch(
     }
   }
 
+  recordLaunch({
+    profile: profileName,
+    tool,
+    timestamp: new Date().toISOString(),
+    outcome: "started",
+  });
+
   let agentProcess: AgentProcess | null = null;
   try {
     agentProcess = await adapter.launch(profile, {
@@ -399,6 +394,12 @@ export async function handleLaunch(
       agentProcess = null;
     } else {
       // Real error from a real adapter
+      recordLaunch({
+        profile: profileName,
+        tool,
+        timestamp: new Date().toISOString(),
+        outcome: "failed",
+      });
       error(`Failed to launch ${tool}: ${msg}`);
       process.exit(1);
     }
@@ -502,6 +503,13 @@ export async function handleLaunch(
 
     // Block until the child process exits
     await waitForProcessExit(agentProcess.pid);
+    recordLaunch({
+      profile: profileName,
+      tool,
+      timestamp: new Date().toISOString(),
+      outcome: "exited",
+      exitCode: 0,
+    });
     await finalizeCoreModules(0);
     process.exit(0);
   }
@@ -526,12 +534,25 @@ export async function handleLaunch(
       });
 
   if (result.error) {
+    recordLaunch({
+      profile: profileName,
+      tool,
+      timestamp: new Date().toISOString(),
+      outcome: "failed",
+    });
     await finalizeCoreModules(1);
     error(`Failed to launch ${tool}: ${result.error.message}`);
     process.exit(1);
   }
 
   const exitCode = result.status ?? 0;
+  recordLaunch({
+    profile: profileName,
+    tool,
+    timestamp: new Date().toISOString(),
+    outcome: exitCode === 0 ? "exited" : "failed",
+    exitCode,
+  });
   await finalizeCoreModules(exitCode);
   process.exit(exitCode);
 }

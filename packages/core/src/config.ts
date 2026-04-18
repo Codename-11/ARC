@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { getArcDir, getConfigPath } from "./paths.js";
+import { getArcDir, getConfigPath, getProfileDir } from "./paths.js";
 import { deepMerge } from "./shared-fs.js";
 import type { ArcConfig, Profile } from "./types.js";
 
@@ -190,4 +190,73 @@ export function resolveInstructions(profile: Profile): string | undefined {
     }
   }
   return profile.instructions;
+}
+
+export interface CloneProfileOptions {
+  /** When true (default), recursively copy the source configDir to the new profile directory. */
+  copyConfigDir?: boolean;
+}
+
+/**
+ * Deep-copy a profile record from `src` to `dst`, resetting `createdAt` and
+ * (optionally) copying the on-disk configDir to the new profile's location.
+ *
+ * Mutates and returns `config`. Callers are responsible for persisting via saveConfig().
+ *
+ * Throws if `src` does not exist or `dst` already exists. If the source
+ * configDir has been deleted, the profile record is still cloned but the
+ * directory copy is silently skipped (warning is left to the caller's UI).
+ */
+export function cloneProfile(
+  config: ArcConfig,
+  src: string,
+  dst: string,
+  opts?: CloneProfileOptions
+): ArcConfig {
+  if (!config.profiles[src]) {
+    throw new Error(`Source profile '${src}' not found`);
+  }
+  if (src === dst) {
+    throw new Error(`Destination name must differ from source ('${src}')`);
+  }
+  if (config.profiles[dst]) {
+    throw new Error(`Profile '${dst}' already exists`);
+  }
+
+  const source = config.profiles[src];
+
+  // Deep-copy the profile record. structuredClone is available in Node 17+.
+  const cloned: Profile =
+    typeof structuredClone === "function"
+      ? (structuredClone(source) as Profile)
+      : (JSON.parse(JSON.stringify(source)) as Profile);
+
+  cloned.createdAt = new Date().toISOString();
+
+  const copyConfigDir = opts?.copyConfigDir !== false;
+  if (copyConfigDir) {
+    const newDir = getProfileDir(dst);
+    const srcDir = source.configDir;
+    const srcExists = srcDir && fs.existsSync(srcDir);
+
+    if (srcExists) {
+      fs.mkdirSync(newDir, { recursive: true });
+      fs.cpSync(srcDir, newDir, {
+        recursive: true,
+        force: true,
+        dereference: true,
+        filter: (s: string) => {
+          const base = path.basename(s);
+          return base !== "node_modules" && base !== ".bin";
+        },
+      });
+    } else {
+      // Source dir missing — still create an empty profile dir so launches don't explode.
+      fs.mkdirSync(newDir, { recursive: true });
+    }
+    cloned.configDir = newDir;
+  }
+
+  config.profiles[dst] = cloned;
+  return config;
 }

@@ -409,6 +409,15 @@ Examples:
     });
 
   profile
+    .command("clone <src> <dst>")
+    .description("Clone an existing profile (copies config directory by default)")
+    .option("--no-copy-dir", "Clone the profile record only, skipping the config directory copy")
+    .action(async (src: string, dst: string, opts: { copyDir?: boolean }) => {
+      const mod = await import("./commands/profile.js");
+      await mod.handleClone(src, dst, opts);
+    });
+
+  profile
     .command("import")
     .description("Import existing agent tool config into a profile")
     .option("--name <name>", "Profile name", "default")
@@ -418,6 +427,25 @@ Examples:
     .action(async (opts: { name: string; from?: string; tool?: string; force?: boolean }) => {
       const mod = await import("./commands/profile.js");
       await mod.handleImport(opts);
+    });
+
+  profile
+    .command("export <name>")
+    .description("Export a profile to a portable JSON file (inlines instructions)")
+    .option("--out <file>", "Output path (default: ./<name>.arc-profile.json)")
+    .action(async (name: string, opts: { out?: string }) => {
+      const mod = await import("./commands/export.js");
+      await mod.handleProfileExport(name, opts);
+    });
+
+  profile
+    .command("import-file <file>")
+    .description("Import a profile from a JSON file produced by `arc profile export`")
+    .option("--as <newname>", "Rename the profile on import")
+    .option("--force", "Overwrite an existing profile with the same name")
+    .action(async (file: string, opts: { as?: string; force?: boolean }) => {
+      const mod = await import("./commands/export.js");
+      await mod.handleProfileImport(file, opts);
     });
 
   profile
@@ -854,6 +882,42 @@ Examples:
         showError(result.error);
         process.exit(1);
       }
+    });
+
+  // === Backup / Restore ===
+
+  const backup = program
+    .command("backup")
+    .description("Back up, restore, and list archives of the full ~/.arc/ state");
+
+  backup
+    .command("create")
+    .description("Create a gzipped archive of ~/.arc/ (excludes credentials/ by default)")
+    .option("--out <file>", "Output path (default: ~/.arc/backups/arc-backup-<timestamp>.tar.gz)")
+    .option("--exclude-credentials", "Exclude ~/.arc/credentials/ (default: on)", true)
+    .option("--include-credentials", "Include ~/.arc/credentials/ in the archive")
+    .action(async (opts: { out?: string; excludeCredentials?: boolean; includeCredentials?: boolean }) => {
+      const mod = await import("./commands/backup.js");
+      const excludeCredentials = opts.includeCredentials ? false : opts.excludeCredentials ?? true;
+      await mod.handleBackupCreate({ out: opts.out, excludeCredentials });
+    });
+
+  backup
+    .command("restore <file>")
+    .description("Restore a backup archive into ~/.arc/ (destructive)")
+    .option("--force", "Overwrite an existing ~/.arc/config.json")
+    .action(async (file: string, opts: { force?: boolean }) => {
+      const mod = await import("./commands/backup.js");
+      await mod.handleBackupRestore(file, opts);
+    });
+
+  backup
+    .command("list")
+    .alias("ls")
+    .description("List archives in ~/.arc/backups/")
+    .action(async () => {
+      const mod = await import("./commands/backup.js");
+      await mod.handleBackupList();
     });
 
   // === Advanced Commands ===

@@ -2,7 +2,7 @@ import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
 import type { AuthType } from "../types.js";
-import { loadConfig, saveConfig, resolveProfileName, resolveProfile } from "../config.js";
+import { loadConfig, saveConfig, resolveProfileName, resolveProfile, cloneProfile } from "../config.js";
 import { success, error, info, detail, profileTable } from "../display.js";
 import { createProfile, importProfile, validateName } from "../tui/createProfile.js";
 
@@ -204,6 +204,45 @@ export async function handleImport(
   success(`Profile "${opts.name}" imported from ${sourceDir}`);
   detail(`Tool:   ${tool}`);
   detail(`Config: ${loadConfig().profiles[opts.name]?.configDir ?? "(unknown)"}`);
+}
+
+export async function handleClone(
+  src: string,
+  dst: string,
+  opts?: { copyDir?: boolean }
+): Promise<void> {
+  const config = loadConfig();
+
+  if (!config.profiles[src]) {
+    error(`Source profile "${src}" not found.`);
+    process.exit(1);
+  }
+
+  // Validate dst name (reuse the TUI's shared name validator)
+  const nameError = validateName(dst, Object.keys(config.profiles));
+  if (nameError) {
+    error(nameError);
+    process.exit(1);
+  }
+
+  const sourceDir = config.profiles[src].configDir;
+  const sourceDirExists = sourceDir ? fs.existsSync(sourceDir) : false;
+  const copyConfigDir = opts?.copyDir !== false;
+
+  try {
+    const updated = cloneProfile(config, src, dst, { copyConfigDir });
+    saveConfig(updated);
+  } catch (err) {
+    error(err instanceof Error ? err.message : String(err));
+    process.exit(1);
+  }
+
+  success(`Profile "${dst}" cloned from "${src}".`);
+  if (copyConfigDir && !sourceDirExists) {
+    info(`Source config directory was missing — cloned profile record only.`);
+  }
+  const newDir = loadConfig().profiles[dst]?.configDir ?? "(unknown)";
+  detail(`Config: ${newDir}`);
 }
 
 
