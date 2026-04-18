@@ -30,18 +30,18 @@ Tracking file for planned features, enhancements, and ideas. Checked items are s
 - [x] **Agent instructions** — `instructions` / `instructionsFile` fields on Profile, resolved at launch, injected as `ARC_AGENT_INSTRUCTIONS` env var; `arc instructions` CLI (show/set/edit/clear)
 - [x] **OpenAI-compatible providers** — `openai-compat` auth type + `ProviderConfig` on Profile (baseUrl, model, apiKeyEnvVar); 7 presets (OpenRouter, Ollama, LM Studio, Together, Groq, MiniMax, DeepSeek); `arc provider` CLI (set/show/clear/presets)
 - [ ] **Team/shared config** — repo-checked config with local secret overlays
-- [ ] **Backup/export/import** — move profiles and settings between machines
+- [x] **Backup/export/import** — `arc backup create/restore/list` (gzipped archive of `~/.arc/`, credentials excluded by default) + `arc profile export` / `arc profile import-file` (single-profile JSON transport with inlined instructions)
 - [x] **Managed updates** — self-update system with npm registry check and TUI update banner
 
 ## Priority 4 — Observability & Polish
 
-- [ ] **Launch history on Dash** — recent launches list (`{ profile, tool, timestamp }`) in `~/.arc/history.json`, displayed on Dash after first session
+- [x] **Launch history on Dash** — `~/.arc/history.json` records each launch (profile, tool, timestamp, outcome, exitCode); DashView RightColumn shows recent launches + recent activity log entries (polled)
 - [x] **Shared layer visibility** — SettingsView shows per-profile sync details; ProfileList shows shared indicator column
-- [ ] **Toast notifications** — brief auto-dismiss messages for confirmations/errors that work across all views
-- [ ] **Interactive sidebar queue** — Enter on sidebar profile list to quick-launch without switching views
+- [x] **Toast notifications** — `ToastProvider` + `useToast()` hook with auto-dismiss (2.5s); `ToastContainer` mounted in Dashboard
+- [x] **Interactive sidebar queue** — combined nav+profile selection in Sidebar; `↑/↓` cycles through nav items then profiles; Enter on a profile row quick-launches without switching views
 - [x] **MCP server management** — MCP host manager with connect/disconnect/list/getTools + callTool with risk classification (Phase 8)
 - [x] **Policy layer** — three-tier permission model (coordinator/interactive/worker) with deny > ask > allow precedence (Phase 20)
-- [ ] **Profile cloning/duplication** — create a new profile from an existing one as template
+- [x] **Profile cloning/duplication** — `cloneProfile()` core fn + `arc profile clone <src> <dst> [--no-copy-dir]` CLI + `Shift+C` inline clone in ProfilesView
 - [x] **Usage/audit log** — structured JSONL log with `arc logs` CLI, level/component/profile filtering (Phase 3)
 
 ## v2.0 Spec Features (All 25 Phases Complete)
@@ -213,8 +213,3 @@ These items from the original v0.1 backlog are still open:
 - [ ] Profile search/filter in Profiles view
 - [ ] Environment preview before launch
 - [ ] Team/shared config (repo-checked config with local secret overlays)
-- [ ] Backup/export/import (move profiles between machines)
-- [ ] Launch history on Dash
-- [ ] Toast notifications
-- [ ] Interactive sidebar queue
-- [ ] Profile cloning/duplication
