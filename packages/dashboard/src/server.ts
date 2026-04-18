@@ -231,6 +231,14 @@ export function createDashboardServer(
   router.add("POST", "/api/chat/confirm", api.chatConfirm);
   router.add("DELETE", "/api/chat/sessions/:id", api.chatDeleteSession);
 
+  // Orchestration routes (Phase 8) — roundtable + staged pipelines
+  router.add("POST", "/api/roundtable/run", api.roundtableRun);
+  router.add("GET", "/api/roundtable/history", api.roundtableHistory);
+  router.add("GET", "/api/roundtable/:id", api.roundtableGet);
+  router.add("POST", "/api/pipeline/run", api.pipelineRun);
+  router.add("GET", "/api/pipeline/history", api.pipelineHistory);
+  router.add("GET", "/api/pipeline/:id", api.pipelineGet);
+
   // ---- HTTP server --------------------------------------------------------
 
   const server = http.createServer((req, res) => {

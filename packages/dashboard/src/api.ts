@@ -4,10 +4,14 @@
 
 import type { IncomingMessage, ServerResponse } from "node:http";
 import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 import {
   loadConfig,
   saveConfig,
   queryLogEvents,
+  getRoundtablesDir,
+  getPipelinesDir,
   type RiskTier,
 } from "@axiom-labs/arc-core";
 import type { DashboardContext } from "./types.js";
@@ -878,7 +882,463 @@ export function createApiHandlers(ctx: DashboardContext) {
         errorJson(res, `Failed to delete session: ${msg}`, 500);
       }
     },
+
+    // -------------------------------------------------------------------
+    // POST /api/roundtable/run   (Phase 8)
+    // -------------------------------------------------------------------
+    async roundtableRun(req: IncomingMessage, res: ServerResponse): Promise<void> {
+      const body = await parseJsonBody(req);
+      if (!body) {
+        return errorJson(res, "Invalid or missing JSON body (max 1 MB)", 413);
+      }
+
+      const topic = body["topic"];
+      const agentsRaw = body["agents"];
+      const roundsRaw = body["rounds"];
+      const synthesizerRaw = body["synthesizer"];
+
+      if (typeof topic !== "string" || !topic.trim()) {
+        return errorJson(res, "Field 'topic' (string) is required");
+      }
+      if (!Array.isArray(agentsRaw) || agentsRaw.length < 2) {
+        return errorJson(res, "Field 'agents' must be an array of at least 2 entries");
+      }
+      const rounds =
+        roundsRaw === undefined
+          ? undefined
+          : typeof roundsRaw === "number" && roundsRaw >= 1 && roundsRaw <= 10
+            ? Math.floor(roundsRaw)
+            : null;
+      if (rounds === null) {
+        return errorJson(res, "Field 'rounds' must be a number between 1 and 10");
+      }
+
+      const parsedAgents: Array<{ profileName: string; role: string }> = [];
+      for (let i = 0; i < agentsRaw.length; i++) {
+        const a = agentsRaw[i] as { profileName?: unknown; role?: unknown };
+        if (!a || typeof a !== "object") {
+          return errorJson(res, `agents[${i}] must be an object`);
+        }
+        if (typeof a.profileName !== "string" || !a.profileName.trim()) {
+          return errorJson(res, `agents[${i}].profileName (string) is required`);
+        }
+        if (
+          typeof a.role !== "string" ||
+          !["advocate", "critic", "neutral"].includes(a.role)
+        ) {
+          return errorJson(
+            res,
+            `agents[${i}].role must be one of: advocate, critic, neutral`,
+          );
+        }
+        parsedAgents.push({ profileName: a.profileName, role: a.role });
+      }
+
+      let synthesizerName: string | undefined;
+      if (synthesizerRaw !== undefined) {
+        if (typeof synthesizerRaw !== "string" || !synthesizerRaw.trim()) {
+          return errorJson(res, "Field 'synthesizer' must be a profile name string");
+        }
+        synthesizerName = synthesizerRaw;
+      }
+
+      // Resolve profiles from config.
+      const config = loadConfig();
+      const resolvedAgents: Array<{
+        profile: Record<string, unknown> & { configDir: string; authType: string; createdAt: string };
+        role: "advocate" | "critic" | "neutral";
+        displayName: string;
+      }> = [];
+      for (const a of parsedAgents) {
+        const p = config.profiles[a.profileName];
+        if (!p) {
+          return errorJson(res, `Profile '${a.profileName}' not found`, 404);
+        }
+        resolvedAgents.push({
+          profile: p as unknown as Record<string, unknown> & {
+            configDir: string;
+            authType: string;
+            createdAt: string;
+          },
+          role: a.role as "advocate" | "critic" | "neutral",
+          displayName: a.profileName,
+        });
+      }
+
+      const synthesizerAgent = synthesizerName
+        ? resolvedAgents.find((r) => r.displayName === synthesizerName)
+        : undefined;
+      if (synthesizerName && !synthesizerAgent) {
+        return errorJson(
+          res,
+          `Synthesizer profile '${synthesizerName}' is not in the agents list`,
+        );
+      }
+
+      // Dynamically load the orchestrator so tests can mock
+      // @axiom-labs/arc-core and unit tests for other endpoints don't pay the
+      // cost of instantiating it.
+      let Orchestrator: unknown;
+      try {
+        const mod = (await import("@axiom-labs/arc-core")) as Record<string, unknown>;
+        Orchestrator = mod["RoundtableOrchestrator"];
+      } catch {
+        /* ignore */
+      }
+      if (typeof Orchestrator !== "function") {
+        return errorJson(
+          res,
+          "RoundtableOrchestrator unavailable — rebuild @axiom-labs/arc-core",
+          503,
+        );
+      }
+
+      const roundtableId = crypto.randomUUID();
+      const createdAt = new Date().toISOString();
+
+      // Respond immediately. Orchestration runs in the background and
+      // broadcasts progress via WebSocket.
+      json(res, { roundtableId });
+
+      const ws = ctx.ws;
+      void (async (): Promise<void> => {
+        try {
+          const OrchCtor = Orchestrator as new (opts?: unknown) => {
+            run(opts: {
+              topic: string;
+              agents: Array<{
+                profile: unknown;
+                role: string;
+                displayName?: string;
+              }>;
+              rounds?: number;
+              synthesizer?: { profile: unknown; role: string; displayName?: string };
+              onEvent?: (evt: Record<string, unknown>) => void;
+            }): Promise<unknown>;
+          };
+          const orchestrator = new OrchCtor();
+          const result = await orchestrator.run({
+            topic,
+            agents: resolvedAgents.map((a) => ({
+              profile: a.profile,
+              role: a.role,
+              displayName: a.displayName,
+            })),
+            rounds,
+            synthesizer: synthesizerAgent
+              ? {
+                  profile: synthesizerAgent.profile,
+                  role: synthesizerAgent.role,
+                  displayName: synthesizerAgent.displayName,
+                }
+              : undefined,
+            onEvent: (event) => {
+              ws?.broadcast("roundtable-event", { roundtableId, event });
+            },
+          });
+
+          const summary = {
+            id: roundtableId,
+            topic,
+            agents: parsedAgents,
+            rounds,
+            createdAt,
+            result,
+          };
+          persistOrchestrationRecord(getRoundtablesDir(), roundtableId, summary);
+          ws?.broadcast("roundtable-event", {
+            roundtableId,
+            event: { type: "persisted", id: roundtableId },
+          });
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          ws?.broadcast("roundtable-error", { roundtableId, error: msg });
+        }
+      })();
+    },
+
+    // -------------------------------------------------------------------
+    // GET /api/roundtable/history   (Phase 8)
+    // -------------------------------------------------------------------
+    roundtableHistory(_req: IncomingMessage, res: ServerResponse): void {
+      const entries = listOrchestrationSummaries(getRoundtablesDir(), (raw) => {
+        const result = (raw["result"] as { consensusScore?: unknown } | undefined) ?? undefined;
+        const consensusScore =
+          result && typeof result.consensusScore === "number"
+            ? result.consensusScore
+            : undefined;
+        return {
+          id: raw["id"],
+          topic: raw["topic"],
+          agents: raw["agents"],
+          createdAt: raw["createdAt"],
+          consensusScore,
+        };
+      });
+      json(res, entries);
+    },
+
+    // -------------------------------------------------------------------
+    // GET /api/roundtable/:id   (Phase 8)
+    // -------------------------------------------------------------------
+    roundtableGet(_req: IncomingMessage, res: ServerResponse, params: Record<string, string>): void {
+      const id = params["id"];
+      if (!isUuid(id)) {
+        return errorJson(res, "Invalid roundtable id", 400);
+      }
+      const record = readOrchestrationRecord(getRoundtablesDir(), id);
+      if (!record) {
+        return errorJson(res, `Roundtable '${id}' not found`, 404);
+      }
+      json(res, record);
+    },
+
+    // -------------------------------------------------------------------
+    // POST /api/pipeline/run   (Phase 8)
+    // -------------------------------------------------------------------
+    async pipelineRun(req: IncomingMessage, res: ServerResponse): Promise<void> {
+      const body = await parseJsonBody(req);
+      if (!body) {
+        return errorJson(res, "Invalid or missing JSON body (max 1 MB)", 413);
+      }
+
+      const phasesRaw = body["phases"];
+      const phaseTimeoutMsRaw = body["phaseTimeoutMs"];
+      const agentsRaw = body["agents"];
+
+      if (!Array.isArray(agentsRaw) || agentsRaw.length === 0) {
+        return errorJson(res, "Field 'agents' must be a non-empty array");
+      }
+
+      const allowedPhases = ["plan", "exec", "verify"] as const;
+      let phases: ("plan" | "exec" | "verify")[] | undefined;
+      if (phasesRaw !== undefined) {
+        if (!Array.isArray(phasesRaw) || phasesRaw.length === 0) {
+          return errorJson(res, "Field 'phases' must be a non-empty array when provided");
+        }
+        for (const p of phasesRaw) {
+          if (typeof p !== "string" || !allowedPhases.includes(p as "plan")) {
+            return errorJson(
+              res,
+              `Each 'phases' entry must be one of: ${allowedPhases.join(", ")}`,
+            );
+          }
+        }
+        phases = phasesRaw as ("plan" | "exec" | "verify")[];
+      }
+
+      let phaseTimeoutMs: Partial<Record<"plan" | "exec" | "verify", number>> | undefined;
+      if (phaseTimeoutMsRaw !== undefined) {
+        if (typeof phaseTimeoutMsRaw !== "object" || phaseTimeoutMsRaw === null) {
+          return errorJson(res, "Field 'phaseTimeoutMs' must be an object");
+        }
+        phaseTimeoutMs = {};
+        for (const [k, v] of Object.entries(phaseTimeoutMsRaw as Record<string, unknown>)) {
+          if (!allowedPhases.includes(k as "plan")) continue;
+          if (typeof v !== "number" || v <= 0) {
+            return errorJson(res, `phaseTimeoutMs.${k} must be a positive number`);
+          }
+          phaseTimeoutMs[k as "plan" | "exec" | "verify"] = v;
+        }
+      }
+
+      const parsedAgents: Array<{ profileName: string }> = [];
+      for (let i = 0; i < agentsRaw.length; i++) {
+        const a = agentsRaw[i] as { profileName?: unknown };
+        if (!a || typeof a !== "object" || typeof a.profileName !== "string" || !a.profileName.trim()) {
+          return errorJson(res, `agents[${i}].profileName (string) is required`);
+        }
+        parsedAgents.push({ profileName: a.profileName });
+      }
+
+      let coreMod: Record<string, unknown> | null = null;
+      try {
+        coreMod = (await import("@axiom-labs/arc-core")) as Record<string, unknown>;
+      } catch {
+        /* fall through */
+      }
+      const StagedWorkflowManager = coreMod?.["StagedWorkflowManager"];
+      const InMemoryMessageBus = coreMod?.["InMemoryMessageBus"];
+      if (typeof StagedWorkflowManager !== "function" || typeof InMemoryMessageBus !== "function") {
+        return errorJson(
+          res,
+          "StagedWorkflowManager unavailable — rebuild @axiom-labs/arc-core",
+          503,
+        );
+      }
+
+      const pipelineId = crypto.randomUUID();
+      const createdAt = new Date().toISOString();
+      json(res, { pipelineId });
+
+      const ws = ctx.ws;
+      void (async (): Promise<void> => {
+        try {
+          const BusCtor = InMemoryMessageBus as new () => unknown;
+          const bus = new BusCtor();
+          const ManagerCtor = StagedWorkflowManager as new (
+            config: unknown,
+            deps: unknown,
+          ) => {
+            run(): Promise<unknown>;
+          };
+
+          const phaseStartAt: Partial<Record<"plan" | "exec" | "verify", number>> = {};
+          const manager = new ManagerCtor(
+            {
+              phases,
+              phaseTimeoutMs,
+              onPhaseChange: (phase: string) => {
+                const now = Date.now();
+                let durationMs: number | undefined;
+                if (phase === "complete" || phase === "aborted") {
+                  // Use the last observed phase entry time if possible.
+                  const lastEntry = Object.entries(phaseStartAt).pop();
+                  if (lastEntry) durationMs = now - (lastEntry[1] as number);
+                } else if (phase === "plan" || phase === "exec" || phase === "verify") {
+                  phaseStartAt[phase] = now;
+                }
+                ws?.broadcast("pipeline-event", {
+                  pipelineId,
+                  phase,
+                  durationMs,
+                });
+              },
+            },
+            {
+              messageBus: bus,
+              allAgents: parsedAgents.map((a) => a.profileName),
+            },
+          );
+
+          const result = await manager.run();
+
+          const summary = {
+            id: pipelineId,
+            phases: phases ?? ["plan", "exec", "verify"],
+            agents: parsedAgents,
+            createdAt,
+            result,
+          };
+          persistOrchestrationRecord(getPipelinesDir(), pipelineId, summary);
+          ws?.broadcast("pipeline-event", {
+            pipelineId,
+            phase: "persisted",
+          });
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          ws?.broadcast("pipeline-error", { pipelineId, error: msg });
+        }
+      })();
+    },
+
+    // -------------------------------------------------------------------
+    // GET /api/pipeline/history   (Phase 8)
+    // -------------------------------------------------------------------
+    pipelineHistory(_req: IncomingMessage, res: ServerResponse): void {
+      const entries = listOrchestrationSummaries(getPipelinesDir(), (raw) => ({
+        id: raw["id"],
+        phases: raw["phases"],
+        agents: raw["agents"],
+        createdAt: raw["createdAt"],
+      }));
+      json(res, entries);
+    },
+
+    // -------------------------------------------------------------------
+    // GET /api/pipeline/:id   (Phase 8)
+    // -------------------------------------------------------------------
+    pipelineGet(_req: IncomingMessage, res: ServerResponse, params: Record<string, string>): void {
+      const id = params["id"];
+      if (!isUuid(id)) {
+        return errorJson(res, "Invalid pipeline id", 400);
+      }
+      const record = readOrchestrationRecord(getPipelinesDir(), id);
+      if (!record) {
+        return errorJson(res, `Pipeline '${id}' not found`, 404);
+      }
+      json(res, record);
+    },
   };
+}
+
+// ---------------------------------------------------------------------------
+// Orchestration persistence helpers (Phase 8)
+// ---------------------------------------------------------------------------
+
+/**
+ * Strict UUID (v1-v5) validator. Restricting to hyphen-separated UUIDs keeps
+ * the filesystem-visible id safe: no traversal, no path separators, bounded
+ * length. Anything routed through `/api/roundtable/:id` or `/api/pipeline/:id`
+ * must match.
+ */
+function isUuid(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
+  );
+}
+
+/** Atomic write: write to temp file, rename into place. */
+function persistOrchestrationRecord(
+  dir: string,
+  id: string,
+  record: Record<string, unknown>,
+): void {
+  if (!isUuid(id)) {
+    throw new Error(`Refusing to persist with non-UUID id: ${id}`);
+  }
+  fs.mkdirSync(dir, { recursive: true });
+  const final = path.join(dir, `${id}.json`);
+  const tmp = `${final}.tmp-${process.pid}-${Date.now()}`;
+  fs.writeFileSync(tmp, JSON.stringify(record, null, 2), "utf-8");
+  fs.renameSync(tmp, final);
+}
+
+function readOrchestrationRecord(
+  dir: string,
+  id: string,
+): Record<string, unknown> | null {
+  if (!isUuid(id)) return null;
+  const file = path.join(dir, `${id}.json`);
+  try {
+    const raw = fs.readFileSync(file, "utf-8");
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function listOrchestrationSummaries<T extends { createdAt?: unknown }>(
+  dir: string,
+  project: (raw: Record<string, unknown>) => T,
+): T[] {
+  let names: string[];
+  try {
+    names = fs.readdirSync(dir);
+  } catch {
+    return [];
+  }
+  const entries: T[] = [];
+  for (const name of names) {
+    if (!name.endsWith(".json")) continue;
+    const id = name.slice(0, -5);
+    if (!isUuid(id)) continue;
+    const record = readOrchestrationRecord(dir, id);
+    if (!record) continue;
+    entries.push(project(record));
+  }
+  entries.sort((a, b) => {
+    const av = typeof a.createdAt === "string" ? a.createdAt : "";
+    const bv = typeof b.createdAt === "string" ? b.createdAt : "";
+    if (av < bv) return 1;
+    if (av > bv) return -1;
+    return 0;
+  });
+  return entries;
 }
 
 // ---------------------------------------------------------------------------

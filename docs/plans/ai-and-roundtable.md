@@ -1,6 +1,6 @@
 # Plan: AI Chat + Full Roundtable Integration
 
-**Status:** Approved — revised 2026-04-18, starting Phase 0.5 + Phase 1
+**Status:** ✅ All 10 phases complete (0, 0.5, 0.7, 1–9) — shipped in 0.4.0 on 2026-04-18
 **Last updated:** 2026-04-18
 **Owner:** Bailey
 
@@ -418,13 +418,13 @@ Update checkboxes in-place as phases complete. Add a `Completed YYYY-MM-DD` mark
 - [x] **Completed 2026-04-18** — `arc roundtable` CLI (streaming + JSON), `arc_chat` + `arc_roundtable` MCP tools, 6-tool team contract (`team_say/read/status/done/plan/ask`) with in-memory shared bus. MCP server now exposes 13 tools. 4 new integration tests (49 tests pass). Limitation: team tools use process-wide bus — MCP SDK doesn't surface per-call session id.
 
 ### Phase 7 — Dashboard chat view
-- [ ] Not started
+- [x] **Completed 2026-04-18** — commit `b3c7538`. Per-session WS streaming (`broadcastTo`), `POST /api/chat/message` + confirm/sessions routes, `public/components/chat.js` (session list, streaming message thread, expandable tool-call cards, confirmation modal), 13 new dashboard tests. Vitest config extended to include `packages/*/tests/**`.
 
 ### Phase 8 — Dashboard roundtable + pipelines
-- [ ] Not started
+- [x] **Completed 2026-04-18** — Roundtable + Pipelines views with live WS progress (`roundtable-event` / `pipeline-event` fan-out via `broadcast`). 6 new REST routes: `POST /api/{roundtable,pipeline}/run`, `GET /api/{roundtable,pipeline}/history` + `/:id`. Atomic persistence to `~/.arc/roundtables/<uuid>.json` + `~/.arc/pipelines/<uuid>.json`. Strict UUID validation blocks path traversal. 11 new integration tests.
 
 ### Phase 9 — Docs + polish
-- [ ] Not started
+- [x] **Completed 2026-04-18** — commit `b3c7538`. New guides: `user-docs/guide/chat.md`, `roundtable.md`, `multi-agent-pipelines.md`. Architecture page updated. FEATURES.md / CLAUDE.md / README.md / CHANGELOG.md updated. Version bumped 0.3.0 → 0.4.0 via `scripts/version.js`.
 
 ---
 

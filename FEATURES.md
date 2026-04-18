@@ -43,7 +43,7 @@ Tracking file for planned features, enhancements, and ideas. Checked items are s
 - [x] **Agent stall watchdog** — nudge at 3 min, mark stalled at 5 min, decision protocol (ported from Agent-Forge)
 - [x] **`arc roundtable` CLI + team MCP tools** — `arc roundtable <topic> --agents a,b,c` with streaming transcript; `arc_chat` / `arc_roundtable` / 6 `team_*` MCP tools. Plan Phase 6 (0.4.0)
 - [x] **Dashboard chat view** — per-session WS streaming, tool-call visualization, permission-mode toggle, confirmation modal. Plan Phase 7 (0.4.0)
-- [ ] **Dashboard roundtable + pipelines view** — configure + run multi-agent flows from the browser with live transcript. Plan Phase 8 (ships in 0.4.x)
+- [x] **Dashboard roundtable + pipelines view** — configure + run multi-agent flows from the browser with live transcript; per-run history persisted to `~/.arc/roundtables/<id>.json` and `~/.arc/pipelines/<id>.json`. Plan Phase 8 (0.4.0)
 
 ## Priority 4 — Observability & Polish
 
