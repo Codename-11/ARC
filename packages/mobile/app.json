@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "ARC",
+    "slug": "arc-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "arc",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": false,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "sh.arc.mobile"
+    },
+    "android": {
+      "package": "sh.arc.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#000000"
+      }
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
