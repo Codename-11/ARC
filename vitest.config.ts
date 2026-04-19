@@ -10,6 +10,7 @@ export default defineConfig({
       "@axiom-labs/arc-mcp": path.resolve(__dirname, "packages/mcp/src/index.ts"),
       "@axiom-labs/arc-daemon": path.resolve(__dirname, "packages/daemon/src/index.ts"),
       "@axiom-labs/arc-client": path.resolve(__dirname, "packages/client/src/index.ts"),
+      "@axiom-labs/arc-relay": path.resolve(__dirname, "packages/relay/src/index.ts"),
     },
   },
   test: {
