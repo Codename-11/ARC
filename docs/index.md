@@ -1,14 +1,29 @@
 # ARC Documentation
 
-**ARC — Agent Runtime Control.** Unified profile and environment manager for agent CLIs. Maintains isolated config directories per profile and injects the right credentials before launching any agent tool.
+**ARC — Agent Runtime Control.** One persistent local daemon that owns
+every agent runtime, backed by a single binary-mux WebSocket protocol.
+TUI, CLI, web dashboard, Electron desktop, mobile, and the self-hosted
+relay are all thin clients.
 
-> Claude Code is the baseline today. Gemini CLI, Codex CLI, and others are supported via the `--tool` flag.
+> **ARC v3 in progress (`1.0.0-alpha.0`).** `arc daemon start` is the new
+> default entry point. Plan of record:
+> [`docs/plans/arc-v3-daemon.md`](./plans/arc-v3-daemon.md). Moving from
+> v2? See [v2-to-v3-migration.md](./v2-to-v3-migration.md).
+
+## v3 Reference
+
+| Doc | Description |
+|-----|-------------|
+| [Architecture](./architecture.md) | Daemon + client SDK + data flow overview |
+| [Daemon operator guide](./daemon.md) | Lifecycle, env vars, log location, SQLite layout, pairing, `readPid` semantics, `EADDRINUSE` troubleshooting |
+| [Wire protocol](./protocol.md) | Frame format, envelope, channel table, method catalog, subscription topics, error codes, backward-compat rules |
+| [v2 → v3 migration](./v2-to-v3-migration.md) | Backup, `arc migrate v2-to-v3`, what survives, rollback to `archive/v0.4.x` |
 
 ## Guides
 
 | Guide | Description |
 |-------|-------------|
-| [Getting Started](./getting-started.md) | Install, requirements, and first profile |
+| [Getting Started](./getting-started.md) | Install, requirements, `arc daemon start`, and first profile |
 | [Profiles](./profiles.md) | Create, switch, import, and delete profiles |
 | [Authentication](./authentication.md) | OAuth, API key, Bedrock, Vertex AI, and Foundry |
 | [Shell Integration](./shell-integration.md) | Bash, zsh, fish, and PowerShell setup |

@@ -6,6 +6,62 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [1.0.0-alpha.0] - 2026-04-19
+
+First v3 pre-release. ARC pivots from a collection of short-lived CLI
+invocations to a **persistent local daemon** that owns every agent
+runtime. The TUI, CLI, web dashboard, Electron desktop app, mobile app,
+and self-hosted relay all become thin clients of one binary-mux
+WebSocket protocol. Plan of record:
+[`docs/plans/arc-v3-daemon.md`](./docs/plans/arc-v3-daemon.md).
+
+### Added
+
+- **`@axiom-labs/arc-daemon` package** — long-running local process. HTTP
+  `/health`, WebSocket binary-mux on `:7272`, SQLite at `~/.arc/arc.db`,
+  structured JSONL log at `~/.arc/daemon.log`, argon2-hashed per-client
+  tokens plus a root token in `~/.arc/auth.json`, PID file with
+  `readPid()` liveness probe, loopback-only host-header enforcement.
+- **Binary-mux wire protocol (v1)** — channel byte + flags + `u32be`
+  length + payload. Channel `0x00` carries a Zod-validated JSON envelope;
+  `0x01`–`0x03` reserved for terminal, file, and audio streams. Specified
+  in [`docs/protocol.md`](./docs/protocol.md).
+- **`@axiom-labs/arc-client` SDK** — shared client library: frame codec,
+  Zod envelope, typed RPC wrappers (`health`, `profiles.*`, `agents.*`),
+  subscription helpers, auto-reconnect with exponential backoff, terminal
+  channel passthrough. Re-used by every UI surface.
+- **`@axiom-labs/arc-relay` placeholder** — package scaffold for the
+  self-hosted NaCl-box WebSocket multiplexer that lands in Phase 10.
+- **`arc daemon` CLI group** — `start` (detached by default),
+  `start --foreground`, `stop`, `restart`, `status [--json]`, and
+  `logs [-n <N>] [--tail]`. `ARC_PORT` and `--port` both respected.
+- **Initial SQLite schema** — `agents`, `agent_events`, `chat_rooms`,
+  `chat_messages`, `loops`, `handoffs`, `clients`, `meta` tables with
+  additive-only migrations from here on.
+- **v3 user docs** — [`docs/architecture.md`](./docs/architecture.md),
+  [`docs/daemon.md`](./docs/daemon.md),
+  [`docs/protocol.md`](./docs/protocol.md), and
+  [`docs/v2-to-v3-migration.md`](./docs/v2-to-v3-migration.md). Getting
+  Started and the main ToC updated to point at the new daemon-first flow.
+
+### Changed
+
+- **Version scheme bumped to `1.x`.** v2 stays recoverable at the
+  `archive/v0.4.x` tag; new work tracks `1.0.0-alpha.0` onward.
+- `packages/cli/src/version.ts` now reads `1.0.0-alpha.0`.
+
+### Breaking
+
+- None yet in this pre-release. The v3 wire-protocol version is `1`;
+  any future breaking protocol change will bump it. Within `1.x` the
+  additive-only rules documented in [protocol.md](./docs/protocol.md#versioning-and-backward-compat)
+  apply.
+
+### Removed
+
+- Nothing. The v2 JSON stores stay in place and are read-for-read by the
+  daemon until later phases migrate them into SQLite.
+
 ## [0.4.0] - 2026-04-18
 
 ### Added
@@ -223,7 +279,8 @@ All 25 phases of the [v2.0 spec](./docs/spec/SPEC.md) are now implemented. ARC h
 - **Light mode contrast** — WCAG AA compliant dimmed/border colors, explicit `colors.text` on import hint
 - **React hooks violation** — `useScreenSize()` moved above conditional returns in DashView
 
-[Unreleased]: https://github.com/Codename-11/ARC/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/Codename-11/ARC/compare/v1.0.0-alpha.0...HEAD
+[1.0.0-alpha.0]: https://github.com/Codename-11/ARC/compare/v0.4.0...v1.0.0-alpha.0
 [0.4.0]: https://github.com/Codename-11/ARC/compare/v0.2.0...v0.4.0
 [0.2.0]: https://github.com/Codename-11/ARC/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Codename-11/ARC/releases/tag/v0.1.0
