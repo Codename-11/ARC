@@ -1,0 +1,66 @@
+# Example compose stack for the headless ARC daemon.
+#
+# Usage:
+#   cd packages/daemon
+#   docker compose up -d                        # pull + start daemon
+#   docker compose --profile auto-update up -d  # also run watchtower
+#   docker compose logs -f arc                  # tail daemon logs
+#   docker compose down                         # stop (volume persists)
+#
+# The daemon binds port 7272 on the host loopback only. To expose on a
+# LAN, change "127.0.0.1:7272:7272" to "0.0.0.0:7272:7272" AND put an
+# authenticating proxy in front — the daemon's auth handshake is meant
+# for trusted networks, not the open internet.
+
+name: arc
+
+services:
+  arc:
+    image: ghcr.io/axiom-labs/arc-daemon:latest
+    container_name: arc-daemon
+    restart: unless-stopped
+    ports:
+      # Loopback-only by default. Swap to "0.0.0.0:7272:7272" to expose.
+      - "127.0.0.1:7272:7272"
+    volumes:
+      # Named volume keeps ~/.arc between container replacements.
+      - arc-state:/home/arc/.arc
+    environment:
+      # Inside the container we must bind all interfaces; the host-side
+      # port mapping controls which networks can actually reach it.
+      ARC_HOST: "0.0.0.0"
+      ARC_PORT: "7272"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:7272/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    labels:
+      # Opt this container in to watchtower's label-scope.
+      com.centurylinklabs.watchtower.enable: "true"
+    # Best-effort hardening. Uncomment read-only-root if you can live
+    # without the daemon writing to /tmp (it doesn't today, but may).
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    # read_only: true
+
+  # Optional: auto-pull new daemon images on release.
+  # Remove the "profiles: [auto-update]" stanza to enable by default.
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: arc-watchtower
+    restart: unless-stopped
+    profiles: ["auto-update"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_POLL_INTERVAL: "3600" # seconds; hourly
+      WATCHTOWER_LABEL_ENABLE: "true"
+
+volumes:
+  arc-state:
+    driver: local
