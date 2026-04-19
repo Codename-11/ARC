@@ -59,6 +59,7 @@ export const Methods = {
   agent_run: "agent.run",
   agent_stop: "agent.stop",
   agent_send: "agent.send",
+  agent_attach: "agent.attach",
 } as const;
 export type MethodName = (typeof Methods)[keyof typeof Methods];
 
@@ -114,6 +115,28 @@ export const AgentRunResult = z.object({ agentId: z.string() });
 export const AgentStopParams = z.object({ agentId: z.string() });
 export const AgentSendParams = z.object({ agentId: z.string(), text: z.string() });
 export const AgentOkResult = z.object({ ok: z.literal(true) });
+
+export const AgentAttachParams = z.object({
+  agentId: z.string(),
+  sinceEpoch: z.number().optional(),
+  sinceSeq: z.number().optional(),
+  limit: z.number().int().min(1).max(2000).optional(),
+});
+
+export const AgentEventPayload = z.object({
+  agentId: z.string(),
+  epoch: z.number(),
+  seq: z.number(),
+  ts: z.number(),
+  kind: z.string(),
+  payload: z.record(z.string(), z.unknown()).optional(),
+});
+
+export const AgentAttachResult = z.object({
+  agentId: z.string(),
+  status: z.string(),
+  events: z.array(AgentEventPayload),
+});
 
 // --- Topic helpers ----------------------------------------------------------
 

@@ -2,3 +2,13 @@ export { startDaemon, readPid, type DaemonHandle, type DaemonOptions } from "./b
 export { loadConfig as loadDaemonConfig, DEFAULT_PORT, PROTOCOL_VERSION, type DaemonConfig } from "./config.js";
 export { ensureAuthFile, pairClient, type AuthFile, type PairResult } from "./auth.js";
 export { buildHealth, type DaemonHealth } from "./health.js";
+export {
+  AgentRuntime,
+  encodeTerminalPayload,
+  decodeTerminalPayload,
+  TERMINAL_ID_LEN,
+  type AgentEvent,
+  type AgentEventKind,
+  type AgentRunOptions,
+  type AgentStatus,
+} from "./agent-runtime.js";

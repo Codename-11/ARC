@@ -55,6 +55,13 @@ export class Hub {
       session.sendControl(envelope);
     }
   }
+
+  /** Iterate live sessions subscribed to a topic (for non-envelope channels). */
+  subscribers(topic: string): Iterable<Session> {
+    const set = this.byTopic.get(topic);
+    if (!set) return [];
+    return set;
+  }
 }
 
 let counter = 0;

@@ -10,6 +10,7 @@ import {
   type ChannelId,
   type Envelope as EnvelopeT,
 } from "@axiom-labs/arc-client";
+import { encodeTerminalPayload } from "../terminal-frame.js";
 
 export type EventSink = (envelope: EnvelopeT) => void;
 
@@ -28,8 +29,14 @@ export class Session {
     this.conn.send("binary", encodeControl(envelope));
   }
 
-  sendTerminal(bytes: Uint8Array): void {
-    this.conn.send("binary", encodeFrame({ channel: Channel.Terminal, flags: 0, payload: bytes }));
+  /**
+   * Send raw terminal bytes on channel 1. The payload is prefixed with a
+   * 36-byte agent UUID so multiplexed streams can be routed per-agent
+   * client-side.
+   */
+  sendTerminal(agentId: string, bytes: Uint8Array): void {
+    const payload = encodeTerminalPayload(agentId, bytes);
+    this.conn.send("binary", encodeFrame({ channel: Channel.Terminal, flags: 0, payload }));
   }
 
   close(code = 1000): void {
