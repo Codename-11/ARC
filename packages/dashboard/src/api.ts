@@ -12,6 +12,7 @@ import {
   queryLogEvents,
   getRoundtablesDir,
   getPipelinesDir,
+  getArcDir,
   type RiskTier,
 } from "@axiom-labs/arc-core";
 import type { DashboardContext } from "./types.js";
@@ -235,6 +236,44 @@ function parseJsonBody(req: IncomingMessage): Promise<Record<string, unknown> | 
       resolve(null);
     });
   });
+}
+
+// ---------------------------------------------------------------------------
+// Daemon token helpers — expose the daemon's root token to browser-side code
+// so it can open an authenticated WebSocket through the `/ws` proxy.
+// Readable only from localhost to avoid leaking the secret.
+// ---------------------------------------------------------------------------
+
+const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]", "::1"]);
+
+/**
+ * True iff the HTTP request originated on the loopback interface.
+ * Checks both the Host header (server-side mount) and remoteAddress.
+ */
+export function isLocalRequest(req: IncomingMessage): boolean {
+  const host = (req.headers.host ?? "").split(":")[0].toLowerCase();
+  if (host && LOOPBACK_HOSTS.has(host)) return true;
+  const addr = req.socket.remoteAddress ?? "";
+  // Strip IPv6-mapped-IPv4 prefix like `::ffff:127.0.0.1`.
+  const normalized = addr.startsWith("::ffff:") ? addr.slice(7) : addr;
+  return LOOPBACK_HOSTS.has(normalized);
+}
+
+/**
+ * Read `~/.arc/auth.json` (written by the daemon on first run) and return
+ * the rootToken. Returns null if the file is missing / malformed.
+ */
+export function readDaemonRootToken(arcDir: string = getArcDir()): string | null {
+  try {
+    const raw = fs.readFileSync(path.join(arcDir, "auth.json"), "utf8");
+    const parsed = JSON.parse(raw) as { rootToken?: unknown; v?: unknown };
+    if (parsed.v === 1 && typeof parsed.rootToken === "string" && parsed.rootToken.length >= 16) {
+      return parsed.rootToken;
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -699,6 +738,28 @@ export function createApiHandlers(ctx: DashboardContext) {
       // This handler is a placeholder — the real implementation is in
       // server.ts where the token is available.
       json(res, { token: null });
+    },
+
+    // -------------------------------------------------------------------
+    // GET /api/daemon-token — returns the daemon rootToken (localhost only)
+    //
+    // Used by the in-browser ArcClient bridge to authenticate the
+    // WebSocket it opens through `/ws`. Refuses any non-loopback request
+    // to prevent exfiltration of the token via DNS rebinding.
+    // -------------------------------------------------------------------
+    daemonToken(req: IncomingMessage, res: ServerResponse): void {
+      if (!isLocalRequest(req)) {
+        return errorJson(res, "Forbidden — daemon token is localhost-only", 403);
+      }
+      const token = readDaemonRootToken();
+      if (!token) {
+        return errorJson(
+          res,
+          "Daemon auth.json not found — is `arc daemon start` running?",
+          503,
+        );
+      }
+      json(res, { token });
     },
 
     // -------------------------------------------------------------------

@@ -8,6 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import http from "node:http";
+import net from "node:net";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -215,6 +216,10 @@ export function createDashboardServer(
     json(res, { token });
   });
 
+  // Daemon token endpoint — returns the daemon's rootToken so in-browser
+  // code can open an authenticated WS through the `/ws` proxy. Localhost-only.
+  router.add("GET", "/api/daemon-token", api.daemonToken);
+
   // Mutation routes
   router.add("POST", "/api/profiles/:name/switch", api.switchProfile);
   router.add("DELETE", "/api/profiles/:name", api.deleteProfile);
@@ -340,10 +345,28 @@ export function createDashboardServer(
   });
 
   // Wire WebSocket upgrade.
+  //
+  // Path & subprotocol routing:
+  //   /ws  + protocol contains "arc-daemon"  → proxy raw bytes to daemon
+  //   /ws  + no matching protocol            → legacy dashboard text WS
+  //   other paths                            → legacy dashboard text WS
   server.on("upgrade", (req, socket, head) => {
     const pathname = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`).pathname;
+    const protoHeader = (req.headers["sec-websocket-protocol"] ?? "") as string;
+    const wantsDaemon =
+      pathname === "/ws" &&
+      protoHeader
+        .split(",")
+        .map((s) => s.trim())
+        .includes("arc-daemon");
     if (logRequests) {
-      process.stderr.write(`\x1b[36m[dash] UPGRADE ${pathname}\x1b[0m\n`);
+      process.stderr.write(
+        `\x1b[36m[dash] UPGRADE ${pathname}${wantsDaemon ? " → daemon-proxy" : ""}\x1b[0m\n`,
+      );
+    }
+    if (wantsDaemon) {
+      proxyUpgradeToDaemon(req, socket, head);
+      return;
     }
     try {
       wsServer.handleUpgrade(req, socket, head);
@@ -435,4 +458,133 @@ export function createDashboardServer(
 function json(res: http.ServerResponse, data: unknown, status = 200): void {
   res.writeHead(status, { "Content-Type": "application/json" });
   res.end(JSON.stringify(data));
+}
+
+// ---------------------------------------------------------------------------
+// Daemon WebSocket proxy — forwards a browser-initiated upgrade on `/ws` to
+// the local daemon at 127.0.0.1:<ARC_PORT|7272>. We open a raw TCP socket,
+// replay the client's HTTP upgrade request verbatim, and pipe both
+// directions. The daemon produces the 101 response itself.
+//
+// If the daemon socket can't be reached, we answer the client with a bare
+// HTTP/1.1 502 and destroy the connection — so dashboards without a daemon
+// running degrade to the HTTP fallback cleanly.
+// ---------------------------------------------------------------------------
+
+/**
+ * Pick the first subprotocol we recognize from the client's offered list.
+ * Today that's just `arc-daemon` (the sentinel the bridge uses to request
+ * daemon routing). Returns null if the client didn't offer anything.
+ */
+function pickSubprotocol(headerValue: string | null): string | null {
+  if (!headerValue) return null;
+  for (const raw of headerValue.split(",")) {
+    const name = raw.trim();
+    if (name === "arc-daemon") return name;
+  }
+  return null;
+}
+
+function proxyUpgradeToDaemon(
+  req: http.IncomingMessage,
+  socket: import("node:stream").Duplex,
+  head: Buffer,
+): void {
+  const envPort = Number.parseInt(process.env["ARC_PORT"] ?? "", 10);
+  const daemonPort = Number.isFinite(envPort) && envPort > 0 ? envPort : 7272;
+  const daemonHost = process.env["ARC_HOST"] ?? "127.0.0.1";
+
+  const upstream = net.connect({ host: daemonHost, port: daemonPort });
+  let upstreamConnected = false;
+
+  const refuse = (message: string): void => {
+    process.stderr.write(
+      `\x1b[33m[dash] daemon proxy: ${message} (${daemonHost}:${daemonPort})\x1b[0m\n`,
+    );
+    try {
+      socket.write(
+        "HTTP/1.1 502 Bad Gateway\r\n" +
+          "Content-Type: text/plain\r\n" +
+          "Connection: close\r\n" +
+          "\r\n" +
+          `daemon unreachable at ${daemonHost}:${daemonPort}\n`,
+      );
+    } catch {
+      /* socket may already be destroyed */
+    }
+    socket.destroy();
+    try { upstream.destroy(); } catch { /* ignore */ }
+  };
+
+  upstream.once("error", (err) => {
+    if (!upstreamConnected) refuse(err.message);
+    else socket.destroy();
+  });
+  socket.once("error", () => {
+    try { upstream.destroy(); } catch { /* ignore */ }
+  });
+
+  upstream.once("connect", () => {
+    upstreamConnected = true;
+    // Re-serialize the inbound upgrade request and forward to daemon.
+    // The daemon checks the Host header for loopback — override it so it
+    // matches the bind regardless of what the browser sent. We also
+    // strip `sec-websocket-protocol` because the daemon's handshake
+    // doesn't echo subprotocols; we re-inject the header ourselves into
+    // the daemon's 101 response below so the strict browser/ws client
+    // sees the subprotocol it asked for.
+    const clientProtoHeader =
+      (req.headers["sec-websocket-protocol"] as string | undefined) ?? null;
+    const pathAndQuery = req.url ?? "/";
+    const headerLines = [`GET ${pathAndQuery} HTTP/1.1`, `Host: 127.0.0.1:${daemonPort}`];
+    for (const [name, value] of Object.entries(req.headers)) {
+      if (!value) continue;
+      const lower = name.toLowerCase();
+      if (lower === "host" || lower === "sec-websocket-protocol") continue;
+      if (Array.isArray(value)) {
+        for (const v of value) headerLines.push(`${name}: ${v}`);
+      } else {
+        headerLines.push(`${name}: ${value}`);
+      }
+    }
+    headerLines.push("", "");
+    upstream.write(headerLines.join("\r\n"));
+    if (head.length > 0) upstream.write(head);
+
+    // Buffer and rewrite the daemon's 101 response so we can inject
+    // `Sec-WebSocket-Protocol: arc-daemon` — required because strict WS
+    // clients (browser, `ws` npm) reject handshakes that don't echo the
+    // subprotocol they requested.
+    let handshakeBuf = Buffer.alloc(0);
+    let handshakeDone = false;
+    const selectedProtocol = pickSubprotocol(clientProtoHeader);
+
+    const onHandshakeData = (chunk: Buffer): void => {
+      if (handshakeDone) {
+        socket.write(chunk);
+        return;
+      }
+      handshakeBuf = Buffer.concat([handshakeBuf, chunk]);
+      const sep = handshakeBuf.indexOf("\r\n\r\n");
+      if (sep === -1) return;
+      const headerBlock = handshakeBuf.subarray(0, sep).toString("latin1");
+      const rest = handshakeBuf.subarray(sep + 4);
+      const lines = headerBlock.split("\r\n");
+      const hasProtoHeader = lines.some((l) => /^sec-websocket-protocol:/i.test(l));
+      const augmented =
+        !hasProtoHeader && selectedProtocol
+          ? [...lines, `Sec-WebSocket-Protocol: ${selectedProtocol}`]
+          : lines;
+      const rewritten = augmented.join("\r\n") + "\r\n\r\n";
+      socket.write(rewritten);
+      if (rest.length > 0) socket.write(rest);
+      handshakeDone = true;
+      upstream.removeListener("data", onHandshakeData);
+      // Switch to raw piping in both directions from here on.
+      upstream.pipe(socket);
+    };
+
+    upstream.on("data", onHandshakeData);
+    socket.pipe(upstream);
+  });
 }
