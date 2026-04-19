@@ -20,7 +20,7 @@
     "dev:tui": "tsx src/index.ts dashboard",
     "predev:tui:watch": "node scripts/kill-stale.js tsx",
     "dev:tui:watch": "node scripts/dev-tui.mjs",
-    "predev:dashboard": "node scripts/kill-stale.js tsx",
+    "predev:dashboard": "node scripts/kill-stale.js tsx --port 3700",
     "dev:dashboard": "tsx --watch packages/dashboard/src/dev.ts",
     "dev:dashboard:no-watch": "tsx packages/dashboard/src/dev.ts",
     "predev:watch": "node scripts/kill-stale.js tsup",

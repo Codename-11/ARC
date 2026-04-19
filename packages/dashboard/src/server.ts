@@ -384,6 +384,15 @@ export function createDashboardServer(
     stop(): Promise<void> {
       return new Promise((resolve, reject) => {
         wsServer.close();
+        // Force-close keep-alive sockets so the port releases immediately.
+        // Without this, `tsx --watch` restart races the old process's
+        // lingering sockets and the new process hits EADDRINUSE on Windows.
+        try {
+          (server as unknown as { closeAllConnections?: () => void })
+            .closeAllConnections?.();
+          (server as unknown as { closeIdleConnections?: () => void })
+            .closeIdleConnections?.();
+        } catch { /* older Node versions */ }
         server.close((err) => {
           if (err) reject(err);
           else resolve();
