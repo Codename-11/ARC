@@ -11,6 +11,7 @@
  *   - `ChatSession` + store (Phase 4) — multi-turn persistence.
  */
 
+import fs from "node:fs";
 import readline from "node:readline";
 import pc from "picocolors";
 import {
@@ -35,6 +36,8 @@ import {
   type ToolContext,
   type AgentEvent,
 } from "@axiom-labs/arc-core";
+import { loadDaemonConfig } from "@axiom-labs/arc-daemon";
+import { ArcClient, type ChatMessage as WireChatMessage } from "@axiom-labs/arc-client";
 import { getVersion } from "../display.js";
 
 // ---------------------------------------------------------------------------
@@ -631,3 +634,213 @@ export async function handleChat(opts: ChatOptions): Promise<void> {
 
   printSystem("Goodbye.");
 }
+
+// ---------------------------------------------------------------------------
+// Chat rooms CLI — thin wrappers over the ARC daemon's chat.* RPCs.
+// ---------------------------------------------------------------------------
+
+async function connectToDaemon(): Promise<ArcClient> {
+  const cfg = loadDaemonConfig();
+  let token: string | null;
+  try {
+    const parsed = JSON.parse(fs.readFileSync(cfg.authPath, "utf8")) as { rootToken?: string };
+    token = typeof parsed.rootToken === "string" ? parsed.rootToken : null;
+  } catch {
+    token = null;
+  }
+  if (!token) {
+    throw new Error(
+      `ARC daemon auth not found at ${cfg.authPath}. Start the daemon with \`arc daemon start\` first.`,
+    );
+  }
+  const host = cfg.host === "0.0.0.0" ? "127.0.0.1" : cfg.host;
+  const url = `ws://${host}:${cfg.port}`;
+  const client = new ArcClient({ url, token, noReconnect: true });
+  try {
+    await client.connect();
+  } catch (err) {
+    throw new Error(
+      `failed to connect to ARC daemon on ${url} (${(err as Error).message}). Is \`arc daemon\` running?`,
+    );
+  }
+  return client;
+}
+
+async function withDaemon<T>(fn: (client: ArcClient) => Promise<T>): Promise<T> {
+  const client = await connectToDaemon();
+  try {
+    return await fn(client);
+  } finally {
+    try {
+      await client.close();
+    } catch {
+      /* ignore — best-effort on shutdown */
+    }
+  }
+}
+
+/** Parse a duration string like "30s", "5m", "1h". Falsy → null. */
+export function parseDuration(input: string | undefined): number | null {
+  if (!input) return null;
+  const trimmed = input.trim();
+  if (trimmed === "") return null;
+  const match = /^(\d+)\s*(ms|s|m|h|d)?$/.exec(trimmed);
+  if (!match) {
+    // allow bare numbers = ms
+    if (/^\d+$/.test(trimmed)) return Number.parseInt(trimmed, 10);
+    throw new Error(
+      `invalid duration "${input}" — expected e.g. 500ms, 30s, 5m, 1h, 2d`,
+    );
+  }
+  const n = Number.parseInt(match[1]!, 10);
+  const unit = (match[2] ?? "ms").toLowerCase();
+  switch (unit) {
+    case "ms":
+      return n;
+    case "s":
+      return n * 1000;
+    case "m":
+      return n * 60_000;
+    case "h":
+      return n * 3_600_000;
+    case "d":
+      return n * 86_400_000;
+  }
+  return n;
+}
+
+function formatTs(ts: number): string {
+  try {
+    return new Date(ts).toISOString();
+  } catch {
+    return String(ts);
+  }
+}
+
+function printRoom(r: { id: string; name: string; createdAt: number }): void {
+  writeLine(`  ${pc.cyan(r.name)} ${pc.dim(r.id)} ${pc.dim(formatTs(r.createdAt))}`);
+}
+
+function printMessage(m: WireChatMessage): void {
+  const head = `${pc.dim("#" + m.id)} ${pc.cyan(m.author)}${m.replyTo ? pc.dim(` →#${m.replyTo}`) : ""} ${pc.dim(formatTs(m.ts))}`;
+  const mentions =
+    m.mentions && m.mentions.length > 0
+      ? ` ${pc.yellow(m.mentions.map((x) => "@" + x).join(" "))}`
+      : "";
+  writeLine(head + mentions);
+  writeLine(`  ${m.body}`);
+}
+
+export async function handleChatRoomsCreate(
+  name: string,
+  opts: { json?: boolean } = {},
+): Promise<void> {
+  await withDaemon(async (client) => {
+    const { room } = await client.chat.create({ name });
+    if (opts.json) {
+      process.stdout.write(JSON.stringify({ room }, null, 2) + "\n");
+    } else {
+      printSystem(`Chat room ready: ${pc.cyan(room.name)} ${pc.dim(room.id)}`);
+    }
+  });
+}
+
+export async function handleChatRoomsList(opts: { json?: boolean } = {}): Promise<void> {
+  await withDaemon(async (client) => {
+    const { rooms } = await client.chat.list();
+    if (opts.json) {
+      process.stdout.write(JSON.stringify({ rooms }, null, 2) + "\n");
+      return;
+    }
+    if (rooms.length === 0) {
+      printSystem("No chat rooms yet. Create one with `arc chat rooms create <name>`.");
+      return;
+    }
+    writeLine("");
+    for (const r of rooms) printRoom(r);
+    writeLine("");
+  });
+}
+
+export async function handleChatPost(
+  room: string,
+  text: string,
+  opts: { as?: string; replyTo?: string; json?: boolean } = {},
+): Promise<void> {
+  const author = opts.as ?? "user";
+  let replyTo: number | undefined;
+  if (opts.replyTo !== undefined) {
+    replyTo = Number.parseInt(opts.replyTo, 10);
+    if (!Number.isFinite(replyTo)) {
+      throw new Error(`--reply-to must be a number (got "${opts.replyTo}")`);
+    }
+  }
+  await withDaemon(async (client) => {
+    const { message } = await client.chat.post({
+      room,
+      author,
+      body: text,
+      ...(replyTo !== undefined ? { replyTo } : {}),
+    });
+    if (opts.json) {
+      process.stdout.write(JSON.stringify({ message }, null, 2) + "\n");
+    } else {
+      printMessage(message);
+    }
+  });
+}
+
+export async function handleChatRead(
+  room: string,
+  opts: {
+    since?: string;
+    mentionsOnly?: boolean;
+    mentioning?: string;
+    limit?: string;
+    json?: boolean;
+  } = {},
+): Promise<void> {
+  const sinceDur = parseDuration(opts.since);
+  const sinceMs = sinceDur !== null && sinceDur > 0 ? Date.now() - sinceDur : undefined;
+  const limit = opts.limit !== undefined ? Number.parseInt(opts.limit, 10) : undefined;
+  await withDaemon(async (client) => {
+    const params: Parameters<typeof client.chat.read>[0] = { room };
+    if (sinceMs !== undefined) params.sinceMs = sinceMs;
+    if (opts.mentionsOnly) params.mentionsOnly = true;
+    if (opts.mentioning) params.mentioning = opts.mentioning;
+    if (limit !== undefined && Number.isFinite(limit)) params.limit = limit;
+    const { messages } = await client.chat.read(params);
+    if (opts.json) {
+      process.stdout.write(JSON.stringify({ messages }, null, 2) + "\n");
+      return;
+    }
+    if (messages.length === 0) {
+      printSystem(`No messages in ${room}.`);
+      return;
+    }
+    writeLine("");
+    for (const m of messages) printMessage(m);
+    writeLine("");
+  });
+}
+
+export async function handleChatWait(
+  room: string,
+  opts: { mentioning?: string; timeout?: string; json?: boolean } = {},
+): Promise<void> {
+  const timeoutMs = parseDuration(opts.timeout) ?? 60_000;
+  await withDaemon(async (client) => {
+    const params: Parameters<typeof client.chat.wait>[0] = { room, timeoutMs };
+    if (opts.mentioning) params.mentioning = opts.mentioning;
+    const result = await client.chat.wait(params);
+    if (opts.json) {
+      process.stdout.write(JSON.stringify(result, null, 2) + "\n");
+    } else if (result.timedOut) {
+      printSystem(`No matching message within ${timeoutMs}ms.`);
+      process.exitCode = 2;
+    } else if (result.message) {
+      printMessage(result.message);
+    }
+  });
+}
+

@@ -59,6 +59,11 @@ export const Methods = {
   agent_run: "agent.run",
   agent_stop: "agent.stop",
   agent_send: "agent.send",
+  chat_create: "chat.create",
+  chat_list: "chat.list",
+  chat_post: "chat.post",
+  chat_read: "chat.read",
+  chat_wait: "chat.wait",
 } as const;
 export type MethodName = (typeof Methods)[keyof typeof Methods];
 
