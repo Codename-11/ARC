@@ -1,0 +1,22 @@
+appId: sh.arc.desktop
+productName: ARC
+directories:
+  output: dist-electron
+  buildResources: assets
+files:
+  - dist/**/*
+  - assets/**/*
+  - package.json
+# Workspace deps need to be bundled in via `asar.smartUnpack: false` + node_modules.
+# For a scaffold we leave this minimal; real packaging will rewire later.
+asar: true
+mac:
+  target:
+    - dir
+  category: public.app-category.developer-tools
+linux:
+  target:
+    - dir
+win:
+  target:
+    - dir
