@@ -44,12 +44,20 @@ export type {
   AgentTool,
   Profile,
   ProviderConfig,
+  ProviderExtends,
   ArcSettings,
   ArcConfig,
   SharedManifest,
   EnforcementMode,
   HookConfig,
 } from "./types.js";
+
+// Provider presets (Claude, Codex, Gemini, OpenCode — extends-style)
+export {
+  providerPresets,
+  listProviderPresets,
+  getProviderPreset,
+} from "./provider-presets.js";
 
 export * from "./adapters/types.js";
 
