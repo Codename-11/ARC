@@ -1,6 +1,6 @@
 {
-  "name": "@axiom-labs/arc-cli-internal",
-  "version": "0.2.0",
+  "name": "@axiom-labs/arc-daemon",
+  "version": "1.0.0-alpha.0",
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
@@ -11,9 +11,10 @@
   },
   "dependencies": {
     "@axiom-labs/arc-core": "workspace:*",
-    "@axiom-labs/arc-adapter-claude": "workspace:*",
-    "@axiom-labs/arc-mcp": "workspace:*",
-    "@axiom-labs/arc-daemon": "workspace:*",
-    "@axiom-labs/arc-client": "workspace:*"
+    "better-sqlite3": "^11.3.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11"
   }
 }

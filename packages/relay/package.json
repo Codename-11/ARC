@@ -1,0 +1,10 @@
+{
+  "name": "@axiom-labs/arc-relay",
+  "version": "1.0.0-alpha.0",
+  "private": true,
+  "type": "module",
+  "description": "ARC relay — self-hosted, E2E-encrypted tunnel for remote daemon access. Placeholder; implementation lands in Phase 10.",
+  "scripts": {
+    "typecheck": "echo 'relay stub — no code yet'"
+  }
+}

@@ -2,6 +2,10 @@
 
 Tracking file for planned features, enhancements, and ideas. Checked items are shipped. See `docs/expansion-ideas.md` for broader product direction and `docs/spec/SPEC.md` for the full v2.0 spec.
 
+## v3 — Daemon + many clients (planned)
+
+See [docs/plans/arc-v3-daemon.md](./docs/plans/arc-v3-daemon.md) for the full 14-phase plan. Targeting `1.0.0` (breaking). Daemon on :7272 + binary-mux WS protocol + client SDK; TUI/CLI/dashboard/Electron/mobile all become peer clients; E2E-encrypted relay for remote access; SQLite canonical store; provider `extends`; `arc loop`; chat rooms; enhanced roundtable + handoff; Docker server mode.
+
 ## Priority 1 — Core UX Gaps
 
 - [x] **Profile creation in TUI** — stepped overlay form (name -> tool -> auth type -> done) so users don't have to exit the TUI to create profiles

@@ -202,6 +202,58 @@ export function createProgram(): Command {
       }
     );
 
+  // === Daemon Commands (v3) ===
+
+  const daemon = program
+    .command("daemon")
+    .description("ARC v3 daemon — long-running local service (Phases 1–3)");
+
+  daemon
+    .command("start")
+    .description("Start the ARC daemon (detached by default)")
+    .option("--port <n>", "Port to bind (default 7272)")
+    .option("--foreground", "Run in foreground (block the terminal)")
+    .action(async (opts: { port?: string; foreground?: boolean }) => {
+      const mod = await import("./commands/daemon.js");
+      await mod.handleDaemonStart(opts);
+    });
+
+  daemon
+    .command("stop")
+    .description("Stop the running daemon")
+    .action(async () => {
+      const mod = await import("./commands/daemon.js");
+      await mod.handleDaemonStop();
+    });
+
+  daemon
+    .command("status")
+    .description("Show daemon status")
+    .option("--json", "Machine-readable output")
+    .action(async (opts: { json?: boolean }) => {
+      const mod = await import("./commands/daemon.js");
+      await mod.handleDaemonStatus(opts);
+    });
+
+  daemon
+    .command("restart")
+    .description("Restart the daemon")
+    .option("--port <n>", "Port to bind (default 7272)")
+    .action(async (opts: { port?: string }) => {
+      const mod = await import("./commands/daemon.js");
+      await mod.handleDaemonRestart(opts);
+    });
+
+  daemon
+    .command("logs")
+    .description("Show daemon log")
+    .option("-n <n>", "Number of lines to tail (default 50)")
+    .option("--tail", "Stream new log lines as they arrive")
+    .action(async (opts: { n?: string; tail?: boolean }) => {
+      const mod = await import("./commands/daemon.js");
+      await mod.handleDaemonLogs(opts);
+    });
+
   // === Session Commands ===
 
   program

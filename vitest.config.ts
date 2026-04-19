@@ -8,6 +8,8 @@ export default defineConfig({
       "@axiom-labs/arc-adapter-claude": path.resolve(__dirname, "packages/adapter-claude/src/index.ts"),
       "@axiom-labs/arc-adapter-openclaw": path.resolve(__dirname, "packages/adapter-openclaw/src/index.ts"),
       "@axiom-labs/arc-mcp": path.resolve(__dirname, "packages/mcp/src/index.ts"),
+      "@axiom-labs/arc-daemon": path.resolve(__dirname, "packages/daemon/src/index.ts"),
+      "@axiom-labs/arc-client": path.resolve(__dirname, "packages/client/src/index.ts"),
     },
   },
   test: {

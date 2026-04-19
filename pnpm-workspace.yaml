@@ -3,3 +3,4 @@ packages:
   - site
 onlyBuiltDependencies:
   - esbuild
+  - better-sqlite3
