@@ -38,9 +38,13 @@ describe("daemon + client end-to-end", () => {
     if (!ctx) return;
     await ctx.client.close();
     await ctx.handle.stop();
-    // Windows holds SQLite WAL/SHM + log-stream file handles briefly after close.
-    // Retry removal a few times to avoid ENOTEMPTY on CI.
-    fs.rmSync(ctx.tmp, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+    // Windows holds SQLite WAL/SHM + log-stream handles longer than our retry
+    // budget. Cleanup is best-effort — the OS reclaims tmp on its own.
+    try {
+      fs.rmSync(ctx.tmp, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
+    } catch {
+      // ignore — don't fail tests on cleanup race
+    }
     ctx = null;
   });
 
