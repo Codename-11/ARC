@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/styles/base.css">
   <link rel="stylesheet" href="/styles/layout.css">
   <link rel="stylesheet" href="/styles/components.css">
+  <link rel="stylesheet" href="/styles/orchestration.css">
 </head>
 <body>
   <div class="app">
@@ -38,11 +39,19 @@
       <div class="sidebar__section">
         <div class="sidebar__label">Manage</div>
         <ul class="sidebar__nav">
+          <li class="sidebar__item" data-view="chat">Chat</li>
           <li class="sidebar__item" data-view="tasks">Tasks</li>
           <li class="sidebar__item" data-view="skills">Skills</li>
           <li class="sidebar__item" data-view="memory">Memory</li>
           <li class="sidebar__item" data-view="agents">Agents</li>
           <li class="sidebar__item" data-view="sync">Sync</li>
+        </ul>
+      </div>
+      <div class="sidebar__section">
+        <div class="sidebar__label">Orchestration</div>
+        <ul class="sidebar__nav">
+          <li class="sidebar__item" data-view="roundtable">Roundtable</li>
+          <li class="sidebar__item" data-view="pipelines">Pipelines</li>
         </ul>
       </div>
       <div class="sidebar__section">
@@ -76,6 +85,9 @@
   <script type="module" src="/components/sessions.js"></script>
   <script type="module" src="/components/traces.js"></script>
   <script type="module" src="/components/risk.js"></script>
+  <script type="module" src="/components/chat.js"></script>
+  <script type="module" src="/components/roundtable.js"></script>
+  <script type="module" src="/components/pipelines.js"></script>
   <script type="module" src="/components/tasks.js"></script>
   <script type="module" src="/components/skills.js"></script>
   <script type="module" src="/components/memory.js"></script>

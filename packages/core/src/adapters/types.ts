@@ -24,6 +24,12 @@ export interface LaunchOptions {
   env: Record<string, string | undefined>;
   cwd?: string;
   beforeSpawn?: () => Promise<void>;
+  /**
+   * Force a specific launch mode regardless of profile/CLI settings.
+   * Orchestrators (roundtable, pipelines) should pass `"worker"` to ensure
+   * the tool runs under ARC supervision.
+   */
+  launchMode?: "native" | "worker";
 }
 
 /** Handle for a running agent process. */

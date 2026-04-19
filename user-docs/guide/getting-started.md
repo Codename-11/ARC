@@ -55,6 +55,24 @@ pnpm install
 pnpm build
 ```
 
+## Your First Launch
+
+### Fast path — no profile
+
+If you just want to run a tool through ARC without any configuration:
+
+```bash
+arc run claude
+arc run gemini
+arc run codex
+```
+
+`arc run <tool>` is a native passthrough — no profile env, no ARC overlay. Useful if you have ARC installed but haven't set up a profile yet. See [Launch without a profile](/guide/profiles#launch-without-a-profile) for details.
+
+### Full path — with a profile
+
+For isolated credentials, shared layer, hooks, and everything else ARC provides, create a profile.
+
 ## First Profile
 
 ### Option 1: Onboarding Wizard
@@ -96,6 +114,43 @@ arc launch               # launches Claude Code
 
 arc use gemini-work
 arc launch               # launches Gemini CLI
+```
+
+### Custom Provider (OpenAI-Compatible)
+
+Connect any OpenAI-compatible API — OpenRouter, Ollama, LM Studio, and more:
+
+```bash
+# OpenRouter (cloud multi-provider gateway)
+arc create openrouter --tool openai-compat --auth-type openai-compat
+arc provider set openrouter --base-url https://openrouter.ai/api/v1 --model anthropic/claude-sonnet-4
+arc set-key openrouter
+arc launch openrouter
+
+# Ollama (local models)
+arc create local --tool openai-compat --auth-type openai-compat
+arc provider set local --base-url http://localhost:11434/v1 --model llama3 --display-name Ollama
+arc launch local
+```
+
+Run `arc provider presets` to see all known providers.
+
+### Agent Instructions
+
+Set custom system prompts per profile:
+
+```bash
+# Inline instructions
+arc instructions set work --from-file ./INSTRUCTIONS.md
+
+# Or point to a file (re-read on every launch)
+arc instructions set work --file ./INSTRUCTIONS.md
+
+# View current instructions
+arc instructions show work
+
+# Edit interactively
+arc instructions edit work
 ```
 
 ## Verify Installation

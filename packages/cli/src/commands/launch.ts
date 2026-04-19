@@ -10,6 +10,7 @@ import { getAdapter } from "../adapters/index.js";
 import { waitForProcessExit } from "@axiom-labs/arc-core";
 import { createDefaultHookBus } from "@axiom-labs/arc-core";
 import { writeLogEvent, queryLogEvents } from "@axiom-labs/arc-core";
+import { recordLaunch } from "@axiom-labs/arc-core";
 import { SessionStore, isResumeIntent } from "@axiom-labs/arc-core";
 import { TelemetryProvider, JsonFileExporter, startSessionSpan } from "@axiom-labs/arc-core";
 import { CircuitBreaker } from "@axiom-labs/arc-core";
@@ -24,12 +25,90 @@ import type { AgentProcess } from "@axiom-labs/arc-core";
 
 const isWindows = process.platform === "win32";
 
+/**
+ * Known native agent tool binaries used for bare-mode inference.
+ * When the first positional arg to `arc launch` matches one of these AND no
+ * profile exists by that name, we auto-infer `--bare` and launch the tool
+ * natively (no profile env injection).
+ */
+export const KNOWN_AGENT_TOOLS = new Set<string>([
+  "claude",
+  "codex",
+  "gemini",
+  "hermes",
+  "openclaw",
+]);
+
+/**
+ * Pure helper — decide whether the caller's first positional arg should
+ * trigger bare-mode inference. Exposed for tests; kept free of I/O.
+ */
+export function shouldInferBare(
+  name: string | undefined,
+  profileNames: readonly string[],
+  explicitBare: boolean
+): boolean {
+  if (explicitBare) return true;
+  if (typeof name !== "string") return false;
+  if (!KNOWN_AGENT_TOOLS.has(name)) return false;
+  return !profileNames.includes(name);
+}
+
 /** Check whether a command binary is available on PATH. */
 export function findBinary(name: string): boolean {
   const result = isWindows
     ? spawnSync("cmd", ["/c", "where", name], { stdio: "ignore" })
     : spawnSync("which", [name], { stdio: "ignore" });
   return result.status === 0;
+}
+
+/**
+ * Bare launch: spawn a native tool with the ambient environment only.
+ * No profile resolution, no env injection (CLAUDE_CONFIG_DIR etc.), no
+ * hook pipeline, no session/telemetry tracking. This is the "arc is
+ * optional orchestration" path — the user just wants `claude` to run.
+ */
+export async function handleBareLaunch(
+  tool: string,
+  args: string[],
+  opts?: { beforeSpawn?: () => void | Promise<void> }
+): Promise<void> {
+  if (!findBinary(tool)) {
+    error(`Binary "${tool}" not found on PATH.`);
+    warn(getInstallHint(tool));
+    process.exit(1);
+  }
+
+  logAction("launch", `(bare) ${tool}`);
+  try {
+    writeLogEvent({
+      level: "info",
+      component: "launch",
+      action: "bare:launch",
+      message: `Bare launch of ${tool}`,
+      data: { profile: null, tool, args },
+    });
+  } catch {
+    // Non-fatal
+  }
+
+  const flagStr = args.length > 0 ? ` [${args.join(" ")}]` : "";
+  info(`Launching ${tool} (bare mode)${flagStr}`);
+
+  if (opts?.beforeSpawn) {
+    await opts.beforeSpawn();
+  }
+
+  const result = isWindows
+    ? spawnSync("cmd", ["/c", tool, ...args], { stdio: "inherit" })
+    : spawnSync(tool, args, { stdio: "inherit" });
+
+  if (result.error) {
+    error(`Failed to launch ${tool}: ${result.error.message}`);
+    process.exit(1);
+  }
+
+  process.exit(result.status ?? 0);
 }
 
 /** Suggest an install command for known agent tool binaries. */
@@ -49,9 +128,54 @@ function getInstallHint(tool: string): string {
 export async function handleLaunch(
   name: string | undefined,
   rawArgs: string[],
-  opts?: { beforeSpawn?: () => void | Promise<void>; dashboard?: boolean }
+  opts?: {
+    beforeSpawn?: () => void | Promise<void>;
+    dashboard?: boolean;
+    /**
+     * Force a specific launch mode regardless of profile setting or CLI flags.
+     * Used by orchestrators (Phase 5+ roundtable, pipelines) to guarantee
+     * `worker` mode so stdout can be captured.
+     */
+    launchMode?: "native" | "worker";
+    /**
+     * Bare mode: skip profile resolution and env injection entirely. Just
+     * spawn the named tool with ambient env. `name` is then treated as the
+     * tool binary (claude / codex / gemini / …).
+     */
+    bare?: boolean;
+    /** Override the tool name in bare mode when it differs from `name`. */
+    tool?: string;
+  }
 ): Promise<void> {
   const config = loadConfig();
+
+  // ─── Bare-mode / tool-name inference ────────────────────────────────
+  // 1. Explicit opts.bare=true always wins.
+  // 2. Otherwise, if the first positional arg matches a known native tool
+  //    AND no profile exists by that name, infer bare mode.
+  const profileNames = Object.keys(config.profiles);
+  const explicitBare = opts?.bare === true;
+  const bare = shouldInferBare(name, profileNames, explicitBare);
+  if (bare && !explicitBare) {
+    // Emit informational notice (stderr so stdout stays clean for piping).
+    warn(`no profile named "${name}" \u2014 launching native tool.`);
+  }
+
+  if (bare) {
+    const toolName = opts?.tool ?? name;
+    if (!toolName) {
+      error("Bare launch requires a tool name (e.g. 'arc run claude').");
+      process.exit(1);
+    }
+    // In bare mode, if `name` was consumed as the tool, the rest is passthrough.
+    let barePassthrough = name === toolName ? rawArgs.slice(1) : rawArgs;
+    if (barePassthrough.length > 0 && barePassthrough[0] === "--") {
+      barePassthrough = barePassthrough.slice(1);
+    }
+    await handleBareLaunch(toolName, barePassthrough, { beforeSpawn: opts?.beforeSpawn });
+    return;
+  }
+
   let profileName: string;
   let passthrough: string[];
 
@@ -60,12 +184,21 @@ export async function handleLaunch(
     profileName = name;
     passthrough = rawArgs.slice(1);
   } else if (name) {
-    // Commander consumed something as name but it's not a valid profile.
-    // Treat everything (including the consumed "name") as passthrough.
+    // Commander consumed something as name but it's not a valid profile,
+    // and it's not a known tool either. Fall back to active profile.
+    if (config.activeProfile === null) {
+      error(`No profile named "${name}" and no active profile set.`);
+      warn("Use 'arc run <tool>' for native launch, or switch to a profile with 'arc profile switch <name>'.");
+      process.exit(1);
+    }
     profileName = config.activeProfile;
     passthrough = rawArgs;
   } else {
     // No name provided — active profile, everything is passthrough
+    if (config.activeProfile === null) {
+      error("No active profile. Use 'arc run <tool>' for native launch, or 'arc profile switch <name>'.");
+      process.exit(1);
+    }
     profileName = config.activeProfile;
     passthrough = rawArgs;
   }
@@ -74,6 +207,20 @@ export async function handleLaunch(
   if (passthrough.length > 0 && passthrough[0] === "--") {
     passthrough = passthrough.slice(1);
   }
+
+  // Extract launch-mode flags from passthrough so they are not forwarded to the agent
+  let cliLaunchMode: "native" | "worker" | undefined;
+  passthrough = passthrough.filter((arg) => {
+    if (arg === "--native") {
+      cliLaunchMode = "native";
+      return false;
+    }
+    if (arg === "--worker") {
+      cliLaunchMode = "worker";
+      return false;
+    }
+    return true;
+  });
 
   // Resolve profile through workspace-aware pipeline (arc.json > explicit > activeProfile)
   let profile: Profile;
@@ -89,6 +236,11 @@ export async function handleLaunch(
 
   const tool = profile.tool ?? "claude";
   const enforcement = profile.enforcement ?? "log";
+
+  // Resolve effective launch mode: caller override > CLI flag > profile setting > default native.
+  // Orchestrators (roundtable, pipelines) pass `opts.launchMode = "worker"` to force supervision.
+  const effectiveLaunchMode: "native" | "worker" =
+    opts?.launchMode ?? cliLaunchMode ?? profile.launchMode ?? "native";
 
   // ─── Session auto-resume detection ──────────────────────────────────
   // Lightweight: detect whether the user's launch args suggest resume intent
@@ -371,25 +523,43 @@ export async function handleLaunch(
     }
   }
 
+  recordLaunch({
+    profile: profileName,
+    tool,
+    timestamp: new Date().toISOString(),
+    outcome: "started",
+  });
+
   let agentProcess: AgentProcess | null = null;
-  try {
-    agentProcess = await adapter.launch(profile, {
-      args: allArgs,
-      env: profileEnv,
-      cwd: process.cwd(),
-      beforeSpawn: opts?.beforeSpawn ? async () => { await opts!.beforeSpawn!(); } : undefined,
-    });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    if (msg === "not implemented") {
-      // Adapter still has stub lifecycle — fall back to spawnSync
-      agentProcess = null;
-    } else {
-      // Real error from a real adapter
-      error(`Failed to launch ${tool}: ${msg}`);
-      process.exit(1);
+  if (effectiveLaunchMode === "worker") {
+    // Worker mode: hand off to the adapter for managed supervision.
+    try {
+      agentProcess = await adapter.launch(profile, {
+        args: allArgs,
+        env: profileEnv,
+        cwd: process.cwd(),
+        beforeSpawn: opts?.beforeSpawn ? async () => { await opts!.beforeSpawn!(); } : undefined,
+        launchMode: "worker",
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg === "not implemented") {
+        // Adapter still has stub lifecycle — fall back to spawnSync
+        agentProcess = null;
+      } else {
+        // Real error from a real adapter
+        recordLaunch({
+          profile: profileName,
+          tool,
+          timestamp: new Date().toISOString(),
+          outcome: "failed",
+        });
+        error(`Failed to launch ${tool}: ${msg}`);
+        process.exit(1);
+      }
     }
   }
+  // Native mode falls straight through to the spawnSync path below for full TTY handoff.
 
   // ─── Finalization helper ──────────────────────────────────────────
   // Completes session tracking and flushes telemetry. Wrapped in try/catch
@@ -489,14 +659,22 @@ export async function handleLaunch(
 
     // Block until the child process exits
     await waitForProcessExit(agentProcess.pid);
+    recordLaunch({
+      profile: profileName,
+      tool,
+      timestamp: new Date().toISOString(),
+      outcome: "exited",
+      exitCode: 0,
+    });
     await finalizeCoreModules(0);
     process.exit(0);
   }
 
-  // ─── Legacy spawnSync path (stubbed adapters: Claude, Gemini) ────
+  // ─── Native TTY handoff path (default mode + adapter-stub fallback) ─
   // Use spawnSync with stdio:"inherit" — the parent blocks completely and
-  // the child process owns the terminal.  No stdin competition, no async
-  // race conditions, no DEP0190 warning.
+  // the child process owns the terminal, so the tool can paint its own TUI
+  // (e.g. Claude's statusLine).  No stdin competition, no async race
+  // conditions, no DEP0190 warning.
   // On Windows, tools are often .cmd shims that need `cmd /c` to resolve.
   if (opts?.beforeSpawn) {
     await opts.beforeSpawn();
@@ -513,12 +691,25 @@ export async function handleLaunch(
       });
 
   if (result.error) {
+    recordLaunch({
+      profile: profileName,
+      tool,
+      timestamp: new Date().toISOString(),
+      outcome: "failed",
+    });
     await finalizeCoreModules(1);
     error(`Failed to launch ${tool}: ${result.error.message}`);
     process.exit(1);
   }
 
   const exitCode = result.status ?? 0;
+  recordLaunch({
+    profile: profileName,
+    tool,
+    timestamp: new Date().toISOString(),
+    outcome: exitCode === 0 ? "exited" : "failed",
+    exitCode,
+  });
   await finalizeCoreModules(exitCode);
   process.exit(exitCode);
 }

@@ -1,0 +1,503 @@
+/* ═══════════════════════════════════════════════════
+   ARC Dashboard — Orchestration Polish
+   Chat / Roundtable / Pipelines visual additions
+   ═══════════════════════════════════════════════════
+   Appends to the existing chat/rt/pipe blocks in
+   components.css. Does not override — extends. */
+
+/* ── Safety fallback for --border-dim alias (used throughout
+   chat/rt/pipe rules). Resolves to --border if upstream tokens
+   ever drop the alias. ── */
+:root {
+  --border-dim: var(--border);
+  --status-success: var(--success);
+  --status-error: var(--error);
+  --bg-raised: var(--surface-raised);
+  --bg-primary: var(--surface);
+}
+
+/* ── Top-of-view error banner ── */
+
+.view-banner {
+  font-family: var(--font-data);
+  font-size: var(--caption);
+  letter-spacing: 0.04em;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-technical);
+  margin-bottom: var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.view-banner--error {
+  color: var(--accent);
+  background: var(--accent-subtle);
+  border: 1px solid var(--accent);
+}
+
+.view-banner--warn {
+  color: var(--warning);
+  background: rgba(212, 168, 67, 0.12);
+  border: 1px solid var(--warning);
+}
+
+.view-banner__icon {
+  font-family: var(--font-data);
+  font-weight: 700;
+}
+
+.view-banner__dismiss {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 6px;
+  opacity: 0.6;
+}
+.view-banner__dismiss:hover { opacity: 1; }
+
+/* ── Toast (bottom-right, auto-fade) ── */
+
+.toast-stack {
+  position: fixed;
+  bottom: var(--space-lg);
+  right: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  z-index: 1200;
+  max-width: 360px;
+  pointer-events: none;
+}
+
+.toast {
+  background: var(--surface-raised);
+  border: 1px solid var(--border-visible);
+  border-radius: var(--radius-compact);
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-data);
+  font-size: var(--caption);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+  animation: toast-in var(--duration-transition) var(--ease),
+             toast-out var(--duration-transition) var(--ease) 4.7s forwards;
+}
+
+.toast--error {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.toast--success {
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.toast__dismiss {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.6;
+  font-size: 14px;
+  line-height: 1;
+}
+.toast__dismiss:hover { opacity: 1; }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes toast-out {
+  from { opacity: 1; }
+  to   { opacity: 0; transform: translateY(-4px); }
+}
+
+/* ── Skeleton loader rows (sidebar lists) ── */
+
+.skeleton {
+  border: 1px solid var(--border);
+  padding: var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.skeleton__line {
+  height: 10px;
+  background: linear-gradient(
+    90deg,
+    var(--surface) 0%,
+    var(--surface-raised) 50%,
+    var(--surface) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s var(--ease) infinite;
+}
+
+.skeleton__line--short { width: 60%; }
+.skeleton__line--tiny  { width: 35%; height: 8px; }
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Button spinner (CSS-only, triggered via [data-loading=true]) ── */
+
+.btn[data-loading="true"] {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.btn[data-loading="true"]::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  top: 50%;
+  left: 50%;
+  margin: -7px 0 0 -7px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  color: var(--text-display);
+  animation: spin 0.7s linear infinite;
+}
+
+.btn--primary[data-loading="true"]::after,
+.btn:not(.btn--ghost):not(.btn--secondary):not(.btn--destructive)[data-loading="true"]::after {
+  color: var(--black);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Empty-state glyph ── */
+
+.empty-glyph {
+  font-family: var(--font-data);
+  font-size: 28px;
+  color: var(--text-disabled);
+  margin-bottom: var(--space-md);
+  letter-spacing: 0.1em;
+  display: block;
+}
+
+.empty--inline {
+  text-align: center;
+  padding: var(--space-2xl) var(--space-md);
+  color: var(--text-disabled);
+  font-family: var(--font-data);
+  font-size: var(--caption);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.empty--inline .empty__title {
+  font-family: var(--font-body);
+  font-size: var(--body-sm);
+  font-weight: 300;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.empty--inline .empty__desc {
+  color: var(--text-disabled);
+  margin: 0;
+}
+
+/* ── Role pill badges (roundtable) ── */
+
+.role-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-visible);
+  font-family: var(--font-data);
+  font-size: var(--label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  background: transparent;
+  line-height: 1.4;
+}
+
+.role-pill--advocate {
+  border-color: var(--success);
+  color: var(--success);
+  background: rgba(74, 158, 92, 0.08);
+}
+
+.role-pill--critic {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+.role-pill--neutral {
+  border-color: var(--border-visible);
+  color: var(--text-secondary);
+}
+
+.role-pill--synthesizer {
+  border-color: var(--interactive);
+  color: var(--interactive);
+  background: rgba(91, 155, 246, 0.1);
+}
+
+/* ── Tool-call card polish ── */
+
+.chat-tool {
+  border-radius: var(--radius-technical);
+  overflow: hidden;
+  transition: border-color var(--duration-micro) var(--ease);
+}
+
+.chat-tool:hover { border-color: var(--border-visible); }
+
+.chat-tool[data-status="error"] {
+  border-color: var(--accent);
+}
+.chat-tool[data-status="ok"] {
+  border-color: rgba(74, 158, 92, 0.35);
+}
+
+.chat-tool__toggle:focus-visible {
+  outline: 1px solid var(--interactive);
+  outline-offset: -1px;
+}
+
+.chat-tool__body {
+  padding: var(--space-sm);
+  background: var(--black);
+  border-radius: var(--radius-technical);
+  max-height: 320px;
+  overflow: auto;
+  font-size: var(--label);
+  line-height: 1.5;
+}
+
+/* ── Help icon + tooltip ── */
+
+.help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--border-visible);
+  color: var(--text-secondary);
+  font-family: var(--font-data);
+  font-size: 9px;
+  cursor: help;
+  margin-left: var(--space-xs);
+  position: relative;
+  vertical-align: middle;
+  user-select: none;
+}
+
+.help-icon:hover,
+.help-icon:focus-visible {
+  color: var(--text-primary);
+  border-color: var(--text-primary);
+  outline: none;
+}
+
+.help-icon[data-hint]::after {
+  content: attr(data-hint);
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-visible);
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: var(--caption);
+  letter-spacing: 0.02em;
+  text-transform: none;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-technical);
+  white-space: normal;
+  width: 220px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-micro) var(--ease);
+  z-index: 50;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  line-height: 1.4;
+  text-align: left;
+}
+
+.help-icon:hover::after,
+.help-icon:focus-visible::after { opacity: 1; }
+
+/* ── Sidebar sub-header (SESSIONS / HISTORY) align with main label style ── */
+
+.chat-sidebar__title,
+.rt-history-sidebar .chat-sidebar__title {
+  text-transform: uppercase;
+  font-weight: 400;
+}
+
+/* ── Pipeline phase-bar polish ── */
+
+.pipe-tracker {
+  gap: var(--space-xs);
+}
+
+.pipe-phase {
+  border-radius: var(--radius-technical);
+  position: relative;
+  transition:
+    border-color var(--duration-micro) var(--ease),
+    color var(--duration-micro) var(--ease),
+    background var(--duration-micro) var(--ease);
+}
+
+.pipe-phase--active {
+  background: var(--accent-subtle);
+  animation: phase-pulse 2s var(--ease) infinite;
+}
+
+.pipe-phase--done {
+  background: rgba(74, 158, 92, 0.08);
+}
+
+.pipe-phase__label {
+  font-family: var(--font-data);
+}
+
+@keyframes phase-pulse {
+  0%, 100% { border-color: var(--accent); }
+  50%      { border-color: rgba(215, 25, 33, 0.5); }
+}
+
+.pipe-phase__arrow {
+  align-self: center;
+  padding: 0 var(--space-xs);
+}
+
+/* ── Roundtable turn polish ── */
+
+.rt-turn {
+  border-radius: var(--radius-technical);
+  transition: background var(--duration-micro) var(--ease);
+}
+
+.rt-turn:hover {
+  background: var(--surface);
+}
+
+.rt-turn__header {
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.rt-turn__round {
+  color: var(--text-disabled);
+}
+
+.rt-synthesis {
+  border-radius: var(--radius-compact);
+  background: var(--surface);
+}
+
+/* ── Chat session row polish ── */
+
+.chat-session {
+  border-radius: var(--radius-technical);
+  transition: border-color var(--duration-micro) var(--ease), background var(--duration-micro) var(--ease);
+}
+
+.chat-session:focus-visible {
+  outline: 1px solid var(--interactive);
+  outline-offset: -1px;
+}
+
+.rt-history__row {
+  border-radius: var(--radius-technical);
+  transition: border-color var(--duration-micro) var(--ease), background var(--duration-micro) var(--ease);
+}
+
+.rt-history__row:hover { background: var(--surface); }
+
+/* ── Form-like inputs used in orchestration controls should feel uniform ── */
+
+.chat-control__select:focus,
+.chat-input:focus,
+.rt-topic:focus {
+  outline: none;
+  border-color: var(--text-display);
+}
+
+/* ── Primary buttons in these views use pill radius + accent hover ── */
+
+.chat-input-row .btn,
+.rt-config__row .btn,
+.rt-config .btn {
+  border-radius: var(--radius-pill);
+}
+
+/* ── Agent row chrome ── */
+
+.rt-agent,
+.pipe-agent {
+  padding: var(--space-xs);
+  border-radius: var(--radius-technical);
+  transition: background var(--duration-micro) var(--ease);
+}
+
+.rt-agent:hover,
+.pipe-agent:hover {
+  background: var(--surface);
+}
+
+/* ── Accessibility: ensure disabled controls feel disabled ── */
+
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.chat-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Hide utility ── */
+
+.is-hidden { display: none !important; }
+
+/* ── Small monochrome kbd ── */
+
+.kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid var(--border-visible);
+  border-radius: var(--radius-technical);
+  font-family: var(--font-data);
+  font-size: 10px;
+  color: var(--text-secondary);
+  background: var(--surface);
+  line-height: 1.4;
+}

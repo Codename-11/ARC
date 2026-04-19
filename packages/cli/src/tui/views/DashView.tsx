@@ -7,6 +7,12 @@ import { VERSION } from "../../version.js";
 import { ImportHint } from "../components/ImportHint.js";
 import { detectToolConfigs, type DetectedTool } from "../../detect.js";
 import { checkForUpdate, type UpdateInfo } from "../../update.js";
+import {
+  getRecentLaunches,
+  queryLogEvents,
+  type LaunchHistoryEntry,
+  type LogEvent,
+} from "@axiom-labs/arc-core";
 import type { ProfileEntry } from "../useProfiles.js";
 
 interface Props {
@@ -132,7 +138,7 @@ function LeftColumn({ profiles, colors, isDark }: {
         )}
         <StatusRow
           label="active"
-          value={activeProfile?.name ?? "none"}
+          value={activeProfile?.name ?? "(none)"}
           color={activeProfile ? colors.text : colors.dimmed}
         />
         {activeToolLabel && (
@@ -141,44 +147,119 @@ function LeftColumn({ profiles, colors, isDark }: {
         {activeProfile?.credential?.accountTier && (
           <StatusRow label="account" value={activeProfile.credential.accountTier} />
         )}
+        {!activeProfile && profiles.length > 0 && (
+          <Box marginTop={1} flexDirection="column">
+            <Text color={colors.dimmed}>Press <Text color={colors.primary} bold>c</Text> to create a profile,</Text>
+            <Text color={colors.dimmed}>or run <Text color={colors.primary} bold>arc run &lt;tool&gt;</Text> for native mode.</Text>
+          </Box>
+        )}
       </Box>
     </Box>
   );
 }
 
-/* ── Right Column: pipeline + status ───────────────────────────────── */
+/* ── Right Column: recent launches + activity ──────────────────────── */
+
+function formatTime(iso: string): string {
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "--:--";
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    return `${hh}:${mm}`;
+  } catch {
+    return "--:--";
+  }
+}
+
+function outcomeColor(outcome: string, colors: ThemeColors): string {
+  switch (outcome) {
+    case "started":
+      return colors.primary;
+    case "exited":
+      return colors.success;
+    case "failed":
+      return colors.error;
+    default:
+      return colors.dimmed;
+  }
+}
 
 function RightColumn({ colors }: { colors: ThemeColors }) {
-  // TODO: Wire to real hook runner state + data stores
-  // For now, show idle/empty state — don't fake activity
+  const [launches, setLaunches] = useState<LaunchHistoryEntry[]>([]);
+  const [activity, setActivity] = useState<LogEvent[]>([]);
+
+  useEffect(() => {
+    const refresh = () => {
+      try {
+        setLaunches(getRecentLaunches(5));
+      } catch {
+        setLaunches([]);
+      }
+      try {
+        setActivity(queryLogEvents({ limit: 5 }));
+      } catch {
+        setActivity([]);
+      }
+    };
+    refresh();
+    const timer = setInterval(refresh, 4000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <Box flexDirection="column">
-      <SectionHeader label="hook pipeline" />
-      <Box gap={1} paddingLeft={1}>
-        <Text color={colors.border}>{"░".repeat(5)}</Text>
-        <Text color={colors.border}>{"░".repeat(5)}</Text>
-        <Text color={colors.border}>{"░".repeat(5)}</Text>
-        <Text color={colors.border}>{"░".repeat(5)}</Text>
-      </Box>
-      <Box gap={1} paddingLeft={1} marginBottom={1}>
-        <Box width={6}><Text color={colors.dimmed}> PRE</Text></Box>
-        <Box width={6}><Text color={colors.dimmed}> VAL</Text></Box>
-        <Box width={6}><Text color={colors.dimmed}> POST</Text></Box>
-        <Box width={6}><Text color={colors.dimmed}> DONE</Text></Box>
-      </Box>
-      <Box flexDirection="column" marginBottom={1} paddingLeft={1}>
-        <StatusRow label="mode" value="—" />
-        <StatusRow label="circuit" value="—" />
+      <SectionHeader label="recent launches" />
+      <Box flexDirection="column" paddingLeft={1} marginBottom={1}>
+        {launches.length === 0 ? (
+          <Text color={colors.dimmed}>No launches yet.</Text>
+        ) : (
+          launches.map((entry, idx) => (
+            <Box key={`${entry.timestamp}-${idx}`} gap={1}>
+              <Box width={6}>
+                <Text color={colors.dimmed}>{formatTime(entry.timestamp)}</Text>
+              </Box>
+              <Box width={14}>
+                <Text color={colors.text}>{entry.profile}</Text>
+              </Box>
+              <Text color={colors.dimmed}>→</Text>
+              <Box width={10}>
+                <Text color={colors.text}>{entry.tool}</Text>
+              </Box>
+              <Text color={outcomeColor(entry.outcome, colors)}>
+                {entry.outcome}
+              </Text>
+            </Box>
+          ))
+        )}
       </Box>
 
-      <SectionHeader label="status" />
+      <SectionHeader label="recent activity" />
       <Box flexDirection="column" paddingLeft={1}>
-        <StatusRow label="HOOKS" value="0" />
-        <StatusRow label="TASKS" value="0" />
-        <StatusRow label="MEMORY" value="0" />
-        <StatusRow label="SESSIONS" value="0" />
-        <StatusRow label="SYNC" value="—" />
+        {activity.length === 0 ? (
+          <Text color={colors.dimmed}>No activity yet.</Text>
+        ) : (
+          activity
+            .slice()
+            .reverse()
+            .map((event, idx) => {
+              const detail =
+                event.message ?? event.detail ?? event.action ?? "";
+              return (
+                <Box key={`${event.timestamp}-${idx}`} gap={1}>
+                  <Box width={6}>
+                    <Text color={colors.dimmed}>
+                      {formatTime(event.timestamp)}
+                    </Text>
+                  </Box>
+                  <Box width={18}>
+                    <Text color={colors.text}>{event.action}</Text>
+                  </Box>
+                  <Text color={colors.dimmed}>{detail}</Text>
+                </Box>
+              );
+            })
+        )}
       </Box>
     </Box>
   );

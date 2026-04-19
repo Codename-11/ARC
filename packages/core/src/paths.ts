@@ -53,4 +53,14 @@ export function getClaudeDefaultDir(): string {
   return path.join(os.homedir(), ".claude");
 }
 
+/** Directory where persisted roundtable results live (`~/.arc/roundtables/`). */
+export function getRoundtablesDir(): string {
+  return path.join(getArcDir(), "roundtables");
+}
+
+/** Directory where persisted pipeline (staged workflow) results live. */
+export function getPipelinesDir(): string {
+  return path.join(getArcDir(), "pipelines");
+}
+
 export const getMulticcDir = getArcDir;

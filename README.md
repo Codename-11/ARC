@@ -40,6 +40,7 @@ One binary. One config directory (`~/.arc/`). Every agent runtime — Claude Cod
 
 | Layer | Capabilities |
 |-------|-------------|
+| **Chat** | Chat interactively with your profile's model, with tool use and permission gates — `arc chat` |
 | **Identity** | Named profiles, credentials, auth (OAuth/API key/Bedrock/Vertex/Foundry), OS keyring, env isolation |
 | **Launch** | Tool detection, shell shims, per-profile flags, workspace-aware auto-selection (`arc.json`) |
 | **Adapters** | Claude Code (SDK bridge + hooks + plugin), Codex CLI, Gemini CLI, OpenClaw, Generic (MCP/HTTP) |
@@ -137,6 +138,16 @@ See [Getting Started](https://arc-cli.dev/docs/guide/getting-started) for requir
 
 ## Quick Start
 
+**Fastest path — no profile:**
+
+```bash
+arc run claude         # Native passthrough — no env injection, no overlay
+arc run gemini
+arc run codex
+```
+
+**Full path — with a profile:**
+
 ```bash
 arc                    # Open TUI — onboarding wizard on first run
 ```
@@ -145,10 +156,21 @@ The onboarding wizard auto-detects installed tools (Claude, Gemini, Codex) and o
 
 ```bash
 arc create work --tool claude --auth-type oauth
-arc launch work
+arc launch work                     # native by default (full TTY handoff)
+arc launch work --worker            # under ARC supervision for hooks/orchestration
 arc use personal
 arc status
 ```
+
+**Chat with your profile:**
+
+```bash
+arc chat                            # REPL over the active profile, with tool use
+arc chat --once "list my profiles"  # one-shot, exit when done
+arc chat --mode read-only           # safe mode — no write-tool calls
+```
+
+The model is your profile's CLI tool (Claude, Codex, or Gemini). ARC composes a system prompt from its knowledge layer, streams the response back, and dispatches any ARC tool calls the model makes. See the [Chat Guide](https://arc-cli.dev/docs/guide/chat).
 
 ## Screenshots
 
@@ -172,14 +194,31 @@ arc use <name>                     # Switch active profile
 arc profile show [name]            # Show profile details
 arc profile delete <name>          # Delete a profile
 arc profile import                 # Import existing tool config
+arc profile switch none            # Clear the active profile
+arc profile clear-active           # Same — activeProfile becomes null
 arc which                          # Show resolved profile source
 ```
 
 ### Launch
 
 ```bash
-arc launch [name]                  # Launch agent tool with profile
+arc run <tool>                     # Native passthrough (no profile, no overlay)
+arc launch [name]                  # Launch agent tool with profile (native by default)
+arc launch [name] --native         # Force full TTY handoff
+arc launch [name] --worker         # Force ARC-supervised mode (for orchestration)
+arc launch --bare <tool>           # Same as `arc run`
 arc launch [name] -- --model opus  # Pass flags through to the tool
+```
+
+### Chat
+
+```bash
+arc chat                           # Interactive REPL over the active profile
+arc chat --once "<prompt>"         # One-shot, exit when done
+arc chat --profile <name>          # Override the active profile
+arc chat --mode read-only          # Forbid any write tools
+arc chat --session <id>            # Resume a prior session
+arc chat --new                     # Start fresh
 ```
 
 ### Dashboard

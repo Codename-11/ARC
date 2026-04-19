@@ -224,9 +224,28 @@ export function createDashboardServer(
   router.add("POST", "/api/memory", api.addMemory);
   router.add("POST", "/api/agents", api.addAgent);
 
+  // Chat routes (Phase 7)
+  router.add("GET", "/api/chat/sessions", api.chatListSessions);
+  router.add("GET", "/api/chat/sessions/:id", api.chatGetSession);
+  router.add("POST", "/api/chat/message", api.chatMessage);
+  router.add("POST", "/api/chat/confirm", api.chatConfirm);
+  router.add("DELETE", "/api/chat/sessions/:id", api.chatDeleteSession);
+
+  // Orchestration routes (Phase 8) — roundtable + staged pipelines
+  router.add("POST", "/api/roundtable/run", api.roundtableRun);
+  router.add("GET", "/api/roundtable/history", api.roundtableHistory);
+  router.add("GET", "/api/roundtable/:id", api.roundtableGet);
+  router.add("POST", "/api/pipeline/run", api.pipelineRun);
+  router.add("GET", "/api/pipeline/history", api.pipelineHistory);
+  router.add("GET", "/api/pipeline/:id", api.pipelineGet);
+
   // ---- HTTP server --------------------------------------------------------
 
+  const logRequests = process.env.ARC_DASHBOARD_LOG !== "off";
+
   const server = http.createServer((req, res) => {
+    const requestStart = Date.now();
+
     // CORS headers.
     res.setHeader("Access-Control-Allow-Origin", corsOrigin);
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
@@ -242,6 +261,23 @@ export function createDashboardServer(
     const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
     const pathname = url.pathname;
     const method = (req.method ?? "GET").toUpperCase();
+
+    // Access log — skip noisy static assets unless ARC_DASHBOARD_LOG=verbose.
+    if (logRequests) {
+      const verbose = process.env.ARC_DASHBOARD_LOG === "verbose";
+      const isNoisy = pathname.startsWith("/scripts/") || pathname.startsWith("/styles/") || pathname.startsWith("/components/") || pathname === "/favicon.ico";
+      if (verbose || !isNoisy) {
+        res.on("finish", () => {
+          const ms = Date.now() - requestStart;
+          const status = res.statusCode;
+          const color = status >= 500 ? "\x1b[31m" : status >= 400 ? "\x1b[33m" : "\x1b[90m";
+          const reset = "\x1b[0m";
+          process.stderr.write(
+            `${color}[dash] ${method.padEnd(6)} ${status} ${pathname}${reset} (${ms}ms)\n`,
+          );
+        });
+      }
+    }
 
     // Auth check: mutation endpoints require a valid Bearer token.
     if (MUTATION_METHODS.has(method) && pathname.startsWith("/api/")) {
@@ -305,7 +341,26 @@ export function createDashboardServer(
 
   // Wire WebSocket upgrade.
   server.on("upgrade", (req, socket, head) => {
-    wsServer.handleUpgrade(req, socket, head);
+    const pathname = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`).pathname;
+    if (logRequests) {
+      process.stderr.write(`\x1b[36m[dash] UPGRADE ${pathname}\x1b[0m\n`);
+    }
+    try {
+      wsServer.handleUpgrade(req, socket, head);
+    } catch (err) {
+      process.stderr.write(
+        `\x1b[31m[dash] WS upgrade failed: ${err instanceof Error ? err.message : err}\x1b[0m\n`,
+      );
+      socket.destroy();
+    }
+  });
+
+  // Surface underlying TCP errors on the HTTP server itself.
+  server.on("clientError", (err, socket) => {
+    if (logRequests) {
+      process.stderr.write(`\x1b[31m[dash] clientError: ${err.message}\x1b[0m\n`);
+    }
+    try { socket.end("HTTP/1.1 400 Bad Request\r\n\r\n"); } catch {}
   });
 
   // ---- start / stop -------------------------------------------------------
@@ -329,6 +384,15 @@ export function createDashboardServer(
     stop(): Promise<void> {
       return new Promise((resolve, reject) => {
         wsServer.close();
+        // Force-close keep-alive sockets so the port releases immediately.
+        // Without this, `tsx --watch` restart races the old process's
+        // lingering sockets and the new process hits EADDRINUSE on Windows.
+        try {
+          (server as unknown as { closeAllConnections?: () => void })
+            .closeAllConnections?.();
+          (server as unknown as { closeIdleConnections?: () => void })
+            .closeIdleConnections?.();
+        } catch { /* older Node versions */ }
         server.close((err) => {
           if (err) reject(err);
           else resolve();

@@ -1,9 +1,16 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Box, Text, useApp, useInput } from "ink";
 import { Spinner } from "@inkjs/ui";
 import { useScreenSize } from "fullscreen-ink";
 import { Layout } from "./components/Layout.js";
-import { Sidebar, type ViewName } from "./components/Sidebar.js";
+import {
+  Sidebar,
+  NAV_ITEMS,
+  SIDEBAR_PROFILES_START,
+  sidebarSelectableCount,
+  sidebarProfileCount,
+  type ViewName,
+} from "./components/Sidebar.js";
 import { SessionView } from "./views/SessionView.js";
 import { ProfilesView } from "./views/ProfilesView.js";
 import { SettingsView } from "./views/SettingsView.js";
@@ -26,6 +33,8 @@ import { ProfileInfoOverlay } from "./views/ProfileInfoOverlay.js";
 import { OnboardingScreen } from "./views/OnboardingScreen.js";
 import { useProfiles } from "./useProfiles.js";
 import { useTheme } from "./theme.js";
+import { ToastProvider, useToast } from "./useToast.js";
+import { ToastContainer } from "./components/Toast.js";
 import { runSelfUpdate } from "../update.js";
 import { handleLaunch } from "../commands/launch.js";
 import { markLaunchPending } from "./render.js";
@@ -35,6 +44,15 @@ const MIN_HEIGHT = 18;
 type OverlayName = "palette" | "help" | "create" | "updating" | "swap" | "about" | "shared-detail" | "profile-info" | null;
 
 export function Dashboard() {
+  return (
+    <ToastProvider>
+      <DashboardInner />
+    </ToastProvider>
+  );
+}
+
+function DashboardInner() {
+  const { toasts } = useToast();
   const { profiles, loading, config, reload } = useProfiles();
   const { exit } = useApp();
   const { toggleTheme, theme } = useTheme();
@@ -46,6 +64,24 @@ export function Dashboard() {
   const [workspaceTyping, setWorkspaceTyping] = useState(false);
   const [activity, setActivity] = useState<import("./views/SessionView.js").ActivityEntry[]>([]);
   const [infoProfile, setInfoProfile] = useState<string | null>(null);
+  // 0-indexed position in the combined sidebar list [nav..., visible profiles...].
+  const [sidebarSelection, setSidebarSelection] = useState(0);
+
+  const selectableCount = sidebarSelectableCount(profiles);
+  useEffect(() => {
+    if (selectableCount === 0) return;
+    if (sidebarSelection >= selectableCount) {
+      setSidebarSelection(selectableCount - 1);
+    }
+  }, [selectableCount, sidebarSelection]);
+
+  useEffect(() => {
+    const navIdx = NAV_ITEMS.findIndex((item) => item.view === activeView);
+    if (navIdx >= 0 && sidebarSelection < NAV_ITEMS.length) {
+      setSidebarSelection(navIdx);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeView]);
 
   const paletteItems: PaletteItem[] = [
     { id: "dash", label: "Dashboard", description: "Overview and status" },
@@ -181,6 +217,39 @@ export function Dashboard() {
 
     if (input === "u" && activeView === "dash") {
       handleTriggerUpdate();
+      return;
+    }
+
+    // --- Sidebar navigation (combined nav + profile queue) ---
+    const profileCount = sidebarProfileCount(profiles);
+    const total = NAV_ITEMS.length + profileCount;
+
+    if (key.upArrow) {
+      if (total === 0) return;
+      setSidebarSelection((prev) => Math.max(0, prev - 1));
+      return;
+    }
+
+    if (key.downArrow) {
+      if (total === 0) return;
+      setSidebarSelection((prev) => Math.min(total - 1, prev + 1));
+      return;
+    }
+
+    if (key.return) {
+      if (sidebarSelection < NAV_ITEMS.length) {
+        const item = NAV_ITEMS[sidebarSelection];
+        if (item) setActiveView(item.view);
+        return;
+      }
+      const profileIdx = sidebarSelection - SIDEBAR_PROFILES_START;
+      const profile = profiles.slice(0, profileCount)[profileIdx];
+      if (profile) {
+        markLaunchPending();
+        setTimeout(() => {
+          handleLaunch(profile.name, [], { beforeSpawn: exit });
+        }, 0);
+      }
       return;
     }
   }, { isActive: !showOnboarding });
@@ -371,13 +440,12 @@ export function Dashboard() {
       sidebar={
         <Sidebar
           activeView={activeView}
-          onViewChange={setActiveView}
           profiles={profiles}
           focusedPane={focusedPane}
-          inputEnabled={overlay === null}
+          selectedIndex={sidebarSelection}
         />
       }
-      content={content}
+      content={<>{content}<ToastContainer toasts={toasts} /></>}
       overlay={overlayNode}
       overlayOpen={overlay !== null}
       overlayName={overlay}

@@ -2,6 +2,17 @@
  * Dashboard dev server — run with `tsx --watch` for hot-reload.
  * Usage: pnpm dev:dashboard [--port 3700]
  */
+
+// Surface silent crashes. Without these, an unhandled rejection or uncaught
+// exception in an async handler can tear the process down mid-request,
+// leaving the console showing only the startup banner.
+process.on("uncaughtException", (err) => {
+  process.stderr.write(`\x1b[31m[dash] uncaughtException: ${err.stack ?? err}\x1b[0m\n`);
+});
+process.on("unhandledRejection", (reason) => {
+  process.stderr.write(`\x1b[31m[dash] unhandledRejection: ${reason instanceof Error ? reason.stack : reason}\x1b[0m\n`);
+});
+
 import { createDashboardServer } from "./server.js";
 import { SessionStore } from "../../core/src/sessions.js";
 import { TaskStore } from "../../core/src/tasks/index.js";
@@ -43,12 +54,26 @@ console.log(`  Mode:    development`);
 console.log(`  Public:  ${publicDir}`);
 console.log(`\n  Watching for changes...\n`);
 
-// Graceful shutdown
+// Graceful shutdown. Hard-exit after a short grace window so tsx --watch
+// can restart us without tripping EADDRINUSE on Windows — the OS takes
+// a moment to release :3700 after server.close().
+let shuttingDown = false;
 for (const sig of ["SIGINT", "SIGTERM"] as const) {
   process.on(sig, async () => {
+    if (shuttingDown) return;
+    shuttingDown = true;
     console.log(`\n  [${sig}] shutting down...`);
-    stopPolling();
-    await dashboard.stop();
+    const hardExit = setTimeout(() => {
+      console.log(`  [${sig}] graceful shutdown hung — forcing exit`);
+      process.exit(0);
+    }, 1500).unref();
+    try {
+      stopPolling();
+      await dashboard.stop();
+    } catch (err) {
+      console.log(`  [${sig}] error during shutdown: ${err instanceof Error ? err.message : err}`);
+    }
+    clearTimeout(hardExit);
     process.exit(0);
   });
 }

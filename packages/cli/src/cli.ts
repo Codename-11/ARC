@@ -51,7 +51,7 @@ export function createProgram(): Command {
     .description("Create a new profile")
     .option(
       "--auth-type <type>",
-      "Auth type (oauth, api-key, bedrock, vertex, foundry)"
+      "Auth type (oauth, api-key, bedrock, vertex, foundry, openai-compat)"
     )
     .option("--tool <tool>", "Agent tool binary (claude, gemini, codex, ...)")
     .option("--description <desc>", "Profile description")
@@ -202,12 +202,67 @@ export function createProgram(): Command {
       }
     );
 
+  // === Daemon Commands (v3) ===
+
+  const daemon = program
+    .command("daemon")
+    .description("ARC v3 daemon — long-running local service (Phases 1–3)");
+
+  daemon
+    .command("start")
+    .description("Start the ARC daemon (detached by default)")
+    .option("--port <n>", "Port to bind (default 7272)")
+    .option("--foreground", "Run in foreground (block the terminal)")
+    .action(async (opts: { port?: string; foreground?: boolean }) => {
+      const mod = await import("./commands/daemon.js");
+      await mod.handleDaemonStart(opts);
+    });
+
+  daemon
+    .command("stop")
+    .description("Stop the running daemon")
+    .action(async () => {
+      const mod = await import("./commands/daemon.js");
+      await mod.handleDaemonStop();
+    });
+
+  daemon
+    .command("status")
+    .description("Show daemon status")
+    .option("--json", "Machine-readable output")
+    .action(async (opts: { json?: boolean }) => {
+      const mod = await import("./commands/daemon.js");
+      await mod.handleDaemonStatus(opts);
+    });
+
+  daemon
+    .command("restart")
+    .description("Restart the daemon")
+    .option("--port <n>", "Port to bind (default 7272)")
+    .action(async (opts: { port?: string }) => {
+      const mod = await import("./commands/daemon.js");
+      await mod.handleDaemonRestart(opts);
+    });
+
+  daemon
+    .command("logs")
+    .description("Show daemon log")
+    .option("-n <n>", "Number of lines to tail (default 50)")
+    .option("--tail", "Stream new log lines as they arrive")
+    .action(async (opts: { n?: string; tail?: boolean }) => {
+      const mod = await import("./commands/daemon.js");
+      await mod.handleDaemonLogs(opts);
+    });
+
   // === Session Commands ===
 
   program
     .command("launch [name]")
     .description("Launch agent tool with a profile")
     .option("-d, --dashboard", "Start web dashboard alongside agent")
+    .option("--native", "Run the tool with full TTY handoff (ARC exits, tool paints its own TUI)")
+    .option("--worker", "Run the tool under ARC supervision (stdout captured for orchestration)")
+    .option("--bare", "Skip profile resolution and env injection — spawn the named tool natively")
     .passThroughOptions()
     .allowUnknownOption()
     .allowExcessArguments()
@@ -216,24 +271,171 @@ export function createProgram(): Command {
       `
 All flags after the profile name are forwarded to the agent tool.
 
+Launch modes:
+  --native   Full TTY handoff (default). ARC exits; tool paints its own TUI
+             (e.g. Claude's statusLine). Best for daily interactive use.
+  --worker   Run under ARC supervision. Stdout captured for monitoring /
+             orchestration (roundtable, pipelines). Suppresses native TUI chrome.
+
+If neither flag is given, the profile's \`launchMode\` setting is used
+(fallback: native).
+
 Examples:
   $ arc launch work
+  $ arc launch work --native
+  $ arc launch work --worker
   $ arc launch work --model sonnet
   $ arc launch work --dashboard
   $ arc launch work --dangerously-skip-permissions
   $ arc launch work -p "explain this code"
   $ arc launch -- --model sonnet      (use -- when omitting profile name)
+  $ arc launch --bare claude          (native launch, no profile env)
 `
     )
     .action(
       async (
         name: string | undefined,
-        opts: { dashboard?: boolean },
+        opts: { dashboard?: boolean; native?: boolean; worker?: boolean; bare?: boolean },
         cmd: Command
       ) => {
+        // Re-inject parsed launch-mode flags into the args array so handleLaunch can see them.
+        // (Commander strips recognized options, but handleLaunch's CLI-flag extractor expects
+        // them in the raw-args stream.)
+        const extraArgs: string[] = [];
+        if (opts.native) extraArgs.push("--native");
+        if (opts.worker) extraArgs.push("--worker");
+        const mergedArgs = extraArgs.length > 0 ? [...cmd.args, ...extraArgs] : cmd.args;
         const mod = await import("./commands/launch.js");
-        await mod.handleLaunch(name, cmd.args, { dashboard: opts.dashboard });
+        await mod.handleLaunch(name, mergedArgs, {
+          dashboard: opts.dashboard,
+          bare: opts.bare,
+        });
       }
+    );
+
+  program
+    .command("run <tool> [args...]")
+    .description("Run a native agent tool (claude/codex/gemini/…) with no profile env injection")
+    .passThroughOptions()
+    .allowUnknownOption()
+    .allowExcessArguments()
+    .addHelpText(
+      "after",
+      `
+Thin alias for 'arc launch --bare <tool>'. Ambient environment only —
+no CLAUDE_CONFIG_DIR, GEMINI_CLI_HOME, CODEX_HOME, or ARC env vars set.
+
+Examples:
+  $ arc run claude --version
+  $ arc run gemini --help
+  $ arc run codex -- some-flag
+`
+    )
+    .action(
+      async (
+        tool: string,
+        _args: string[],
+        _opts: Record<string, never>,
+        cmd: Command
+      ) => {
+        // `cmd.args` = [tool, ...rest]; pass the rest through to the binary.
+        const rest = cmd.args.slice(1);
+        const mod = await import("./commands/run.js");
+        await mod.handleRun(tool, rest);
+      }
+    );
+
+  program
+    .command("chat")
+    .description("Interactive chat with your active profile's agent (with ARC tool use)")
+    .option("--profile <name>", "Profile to use (default: active)")
+    .option("--mode <mode>", "Permission mode (read-only|supervised|autonomous)", "supervised")
+    .option("--once <prompt>", "One-shot mode: send prompt, stream response, exit")
+    .option("--no-tools", "Disable ARC tool use (plain chat only)")
+    .option("--session <id>", "Resume a previous chat session")
+    .option("--new", "Force a new session (default when --session is absent)")
+    .addHelpText(
+      "after",
+      `
+Examples:
+  $ arc chat                                     (interactive REPL)
+  $ arc chat --once "list my profiles"           (one-shot)
+  $ arc chat --mode read-only                    (no writes)
+  $ arc chat --session abc-123                   (resume)
+  $ arc chat --no-tools                          (plain chat only)
+
+REPL commands:
+  /exit /quit          End the session
+  /save                Save the session to disk
+  /new                 Start a new session
+  /mode <m>            Switch permission mode
+  /sessions            List saved sessions
+  /resume <id>         Resume a saved session
+  /help                Show command list
+`,
+    )
+    .action(
+      async (opts: {
+        profile?: string;
+        mode?: string;
+        once?: string;
+        tools?: boolean;
+        session?: string;
+        new?: boolean;
+      }) => {
+        const mod = await import("./commands/chat.js");
+        await mod.handleChat({
+          profile: opts.profile,
+          mode: opts.mode as "read-only" | "supervised" | "autonomous" | undefined,
+          once: opts.once,
+          noTools: opts.tools === false,
+          session: opts.session,
+          new: opts.new,
+        });
+      },
+    );
+
+  program
+    .command("roundtable <topic>")
+    .description("Run a multi-agent roundtable discussion across profiles")
+    .option("--agents <list>", "Comma-separated profile names (e.g. work-claude,work-codex)")
+    .option("--rounds <n>", "Number of discussion rounds", "2")
+    .option("--synthesizer <name>", "Profile that writes the final summary (default: first agent)")
+    .option("--roles <list>", "Comma-separated roles matching --agents order (advocate|critic|neutral)")
+    .option("--format <mode>", "Output mode (plain|json)", "plain")
+    .option("--no-pacing", "Disable adaptive delivery pacing (faster, for tests)")
+    .addHelpText(
+      "after",
+      `
+Examples:
+  $ arc roundtable "should we rewrite X?" --agents work-claude,work-codex,work-gemini
+  $ arc roundtable "approach for auth?" --agents a,b --rounds 3 --synthesizer b
+  $ arc roundtable "risk review" --agents a,b,c --roles advocate,critic,neutral
+  $ arc roundtable "ship it?" --agents a,b --format json
+`,
+    )
+    .action(
+      async (
+        topic: string,
+        opts: {
+          agents?: string;
+          rounds?: string;
+          synthesizer?: string;
+          roles?: string;
+          format?: string;
+          pacing?: boolean;
+        },
+      ) => {
+        const mod = await import("./commands/roundtable.js");
+        await mod.handleRoundtable(topic, {
+          agents: opts.agents,
+          rounds: opts.rounds,
+          synthesizer: opts.synthesizer,
+          roles: opts.roles,
+          format: opts.format as "plain" | "json" | undefined,
+          pacing: opts.pacing,
+        });
+      },
     );
 
   program
@@ -360,7 +562,7 @@ Examples:
     .description("Create a new profile")
     .option(
       "--auth-type <type>",
-      "Auth type (oauth, api-key, bedrock, vertex, foundry)"
+      "Auth type (oauth, api-key, bedrock, vertex, foundry, openai-compat)"
     )
     .option("--tool <tool>", "Agent tool binary (claude, gemini, codex, ...)")
     .option("--description <desc>", "Profile description")
@@ -392,10 +594,25 @@ Examples:
   profile
     .command("switch <name>")
     .alias("use")
-    .description("Switch active profile")
+    .description("Switch active profile (use 'none' or 'off' to clear)")
+    .addHelpText("after", `
+Examples:
+  $ arc profile switch work
+  $ arc profile switch none           (clear active profile)
+  $ arc profile switch off            (same — native launches via 'arc run <tool>')
+`)
     .action(async (name: string) => {
       const mod = await import("./commands/profile.js");
       await mod.handleSwitch(name);
+    });
+
+  profile
+    .command("clear-active")
+    .alias("clear")
+    .description("Clear the active profile — tools launch natively via 'arc run'")
+    .action(async () => {
+      const mod = await import("./commands/profile.js");
+      await mod.handleClearActive();
     });
 
   profile
@@ -409,6 +626,15 @@ Examples:
     });
 
   profile
+    .command("clone <src> <dst>")
+    .description("Clone an existing profile (copies config directory by default)")
+    .option("--no-copy-dir", "Clone the profile record only, skipping the config directory copy")
+    .action(async (src: string, dst: string, opts: { copyDir?: boolean }) => {
+      const mod = await import("./commands/profile.js");
+      await mod.handleClone(src, dst, opts);
+    });
+
+  profile
     .command("import")
     .description("Import existing agent tool config into a profile")
     .option("--name <name>", "Profile name", "default")
@@ -418,6 +644,25 @@ Examples:
     .action(async (opts: { name: string; from?: string; tool?: string; force?: boolean }) => {
       const mod = await import("./commands/profile.js");
       await mod.handleImport(opts);
+    });
+
+  profile
+    .command("export <name>")
+    .description("Export a profile to a portable JSON file (inlines instructions)")
+    .option("--out <file>", "Output path (default: ./<name>.arc-profile.json)")
+    .action(async (name: string, opts: { out?: string }) => {
+      const mod = await import("./commands/export.js");
+      await mod.handleProfileExport(name, opts);
+    });
+
+  profile
+    .command("import-file <file>")
+    .description("Import a profile from a JSON file produced by `arc profile export`")
+    .option("--as <newname>", "Rename the profile on import")
+    .option("--force", "Overwrite an existing profile with the same name")
+    .action(async (file: string, opts: { as?: string; force?: boolean }) => {
+      const mod = await import("./commands/export.js");
+      await mod.handleProfileImport(file, opts);
     });
 
   profile
@@ -451,6 +696,89 @@ Examples:
       saveConfig(config);
       success(`Launch flags for "${name}": ${flags.join(" ")}`);
       showInfo("These flags will be prepended on every `arc launch`.");
+    });
+
+  // === Agent Instructions ===
+
+  const instructions = program
+    .command("instructions")
+    .alias("inst")
+    .description("Manage agent instructions / system prompts per profile");
+
+  instructions
+    .command("show [name]")
+    .description("Show resolved instructions for a profile (default: active)")
+    .action(async (name?: string) => {
+      const mod = await import("./commands/instructions.js");
+      await mod.handleInstructionsShow(name);
+    });
+
+  instructions
+    .command("set <name>")
+    .description("Set inline instructions for a profile")
+    .option("--from-file <path>", "Read instructions from a file instead of inline")
+    .option("--file <path>", "Set instructionsFile path (read at launch time)")
+    .action(async (name: string, opts: { fromFile?: string; file?: string }) => {
+      const mod = await import("./commands/instructions.js");
+      await mod.handleInstructionsSet(name, opts);
+    });
+
+  instructions
+    .command("edit <name>")
+    .description("Open instructions in $EDITOR")
+    .action(async (name: string) => {
+      const mod = await import("./commands/instructions.js");
+      await mod.handleInstructionsEdit(name);
+    });
+
+  instructions
+    .command("clear <name>")
+    .description("Remove instructions from a profile")
+    .action(async (name: string) => {
+      const mod = await import("./commands/instructions.js");
+      await mod.handleInstructionsClear(name);
+    });
+
+  // === Provider Configuration ===
+
+  const provider = program
+    .command("provider")
+    .description("Configure custom OpenAI-compatible providers for profiles");
+
+  provider
+    .command("set <name>")
+    .description("Set provider config on a profile")
+    .option("--base-url <url>", "API base URL (e.g. https://openrouter.ai/api/v1)")
+    .option("--model <model>", "Model identifier (e.g. anthropic/claude-3.5-sonnet)")
+    .option("--api-key-var <var>", "Env var name for the API key (default: OPENAI_API_KEY)")
+    .option("--display-name <name>", "Provider display name (e.g. OpenRouter, Ollama)")
+    .action(async (name: string, opts: { baseUrl?: string; model?: string; apiKeyVar?: string; displayName?: string }) => {
+      const mod = await import("./commands/provider.js");
+      await mod.handleProviderSet(name, opts);
+    });
+
+  provider
+    .command("show [name]")
+    .description("Show provider config for a profile (default: active)")
+    .action(async (name?: string) => {
+      const mod = await import("./commands/provider.js");
+      await mod.handleProviderShow(name);
+    });
+
+  provider
+    .command("clear <name>")
+    .description("Remove provider config from a profile")
+    .action(async (name: string) => {
+      const mod = await import("./commands/provider.js");
+      await mod.handleProviderClear(name);
+    });
+
+  provider
+    .command("presets")
+    .description("List known provider presets (OpenRouter, Ollama, LM Studio, etc.)")
+    .action(async () => {
+      const mod = await import("./commands/provider.js");
+      await mod.handleProviderPresets();
     });
 
   // === Shared Layer ===
@@ -531,8 +859,8 @@ Examples:
       }
 
       const profileName = name ?? config.activeProfile;
-      if (!config.profiles[profileName]) {
-        showError(`Profile "${profileName}" not found.`);
+      if (!profileName || !config.profiles[profileName]) {
+        showError(profileName ? `Profile "${profileName}" not found.` : "No active profile — pass a name.");
         process.exit(1);
       }
 
@@ -552,10 +880,10 @@ Examples:
 
       const config = loadConfig();
       const profileName = name ?? config.activeProfile;
-      const profile = config.profiles[profileName];
+      const profile = profileName ? config.profiles[profileName] : undefined;
 
-      if (!profile) {
-        showError(`Profile "${profileName}" not found.`);
+      if (!profile || !profileName) {
+        showError(profileName ? `Profile "${profileName}" not found.` : "No active profile — pass a name.");
         process.exit(1);
       }
 
@@ -771,6 +1099,42 @@ Examples:
         showError(result.error);
         process.exit(1);
       }
+    });
+
+  // === Backup / Restore ===
+
+  const backup = program
+    .command("backup")
+    .description("Back up, restore, and list archives of the full ~/.arc/ state");
+
+  backup
+    .command("create")
+    .description("Create a gzipped archive of ~/.arc/ (excludes credentials/ by default)")
+    .option("--out <file>", "Output path (default: ~/.arc/backups/arc-backup-<timestamp>.tar.gz)")
+    .option("--exclude-credentials", "Exclude ~/.arc/credentials/ (default: on)", true)
+    .option("--include-credentials", "Include ~/.arc/credentials/ in the archive")
+    .action(async (opts: { out?: string; excludeCredentials?: boolean; includeCredentials?: boolean }) => {
+      const mod = await import("./commands/backup.js");
+      const excludeCredentials = opts.includeCredentials ? false : opts.excludeCredentials ?? true;
+      await mod.handleBackupCreate({ out: opts.out, excludeCredentials });
+    });
+
+  backup
+    .command("restore <file>")
+    .description("Restore a backup archive into ~/.arc/ (destructive)")
+    .option("--force", "Overwrite an existing ~/.arc/config.json")
+    .action(async (file: string, opts: { force?: boolean }) => {
+      const mod = await import("./commands/backup.js");
+      await mod.handleBackupRestore(file, opts);
+    });
+
+  backup
+    .command("list")
+    .alias("ls")
+    .description("List archives in ~/.arc/backups/")
+    .action(async () => {
+      const mod = await import("./commands/backup.js");
+      await mod.handleBackupList();
     });
 
   // === Advanced Commands ===

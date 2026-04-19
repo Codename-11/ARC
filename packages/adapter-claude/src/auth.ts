@@ -123,6 +123,12 @@ export async function getClaudeCredentialStatus(profile: Profile): Promise<Crede
         authType: "foundry",
         method: "foundry",
       };
+    case "openai-compat":
+      return {
+        authenticated: profile.envOverrides?.["OPENAI_API_KEY"] !== undefined,
+        authType: "openai-compat",
+        method: "api-key",
+      };
   }
 }
 

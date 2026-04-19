@@ -28,7 +28,7 @@ const features: Feature[] = [
     label: "ADAPTERS",
     title: "Multi-Runtime",
     description:
-      "Claude Code, Codex CLI, Gemini CLI, OpenClaw, and a generic adapter for anything that speaks MCP or HTTP.",
+      "Claude Code, Codex CLI, Gemini CLI, OpenClaw, Hermes, and a generic adapter. Native launch for full TUI handoff, worker mode for orchestration, or bare passthrough with no profile.",
   },
   {
     icon: <Shield size={18} strokeWidth={1.5} />,
@@ -47,9 +47,9 @@ const features: Feature[] = [
   {
     icon: <ListTodo size={18} strokeWidth={1.5} />,
     label: "ORCHESTRATION",
-    title: "Tasks & Sessions",
+    title: "Chat, Tasks & Roundtables",
     description:
-      "Task CRUD with cron scheduling and agent-to-agent messaging. Session suspend/resume with resume-intent detection.",
+      "Chat with your active profile via arc chat — streaming tool use, permission gates, session persistence. Tasks with cron scheduling, agent-to-agent messaging, and a roundtable orchestrator for multi-agent decisions.",
   },
   {
     icon: <LayoutDashboard size={18} strokeWidth={1.5} />,

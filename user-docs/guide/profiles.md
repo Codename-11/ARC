@@ -31,6 +31,15 @@ arc use <name>
 
 Sets the default profile used by `arc launch` and the shell wrapper.
 
+### Clear the Active Profile
+
+```bash
+arc profile switch none
+arc profile clear-active
+```
+
+Both commands set `activeProfile` to `null` in `~/.arc/config.json`. `arc list` and the TUI render this as `(none)`. While there is no active profile, `arc launch` requires an explicit profile name or an inferred tool (see [Launch without a profile](#launch-without-a-profile) below).
+
 ## Show Details
 
 ```bash
@@ -75,6 +84,48 @@ When a profile with `inherits` is launched, ARC runs `resolveProfile()` to merge
 1. Base profile settings (tool, auth, env, launch args)
 2. Child profile overrides (anything explicitly set)
 
+## Launch Modes
+
+Each profile can run its underlying tool in one of two modes, selectable per-profile or per-launch.
+
+### Native (default)
+
+Full TTY handoff. ARC spawns the tool with inherited stdio and exits, letting the tool paint its own TUI — Claude's `statusLine`, Gemini's ANSI chrome, Codex's REPL, etc. This is the right mode for daily interactive work.
+
+```bash
+arc launch work              # uses profile's launchMode (default: native)
+arc launch work --native     # force native mode for this launch
+```
+
+In native mode ARC does no process supervision, no stdout capture, and no stream parsing. You get the tool's native experience; ARC just handled env isolation, credentials, and hook pre-launch checks.
+
+### Worker
+
+Run the tool under ARC supervision via the adapter's managed lifecycle. Stdout is captured and parsed so ARC can feed orchestrators (roundtable, PLAN/EXEC/VERIFY pipelines, dashboard chat). This **suppresses the tool's native TUI chrome** — it's meant for programmatic use, not direct interactive sessions.
+
+```bash
+arc launch work --worker     # one-off worker mode
+```
+
+To make worker mode the default for a profile, either set `launchMode: "worker"` in `~/.arc/config.json` or press `m` on the profile in the TUI Profiles view to toggle.
+
+### When to use each
+
+| Scenario | Mode |
+|---|---|
+| Daily coding with Claude / Gemini / Codex | **native** |
+| Running a roundtable or multi-agent pipeline | **worker** (orchestrator forces this) |
+| Dashboard AI chat / programmatic prompts | **worker** |
+| CI / headless automation | **worker** |
+| Debugging the tool's own TUI (statusLine, theming) | **native** |
+
+### Resolution order
+
+1. `opts.launchMode` passed by an orchestrator (always wins)
+2. `--native` / `--worker` CLI flag
+3. `profile.launchMode` in `~/.arc/config.json`
+4. Default: `native`
+
 ## Workspace Selection
 
 ARC supports per-repository profile auto-selection via `arc.json` in the project root:
@@ -102,6 +153,50 @@ Resolution order:
 1. `ARC_PROFILE` env var (if set)
 2. Workspace `arc.json` (if present in cwd or parent)
 3. Active profile in `~/.arc/config.json`
+
+## Launch Modes
+
+Each profile launches in one of two modes:
+
+| Mode | Behavior |
+|------|----------|
+| `native` (default) | Full TTY handoff — the tool paints its own TUI with statusLine and other chrome. ARC exits cleanly to the child process. |
+| `worker` | ARC supervises the child process: captures stdout, enables hooks/orchestration, but suppresses the tool's native TUI chrome. Required for roundtable and multi-agent pipelines. |
+
+Set the mode on the profile or override per launch:
+
+```bash
+arc launch work --native          # Force native for this launch
+arc launch work --worker          # Force worker for this launch
+```
+
+In the TUI ProfilesView, press `m` on a selected profile to toggle between modes.
+
+The roundtable orchestrator always forces `worker` mode regardless of the profile setting, because it needs to capture each agent's output.
+
+::: tip
+If you previously set `CLAUDE_CODE_NO_FLICKER=1` to stop Claude's screen from flashing, unset it — `arc doctor` will flag it. Claude's `/tui fullscreen` command is the current mechanism and `native` launch mode gives the tool full control of the terminal.
+:::
+
+## Launch Without a Profile
+
+You can use ARC-installed tools without any ARC overlay — no env injection, no hook pipeline, no profile config directory:
+
+```bash
+arc run claude                    # Native passthrough — find claude on PATH and exec
+arc run gemini
+arc run codex
+
+arc launch --bare claude          # Same, via launch command
+```
+
+Tool-name inference: `arc launch claude` with no profile named `claude` falls through to bare launch automatically.
+
+When to use:
+
+- You have ARC installed but want the tool's stock experience for a session
+- You're comparing behavior with and without ARC
+- You haven't created a profile yet and want to try the tool first
 
 ## Status
 

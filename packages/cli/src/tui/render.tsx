@@ -13,13 +13,11 @@ export function markLaunchPending(): void {
 
 const ALT_BUFFER_ON = "\x1b[?1049h";
 const ALT_BUFFER_OFF = "\x1b[?1049l";
-const MOUSE_ON = "\x1b[?1000h\x1b[?1006h";
-const MOUSE_OFF = "\x1b[?1006l\x1b[?1000l";
 const CURSOR_SHOW = "\x1b[?25h";
 
 function restoreTerminal(): void {
   try {
-    process.stdout.write(MOUSE_OFF + ALT_BUFFER_OFF + CURSOR_SHOW);
+    process.stdout.write(ALT_BUFFER_OFF + CURSOR_SHOW);
   } catch {
     // stdout may already be closed during teardown
   }
@@ -53,7 +51,7 @@ export async function renderDashboard(): Promise<void> {
 
   await withLifecycleScope({ component: "tui" }, async (scope) => {
     scope.registerCleanup(restoreTerminal);
-    process.stdout.write(ALT_BUFFER_ON + MOUSE_ON);
+    process.stdout.write(ALT_BUFFER_ON);
     writeLogEvent({ level: "info", component: "tui", action: "dashboard:start" });
 
     const instance = render(

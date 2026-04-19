@@ -1,0 +1,19 @@
+{
+  "name": "@axiom-labs/arc-client",
+  "version": "1.0.0-alpha.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "description": "Client SDK for the ARC daemon protocol (binary-mux WebSocket).",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --target node20 --clean",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "ws": "^8.18.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.12"
+  }
+}

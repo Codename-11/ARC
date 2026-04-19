@@ -51,16 +51,16 @@ describe("MCP Server — arc-supervision tools", () => {
   // ── Tool discovery ──────────────────────────────────────────────
 
   describe("tool listing", () => {
-    it("lists all 5 supervision tools", async () => {
+    it("lists the 5 supervision tools (Phase 6 adds arc_chat, arc_roundtable, team_*)", async () => {
       const { tools } = await client.listTools();
       const names = tools.map((t) => t.name).sort();
-      expect(names).toEqual([
+      expect(names).toEqual(expect.arrayContaining([
         "arc_audit_completion",
         "arc_classify_risk",
         "arc_derive_completion",
         "arc_expand_intent",
         "arc_explain_trace",
-      ]);
+      ]));
     });
   });
 

@@ -10,15 +10,16 @@ import os from "node:os";
 // They describe current behavior, not ideal behavior.
 
 describe("Adapter registry", () => {
-  it("listAdapters() returns exactly 5 adapters", () => {
+  it("listAdapters() returns exactly 6 adapters", () => {
     const adapters = listAdapters();
-    expect(adapters).toHaveLength(5);
+    expect(adapters).toHaveLength(6);
     const ids = adapters.map((a) => a.id);
     expect(ids).toContain("claude");
     expect(ids).toContain("gemini");
     expect(ids).toContain("codex");
     expect(ids).toContain("openclaw");
     expect(ids).toContain("hermes");
+    expect(ids).toContain("openai-compat");
   });
 
   it('getAdapter("claude") returns adapter with id "claude" and displayName "Claude Code"', () => {
@@ -37,6 +38,13 @@ describe("Adapter registry", () => {
     const adapter = getAdapter("codex");
     expect(adapter.id).toBe("codex");
     expect(adapter.displayName).toBe("Codex CLI");
+  });
+
+  it('getAdapter("openai-compat") returns adapter with id "openai-compat"', () => {
+    const adapter = getAdapter("openai-compat");
+    expect(adapter.id).toBe("openai-compat");
+    expect(adapter.displayName).toBe("OpenAI Compatible");
+    expect(adapter.capabilities.processWrap).toBe(true);
   });
 
   it("getAdapter() with unknown tool returns a fallback adapter (not undefined/null)", () => {

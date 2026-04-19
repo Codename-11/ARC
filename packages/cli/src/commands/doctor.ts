@@ -158,6 +158,21 @@ async function checkProfiles(): Promise<void> {
     return;
   }
 
+  // Surface active-profile state first (info row, not a failure).
+  if (config.activeProfile === null) {
+    console.log(
+      `  ${pc.blue("\u2139")} active profile: ${pc.dim("(none)")} \u2014 that's fine; use ${pc.bold(pc.cyan("arc run <tool>"))} to launch tools natively`
+    );
+  } else if (!config.profiles[config.activeProfile]) {
+    console.log(
+      `  ${pc.yellow("\u26A0")} active profile ${JSON.stringify(config.activeProfile)} references a missing profile`
+    );
+  } else {
+    console.log(
+      `  ${pc.green("\u2714")} active profile: ${config.activeProfile}`
+    );
+  }
+
   const names = Object.keys(config.profiles);
   if (names.length === 0) {
     console.log(`  ${pc.dim("No profiles configured.")}`);
@@ -226,6 +241,22 @@ async function checkProfiles(): Promise<void> {
 
 // ── Main Handler ────────────────────────────────────
 
+/**
+ * Diagnostic: env.deprecated_no_flicker
+ * Flags the deprecated CLAUDE_CODE_NO_FLICKER env var. v2.1.110+ of Claude Code
+ * uses `/tui fullscreen` instead; leaving this var set can cause odd rendering.
+ */
+function checkDeprecatedEnv(): void {
+  if (process.env["CLAUDE_CODE_NO_FLICKER"] !== undefined) {
+    warning(
+      "CLAUDE_CODE_NO_FLICKER is deprecated (v2.1.110+ uses /tui fullscreen)"
+    );
+    console.log(
+      `    ${pc.dim("Repair: Remove CLAUDE_CODE_NO_FLICKER from your shell profile")}`
+    );
+  }
+}
+
 function checkNodeVersion(): void {
   const version = process.version.replace(/^v/, "");
   const major = parseInt(version.split(".")[0], 10);
@@ -250,6 +281,7 @@ export async function handleDoctor(): Promise<void> {
   checkConfigFile();
   checkPath();
   checkShellIntegration();
+  checkDeprecatedEnv();
 
   await checkProfiles();
 

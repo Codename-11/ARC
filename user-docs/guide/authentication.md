@@ -94,6 +94,36 @@ ARC sets `CLAUDE_CODE_USE_FOUNDRY=1`. Required variables:
 | `ANTHROPIC_FOUNDRY_BASE_URL` | Foundry endpoint base URL |
 | `ANTHROPIC_FOUNDRY_RESOURCE` | Foundry resource name |
 
+## OpenAI-Compatible Providers
+
+Connect any OpenAI-compatible API (OpenRouter, Ollama, LM Studio, Together AI, Groq, MiniMax, DeepSeek, and more).
+
+```bash
+arc create openrouter --tool openai-compat --auth-type openai-compat
+arc provider set openrouter --base-url https://openrouter.ai/api/v1 --model anthropic/claude-sonnet-4
+arc set-key openrouter
+```
+
+ARC injects `OPENAI_BASE_URL` and `OPENAI_API_KEY` into the agent tool's environment.
+
+| Variable | Description |
+|----------|-------------|
+| `OPENAI_BASE_URL` | API endpoint from provider config |
+| `OPENAI_API_KEY` | API key (stored via `arc set-key`) |
+| `OPENAI_MODEL` | Model identifier from provider config |
+
+Run `arc provider presets` to see all known presets with their default base URLs and models.
+
+### Local Models
+
+For Ollama, LM Studio, or other local inference servers, no API key is needed:
+
+```bash
+arc create local --tool openai-compat --auth-type openai-compat
+arc provider set local --base-url http://localhost:11434/v1 --model llama3 --display-name Ollama
+arc launch local
+```
+
 ## Encrypted Secrets
 
 ARC includes an encrypted secret store for arbitrary key-value secrets, using Argon2id KDF and AES-256-GCM per-entry encryption.

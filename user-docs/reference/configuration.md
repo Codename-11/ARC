@@ -40,6 +40,8 @@
 
 The central configuration file. Contains the profile registry, active profile, and display settings.
 
+`activeProfile` may be either a profile name or `null`. When `null`, ARC has no default profile — `arc list` and the TUI render the active slot as `(none)`, and `arc launch` requires an explicit profile name or tool inference (see [Launch without a profile](/guide/profiles#launch-without-a-profile)).
+
 ```json
 {
   "version": 1,
@@ -92,6 +94,7 @@ The central configuration file. Contains the profile registry, active profile, a
 | `useSharedMemory` | `boolean?` | Whether `memory/` is linked to `shared/memory/` |
 | `useSharedProjects` | `boolean?` | Whether `projects/` is linked to `shared/projects/` |
 | `launchArgs` | `string[]?` | Default flags passed to the agent tool on every launch |
+| `launchMode` | `"native" \| "worker"?` | Launch in full TTY handoff (`native`, default) or under ARC supervision (`worker`). See [Launch Modes](/guide/profiles#launch-modes) |
 | `enforcement` | `"off" \| "log" \| "advise" \| "enforce"?` | Hook enforcement mode for this profile. Defaults to `"log"`. See [Hooks & Supervision](/features/hooks) |
 | `hooks` | `object?` | Per-hook config overrides (`{ "hook-name": { enabled, timeout } }`). See [Hook Configuration](/features/hooks#configuring-hooks-per-profile) |
 

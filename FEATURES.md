@@ -2,6 +2,10 @@
 
 Tracking file for planned features, enhancements, and ideas. Checked items are shipped. See `docs/expansion-ideas.md` for broader product direction and `docs/spec/SPEC.md` for the full v2.0 spec.
 
+## v3 — Daemon + many clients (planned)
+
+See [docs/plans/arc-v3-daemon.md](./docs/plans/arc-v3-daemon.md) for the full 14-phase plan. Targeting `1.0.0` (breaking). Daemon on :7272 + binary-mux WS protocol + client SDK; TUI/CLI/dashboard/Electron/mobile all become peer clients; E2E-encrypted relay for remote access; SQLite canonical store; provider `extends`; `arc loop`; chat rooms; enhanced roundtable + handoff; Docker server mode.
+
 ## Priority 1 — Core UX Gaps
 
 - [x] **Profile creation in TUI** — stepped overlay form (name -> tool -> auth type -> done) so users don't have to exit the TUI to create profiles
@@ -15,6 +19,8 @@ Tracking file for planned features, enhancements, and ideas. Checked items are s
 - [x] **Workspace-aware profile auto-selection** — `arc.json` in repo root specifies preferred profile/tool; workspace overrides applied on launch (Phase 9)
 - [x] **Workspace shell syntax highlighting** — tokenized input with color-coded `/commands` (green), `@profiles` (blue), `#tags` (dimmed); invalid tokens show in red
 - [x] **Workspace shell auto-complete** — suggestion overlay for `/` commands and `@profile` mentions; Tab/Enter accepts, arrows navigate, Escape dismisses
+- [x] **Launch modes (native / worker)** — `launchMode` field on Profile, `arc launch --native` / `--worker` CLI flags, `m` key toggle in ProfilesView, doctor check for deprecated `CLAUDE_CODE_NO_FLICKER`
+- [x] **Bare launch / clearable active profile** — `arc run <tool>`, `arc launch --bare <tool>`, tool-name inference when no matching profile exists, `arc profile switch none` / `arc profile clear-active`, `activeProfile: null` renders as `(none)`
 - [ ] **Quick profile switch overlay** — global `Ctrl+S` or palette action that shows a focused profile picker from any view
 - [x] **Doctor repair actions** — inline install hints, re-auth instructions, and PATH/shell fix hints on actionable diagnostics
 - [ ] **Profile search/filter** — `/` search in Profiles view and queue for scaling to 10+ profiles
@@ -27,19 +33,31 @@ Tracking file for planned features, enhancements, and ideas. Checked items are s
 - [x] **Tool-adapter architecture** — `RuntimeAdapter` interface with lifecycle methods; Claude, Codex, Gemini, OpenClaw, and Generic adapters (Phase 2, 5-6)
 - [x] **Profile inheritance** — `inherits` field + `resolveProfile()` engine for base + override resolution (Phase 9)
 - [x] **Project-local config** (`arc.json`) — preferred tool, profile, workspace overrides per repo (Phase 9)
+- [x] **Agent instructions** — `instructions` / `instructionsFile` fields on Profile, resolved at launch, injected as `ARC_AGENT_INSTRUCTIONS` env var; `arc instructions` CLI (show/set/edit/clear)
+- [x] **OpenAI-compatible providers** — `openai-compat` auth type + `ProviderConfig` on Profile (baseUrl, model, apiKeyEnvVar); 7 presets (OpenRouter, Ollama, LM Studio, Together, Groq, MiniMax, DeepSeek); `arc provider` CLI (set/show/clear/presets)
 - [ ] **Team/shared config** — repo-checked config with local secret overlays
-- [ ] **Backup/export/import** — move profiles and settings between machines
+- [x] **Backup/export/import** — `arc backup create/restore/list` (gzipped archive of `~/.arc/`, credentials excluded by default) + `arc profile export` / `arc profile import-file` (single-profile JSON transport with inlined instructions)
 - [x] **Managed updates** — self-update system with npm registry check and TUI update banner
+- [x] **Agent client foundation** — internal CLI-spawn agent client at `packages/core/src/agent-client/` (Claude/Codex/Gemini), MCP config injection per `mcpMode`, stream parsers. Plan Phase 1
+- [x] **Tool registry + agent loop** — `packages/core/src/agent/` with ~16 ARC tools spanning read / write / dangerous tiers; three permission modes (read-only / supervised / autonomous); `runAgent` generator. Plan Phase 2
+- [x] **Knowledge endowment** — `packages/core/src/knowledge/` system prompt composition (ARC architecture + 52-entry command catalog + 33-entry feature index + 16-term glossary + runtime state). Plan Phase 3
+- [x] **`arc chat` CLI** — terminal REPL using active profile's agent client with streaming output, permission-gated tool calls, per-profile session persistence at `~/.arc/profiles/<name>/chat-sessions/`, REPL slash commands. Plan Phase 4 (0.4.0)
+- [x] **Roundtable orchestrator** — `RoundtableOrchestrator` driving the existing roundtable hook with adaptive pacing (EMA latency) and synthesizer-driven consensus score. Plan Phase 5 (0.4.0)
+- [x] **Staged workflow state machine** — `StagedWorkflowManager` PLAN → EXEC → VERIFY with completion patterns and per-phase timeouts (ported from Agent-Forge)
+- [x] **Agent stall watchdog** — nudge at 3 min, mark stalled at 5 min, decision protocol (ported from Agent-Forge)
+- [x] **`arc roundtable` CLI + team MCP tools** — `arc roundtable <topic> --agents a,b,c` with streaming transcript; `arc_chat` / `arc_roundtable` / 6 `team_*` MCP tools. Plan Phase 6 (0.4.0)
+- [x] **Dashboard chat view** — per-session WS streaming, tool-call visualization, permission-mode toggle, confirmation modal. Plan Phase 7 (0.4.0)
+- [x] **Dashboard roundtable + pipelines view** — configure + run multi-agent flows from the browser with live transcript; per-run history persisted to `~/.arc/roundtables/<id>.json` and `~/.arc/pipelines/<id>.json`. Plan Phase 8 (0.4.0)
 
 ## Priority 4 — Observability & Polish
 
-- [ ] **Launch history on Dash** — recent launches list (`{ profile, tool, timestamp }`) in `~/.arc/history.json`, displayed on Dash after first session
+- [x] **Launch history on Dash** — `~/.arc/history.json` records each launch (profile, tool, timestamp, outcome, exitCode); DashView RightColumn shows recent launches + recent activity log entries (polled)
 - [x] **Shared layer visibility** — SettingsView shows per-profile sync details; ProfileList shows shared indicator column
-- [ ] **Toast notifications** — brief auto-dismiss messages for confirmations/errors that work across all views
-- [ ] **Interactive sidebar queue** — Enter on sidebar profile list to quick-launch without switching views
+- [x] **Toast notifications** — `ToastProvider` + `useToast()` hook with auto-dismiss (2.5s); `ToastContainer` mounted in Dashboard
+- [x] **Interactive sidebar queue** — combined nav+profile selection in Sidebar; `↑/↓` cycles through nav items then profiles; Enter on a profile row quick-launches without switching views
 - [x] **MCP server management** — MCP host manager with connect/disconnect/list/getTools + callTool with risk classification (Phase 8)
 - [x] **Policy layer** — three-tier permission model (coordinator/interactive/worker) with deny > ask > allow precedence (Phase 20)
-- [ ] **Profile cloning/duplication** — create a new profile from an existing one as template
+- [x] **Profile cloning/duplication** — `cloneProfile()` core fn + `arc profile clone <src> <dst> [--no-copy-dir]` CLI + `Shift+C` inline clone in ProfilesView
 - [x] **Usage/audit log** — structured JSONL log with `arc logs` CLI, level/component/profile filtering (Phase 3)
 
 ## v2.0 Spec Features (All 25 Phases Complete)
@@ -53,7 +71,8 @@ Tracking file for planned features, enhancements, and ideas. Checked items are s
 - [x] OpenClaw adapter (plugin manifest, RuntimeAdapter, 3 lifecycle hooks)
 - [x] Hermes Agent adapter (MCP bridge, lifecycle, process management)
 - [x] Generic adapter factory (fallback for any unknown tool, health monitoring)
-- [x] 48 adapter registry + generic adapter tests
+- [x] OpenAI Compatible adapter (custom provider endpoints, 7 presets)
+- [x] 50+ adapter registry + generic adapter tests
 
 ### Logging & Lifecycle (Phases 3-4)
 - [x] Structured JSONL log at `~/.arc/logs/structured.jsonl`
@@ -210,8 +229,3 @@ These items from the original v0.1 backlog are still open:
 - [ ] Profile search/filter in Profiles view
 - [ ] Environment preview before launch
 - [ ] Team/shared config (repo-checked config with local secret overlays)
-- [ ] Backup/export/import (move profiles between machines)
-- [ ] Launch history on Dash
-- [ ] Toast notifications
-- [ ] Interactive sidebar queue
-- [ ] Profile cloning/duplication

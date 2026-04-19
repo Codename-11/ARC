@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { resolveProfile, validateConfig } from "@axiom-labs/arc-core";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { resolveProfile, validateConfig, resolveInstructions } from "@axiom-labs/arc-core";
 import type { ArcConfig, Profile } from "@axiom-labs/arc-core";
 
 // ─── Helpers ─────────────────────────────────────────────────────────
@@ -308,5 +311,52 @@ describe("validateConfig with inherits", () => {
     };
 
     expect(validateConfig(config)).toBe(true);
+  });
+});
+
+// ─── resolveInstructions ────────────────────────────────────────────
+
+describe("resolveInstructions", () => {
+  it("returns undefined when no instructions configured", () => {
+    const profile = baseProfile();
+    expect(resolveInstructions(profile)).toBeUndefined();
+  });
+
+  it("returns inline instructions text", () => {
+    const profile = baseProfile({ instructions: "You are a helpful assistant." });
+    expect(resolveInstructions(profile)).toBe("You are a helpful assistant.");
+  });
+
+  it("reads instructionsFile from disk", () => {
+    const tmpFile = path.join(os.tmpdir(), `arc-test-instructions-${Date.now()}.md`);
+    fs.writeFileSync(tmpFile, "Instructions from file.", "utf-8");
+    try {
+      const profile = baseProfile({ instructionsFile: tmpFile });
+      expect(resolveInstructions(profile)).toBe("Instructions from file.");
+    } finally {
+      fs.unlinkSync(tmpFile);
+    }
+  });
+
+  it("instructionsFile takes precedence over inline instructions", () => {
+    const tmpFile = path.join(os.tmpdir(), `arc-test-instructions-${Date.now()}.md`);
+    fs.writeFileSync(tmpFile, "File wins.", "utf-8");
+    try {
+      const profile = baseProfile({
+        instructions: "Inline text.",
+        instructionsFile: tmpFile,
+      });
+      expect(resolveInstructions(profile)).toBe("File wins.");
+    } finally {
+      fs.unlinkSync(tmpFile);
+    }
+  });
+
+  it("falls back to inline if instructionsFile is missing", () => {
+    const profile = baseProfile({
+      instructions: "Fallback text.",
+      instructionsFile: "/nonexistent/path/instructions.md",
+    });
+    expect(resolveInstructions(profile)).toBe("Fallback text.");
   });
 });
