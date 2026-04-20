@@ -26,15 +26,31 @@
 
 ---
 
+> ### 🚧 ARC v3 in progress (`1.0.0-alpha.0`)
+>
+> ARC is pivoting to a **daemon-first architecture**. A single long-running
+> local process now owns every agent runtime; the TUI, CLI, web dashboard,
+> and future Electron / mobile / relay clients are thin consumers of one
+> binary-mux WebSocket protocol.
+>
+> - Plan of record: [`docs/plans/arc-v3-daemon.md`](./docs/plans/arc-v3-daemon.md)
+> - New-in-v3: [daemon operator guide](./docs/daemon.md) · [architecture](./docs/architecture.md) · [wire protocol](./docs/protocol.md) · [v2 → v3 migration](./docs/v2-to-v3-migration.md)
+> - v2 (`0.4.x`) stays recoverable at the `archive/v0.4.x` tag.
+
 <p align="center">
   <img src="assets/screenshots/dash-dark.png" alt="ARC Dashboard" width="700">
 </p>
 
 ## What is ARC?
 
-ARC started as a profile manager for agent CLIs (v0.1). It has since absorbed the [Axiom-Supervisor](https://github.com/Codename-11/axiom-supervisor) project and implements all 25 phases of the [v2.0 spec](./docs/spec/SPEC.md) — becoming a unified control plane for the full lifecycle of AI coding agents.
+ARC started as a profile manager for agent CLIs (v0.1), absorbed the
+[Axiom-Supervisor](https://github.com/Codename-11/axiom-supervisor) project
+to implement all 25 phases of the v2.0 spec, and is now (v3) pivoting to a
+**daemon-first** architecture — a persistent local process that owns every
+agent runtime and exposes a single binary-mux WebSocket protocol to every
+UI surface.
 
-One binary. One config directory (`~/.arc/`). Every agent runtime — Claude Code, Codex CLI, Gemini CLI, OpenClaw, or anything that speaks MCP/HTTP/stdio.
+One daemon. One config directory (`~/.arc/`). Every agent runtime — Claude Code, Codex CLI, Gemini CLI, OpenClaw, or anything that speaks MCP/HTTP/stdio.
 
 ## Features
 
