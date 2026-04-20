@@ -16,6 +16,17 @@ import {
   type ChannelId,
   type Envelope as EnvelopeT,
 } from "./protocol.js";
+import {
+  ChatCreateParams,
+  ChatCreateResult,
+  ChatListResult,
+  ChatPostParams,
+  ChatPostResult,
+  ChatReadParams,
+  ChatReadResult,
+  ChatWaitParams,
+  ChatWaitResult,
+} from "./protocol-chat.js";
 import { decodeFrame, encodeControl, encodeFrame } from "./frame.js";
 
 export interface ArcClientOptions {
@@ -149,6 +160,35 @@ export class ArcClient {
     send: (params: z.infer<typeof AgentSendParams>): Promise<z.infer<typeof AgentOkResult>> =>
       this.call(Methods.agent_send, AgentSendParams.parse(params)).then((r) =>
         AgentOkResult.parse(r),
+      ),
+  };
+
+  chat = {
+    create: (
+      params: z.infer<typeof ChatCreateParams>,
+    ): Promise<z.infer<typeof ChatCreateResult>> =>
+      this.call(Methods.chat_create, ChatCreateParams.parse(params)).then((r) =>
+        ChatCreateResult.parse(r),
+      ),
+    list: (): Promise<z.infer<typeof ChatListResult>> =>
+      this.call(Methods.chat_list).then((r) => ChatListResult.parse(r)),
+    post: (
+      params: z.infer<typeof ChatPostParams>,
+    ): Promise<z.infer<typeof ChatPostResult>> =>
+      this.call(Methods.chat_post, ChatPostParams.parse(params)).then((r) =>
+        ChatPostResult.parse(r),
+      ),
+    read: (
+      params: z.infer<typeof ChatReadParams>,
+    ): Promise<z.infer<typeof ChatReadResult>> =>
+      this.call(Methods.chat_read, ChatReadParams.parse(params)).then((r) =>
+        ChatReadResult.parse(r),
+      ),
+    wait: (
+      params: z.infer<typeof ChatWaitParams>,
+    ): Promise<z.infer<typeof ChatWaitResult>> =>
+      this.call(Methods.chat_wait, ChatWaitParams.parse(params)).then((r) =>
+        ChatWaitResult.parse(r),
       ),
   };
 

@@ -345,7 +345,7 @@ Examples:
       }
     );
 
-  program
+  const chatCmd = program
     .command("chat")
     .description("Interactive chat with your active profile's agent (with ARC tool use)")
     .option("--profile <name>", "Profile to use (default: active)")
@@ -363,6 +363,9 @@ Examples:
   $ arc chat --mode read-only                    (no writes)
   $ arc chat --session abc-123                   (resume)
   $ arc chat --no-tools                          (plain chat only)
+  $ arc chat rooms create standup                (new chat room via daemon)
+  $ arc chat post standup "hello @agent-1"       (post a message)
+  $ arc chat wait standup --mentioning me        (block until mentioned)
 
 REPL commands:
   /exit /quit          End the session
@@ -392,6 +395,86 @@ REPL commands:
           session: opts.session,
           new: opts.new,
         });
+      },
+    );
+
+  const chatRooms = chatCmd
+    .command("rooms")
+    .description("Manage chat rooms backed by the ARC daemon");
+
+  chatRooms
+    .command("create <name>")
+    .description("Create a new chat room (idempotent by name)")
+    .option("--json", "Output machine-readable JSON")
+    .action(async (name: string, opts: { json?: boolean }) => {
+      const mod = await import("./commands/chat.js");
+      await mod.handleChatRoomsCreate(name, opts);
+    });
+
+  chatRooms
+    .command("list")
+    .alias("ls")
+    .description("List all chat rooms")
+    .option("--json", "Output machine-readable JSON")
+    .action(async (opts: { json?: boolean }) => {
+      const mod = await import("./commands/chat.js");
+      await mod.handleChatRoomsList(opts);
+    });
+
+  chatCmd
+    .command("post <room> <text>")
+    .description("Post a message to a chat room (extracts @mentions from text)")
+    .option("--as <id>", "Author id (default: user)")
+    .option("--reply-to <n>", "Parent message id to thread under")
+    .option("--json", "Output machine-readable JSON")
+    .action(
+      async (
+        room: string,
+        text: string,
+        opts: { as?: string; replyTo?: string; json?: boolean },
+      ) => {
+        const mod = await import("./commands/chat.js");
+        await mod.handleChatPost(room, text, opts);
+      },
+    );
+
+  chatCmd
+    .command("read <room>")
+    .description("Read messages from a chat room")
+    .option("--since <dur>", "Only show messages after a duration (e.g. 5m, 1h, 30s)")
+    .option("--mentions-only", "Only show messages that contain any mention")
+    .option("--mentioning <id>", "Only show messages that mention this id (or @everyone)")
+    .option("--limit <n>", "Maximum messages (default 200)")
+    .option("--json", "Output machine-readable JSON")
+    .action(
+      async (
+        room: string,
+        opts: {
+          since?: string;
+          mentionsOnly?: boolean;
+          mentioning?: string;
+          limit?: string;
+          json?: boolean;
+        },
+      ) => {
+        const mod = await import("./commands/chat.js");
+        await mod.handleChatRead(room, opts);
+      },
+    );
+
+  chatCmd
+    .command("wait <room>")
+    .description("Block until a new message arrives (optionally mentioning <id>)")
+    .option("--mentioning <id>", "Only resolve on messages mentioning this id (or @everyone)")
+    .option("--timeout <dur>", "Timeout duration (e.g. 30s, 5m) [default 60s]")
+    .option("--json", "Output machine-readable JSON")
+    .action(
+      async (
+        room: string,
+        opts: { mentioning?: string; timeout?: string; json?: boolean },
+      ) => {
+        const mod = await import("./commands/chat.js");
+        await mod.handleChatWait(room, opts);
       },
     );
 
