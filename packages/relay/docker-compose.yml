@@ -1,0 +1,80 @@
+# Example compose for self-hosting arc-relay.
+#
+# The relay itself speaks plain `ws://` on port 8765 — terminate TLS at an
+# edge proxy (nginx, Caddy, or a cloud LB) and forward to the relay.
+#
+#   ┌─────────┐  wss://my-relay.example.com  ┌───────────┐  ws://relay:8765  ┌───────┐
+#   │ clients │ ────────────────────────────▶ │ tls proxy │ ─────────────────▶ │ relay │
+#   └─────────┘                              └───────────┘                   └───────┘
+#
+# Uncomment one of the proxy blocks below (nginx or caddy) and point it at
+# a real domain + cert. Both are battle-tested; pick whichever you prefer.
+
+version: "3.9"
+
+services:
+  relay:
+    image: ghcr.io/axiom-labs/arc-relay:latest
+    # Or build locally from this workspace:
+    # build:
+    #   context: ../../
+    #   dockerfile: packages/relay/Dockerfile
+    container_name: arc-relay
+    restart: unless-stopped
+    environment:
+      RELAY_PORT: "8765"
+      RELAY_HOST: "0.0.0.0"
+    # Expose directly if you terminate TLS elsewhere (cloud LB, existing nginx).
+    # For a fully self-contained stack, comment the ports block and use the
+    # proxy service below.
+    ports:
+      - "8765:8765"
+
+  # ── Option A: nginx reverse proxy with Let's Encrypt via certbot ────────
+  # Uncomment and edit `server_name` + email.
+  #
+  # proxy:
+  #   image: nginx:alpine
+  #   container_name: arc-relay-proxy
+  #   restart: unless-stopped
+  #   depends_on: [relay]
+  #   ports:
+  #     - "443:443"
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+  #     - ./certs:/etc/letsencrypt:ro
+  #
+  # certbot:
+  #   image: certbot/certbot:latest
+  #   volumes:
+  #     - ./certs:/etc/letsencrypt
+  #   entrypoint: >
+  #     sh -c "certbot certonly --webroot -w /var/www/certbot
+  #            --email you@example.com --agree-tos --no-eff-email
+  #            -d relay.example.com"
+
+  # ── Option B: Caddy (automatic HTTPS, zero config) ──────────────────────
+  # Uncomment and edit `relay.example.com` in Caddyfile below.
+  #
+  # proxy:
+  #   image: caddy:alpine
+  #   container_name: arc-relay-proxy
+  #   restart: unless-stopped
+  #   depends_on: [relay]
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./Caddyfile:/etc/caddy/Caddyfile:ro
+  #     - caddy_data:/data
+  #     - caddy_config:/config
+  #
+  # Example Caddyfile:
+  #   relay.example.com {
+  #     reverse_proxy /* relay:8765
+  #   }
+
+# volumes:
+#   caddy_data:
+#   caddy_config:
