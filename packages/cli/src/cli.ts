@@ -73,7 +73,6 @@ export function createProgram(): Command {
 
   program
     .command("list")
-    .alias("ls")
     .description("List all profiles")
     .action(async () => {
       const mod = await import("./commands/profile.js");
@@ -252,6 +251,42 @@ export function createProgram(): Command {
     .action(async (opts: { n?: string; tail?: boolean }) => {
       const mod = await import("./commands/daemon.js");
       await mod.handleDaemonLogs(opts);
+    });
+
+  // === Docker-style Agent Verbs (talk to the daemon) ===
+
+  program
+    .command("ls")
+    .description("List agents tracked by the daemon")
+    .option("--all", "Include completed/stopped agents")
+    .option("--json", "Output machine-readable JSON")
+    .action(async (opts: { all?: boolean; json?: boolean }) => {
+      const mod = await import("./commands/ls.js");
+      await mod.handleLs(opts);
+    });
+
+  program
+    .command("attach <agentId>")
+    .description("Attach to a running agent's terminal output")
+    .action(async (agentId: string) => {
+      const mod = await import("./commands/attach.js");
+      await mod.handleAttach(agentId);
+    });
+
+  program
+    .command("send <agentId> <text>")
+    .description("Send a message to a running agent")
+    .action(async (agentId: string, text: string) => {
+      const mod = await import("./commands/send.js");
+      await mod.handleSend(agentId, text);
+    });
+
+  program
+    .command("stop <agentId>")
+    .description("Stop a running agent")
+    .action(async (agentId: string) => {
+      const mod = await import("./commands/stop-agent.js");
+      await mod.handleStopAgent(agentId);
     });
 
   // === Session Commands ===
