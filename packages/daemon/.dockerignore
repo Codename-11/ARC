@@ -1,0 +1,61 @@
+# Keep the Docker build context small. The Dockerfile lives under
+# packages/daemon/ but `docker build` is invoked from the repo root so
+# that the monorepo is visible — these ignores run against the root.
+#
+# What we DO need: package.json files, pnpm workspace manifests,
+# and source under packages/{core,client,daemon}/.
+
+# Dependencies + build output (rebuilt inside the image)
+**/node_modules
+**/dist
+**/.turbo
+
+# Tests — not needed for a production image
+**/tests
+**/*.test.ts
+**/*.test.tsx
+
+# VCS
+.git
+.gitignore
+
+# Editor + OS
+.idea
+.vscode
+.DS_Store
+Thumbs.db
+
+# Local env + secrets
+.env
+.env.*
+*.local
+
+# Coverage + reports
+coverage
+.nyc_output
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Landing site + docs — not part of the daemon image
+site
+user-docs
+
+# Other packages not used by the daemon
+packages/cli
+packages/dashboard
+packages/mcp
+packages/relay
+packages/adapter-*
+
+# Dev-only files at the root
+Dockerfile
+nginx.conf
+docker-compose.yml
+.github
+
+# Don't pull the daemon's own compose + docs into the image
+packages/daemon/docker-compose.yml
+packages/daemon/DOCKER.md

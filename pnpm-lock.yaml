@@ -122,12 +122,18 @@ importers:
 
   packages/daemon:
     dependencies:
+      '@axiom-labs/arc-client':
+        specifier: workspace:*
+        version: link:../client
       '@axiom-labs/arc-core':
         specifier: workspace:*
         version: link:../core
       better-sqlite3:
         specifier: ^11.3.0
         version: 11.10.0
+      ws:
+        specifier: ^8.18.0
+        version: 8.20.0
       zod:
         specifier: ^3.25.0
         version: 3.25.76
