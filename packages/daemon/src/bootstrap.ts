@@ -5,6 +5,7 @@ import { openDb } from "./db.js";
 import { createLogger } from "./logger.js";
 import { ensureAuthFile } from "./auth.js";
 import { Hub } from "./hub.js";
+import { AgentRuntime } from "./agent-runtime.js";
 import { startServer, type ServerHandle } from "./server.js";
 
 export interface DaemonOptions {
@@ -59,12 +60,25 @@ export async function startDaemon(
   const version = opts.version ?? readDaemonVersion();
   const startedAt = Date.now();
 
-  const server = startServer({ config, db, logger, hub, auth, version, startedAt });
+  const runtime = new AgentRuntime({
+    db,
+    hub,
+    logger,
+    broadcastTerminal: (agentId, bytes) => {
+      for (const session of hub.subscribers(`agent:${agentId}`)) {
+        if (!session.conn.alive) continue;
+        session.sendTerminal(agentId, bytes);
+      }
+    },
+  });
+
+  const server = startServer({ config, db, logger, hub, auth, version, startedAt, runtime });
   fs.writeFileSync(config.pidPath, String(process.pid));
   logger.info("daemon.started", { pid: process.pid, version, port: config.port });
 
   const stop = async () => {
     logger.info("daemon.stopping");
+    await runtime.shutdown();
     await server.close();
     try {
       db.close();

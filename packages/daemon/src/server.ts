@@ -8,6 +8,7 @@ import type { DB } from "./db.js";
 import type { Logger } from "./logger.js";
 import type { Hub } from "./hub.js";
 import type { AuthFile } from "./auth.js";
+import type { AgentRuntime } from "./agent-runtime.js";
 import { createWsConnection } from "./ws/connection.js";
 import { Session, receiveBinary } from "./ws/session.js";
 import { dispatchEnvelope } from "./router.js";
@@ -19,6 +20,7 @@ export interface ServerDeps {
   logger: Logger;
   hub: Hub;
   auth: AuthFile;
+  runtime: AgentRuntime;
   version: string;
   startedAt: number;
 }
@@ -91,7 +93,7 @@ function handleUpgrade(
   deps: ServerDeps,
   sessions: Set<Session>,
 ): void {
-  const { config, logger, db, hub, auth, version, startedAt } = deps;
+  const { config, logger, db, hub, auth, runtime, version, startedAt } = deps;
 
   if (!isAllowedHost(req.headers.host, config.port)) {
     socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
@@ -142,6 +144,7 @@ function handleUpgrade(
         logger,
         hub,
         auth,
+        runtime,
         version,
         startedAt,
         host: config.host,

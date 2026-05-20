@@ -3,6 +3,7 @@ import type { Logger } from "../logger.js";
 import type { Session } from "../ws/session.js";
 import type { Hub } from "../hub.js";
 import type { AuthFile } from "../auth.js";
+import type { AgentRuntime } from "../agent-runtime.js";
 
 export interface RpcContext {
   db: DB;
@@ -10,6 +11,7 @@ export interface RpcContext {
   hub: Hub;
   auth: AuthFile;
   session: Session;
+  runtime: AgentRuntime;
   /** Daemon start time — for uptime reporting. */
   startedAt: number;
   /** Daemon version string. */
