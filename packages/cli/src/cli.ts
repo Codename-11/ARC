@@ -254,6 +254,22 @@ export function createProgram(): Command {
       await mod.handleDaemonLogs(opts);
     });
 
+  // === Migration Commands (v3) ===
+
+  const migrate = program
+    .command("migrate")
+    .description("Migrate ARC data between versions");
+
+  migrate
+    .command("v2-to-v3")
+    .description("Ingest v2 state (history.json, chat sessions, activity log) into the v3 SQLite store")
+    .option("--dry-run", "Count without writing")
+    .option("--json", "Machine-readable output")
+    .action(async (opts: { dryRun?: boolean; json?: boolean }) => {
+      const mod = await import("./commands/migrate.js");
+      await mod.handleMigrate(opts);
+    });
+
   // === Session Commands ===
 
   program
