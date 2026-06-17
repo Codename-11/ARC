@@ -16,7 +16,8 @@
       "@axiom-labs/arc-mcp": ["./packages/mcp/src/index.ts"],
       "@axiom-labs/arc-dashboard": ["./packages/dashboard/src/index.ts"],
       "@axiom-labs/arc-daemon": ["./packages/daemon/src/index.ts"],
-      "@axiom-labs/arc-client": ["./packages/client/src/index.ts"]
+      "@axiom-labs/arc-client": ["./packages/client/src/index.ts"],
+      "@axiom-labs/arc-desktop": ["./packages/desktop/src/main.ts"]
     }
   },
   "include": [
@@ -28,6 +29,7 @@
     "packages/dashboard/src/**/*.ts",
     "packages/daemon/src/**/*.ts",
     "packages/client/src/**/*.ts",
+    "packages/desktop/src/**/*.ts",
     "packages/cli/src/**/*.ts",
     "packages/cli/src/**/*.tsx",
     "tests/**/*.ts",

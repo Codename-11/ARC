@@ -1,0 +1,22 @@
+{
+  "name": "@axiom-labs/arc-desktop",
+  "version": "1.0.0-alpha.0",
+  "private": true,
+  "type": "module",
+  "description": "ARC desktop shell (Electron). Spawns the ARC daemon and loads the dashboard.",
+  "main": "./dist/main.js",
+  "scripts": {
+    "build": "tsup src/main.ts src/preload.ts --format esm --target node20 --out-dir dist --external electron --clean",
+    "dev": "pnpm run build && electron ./dist/main.js",
+    "pack": "pnpm run build && electron-builder --config electron-builder.yml --dir",
+    "dist": "pnpm run build && electron-builder --config electron-builder.yml",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@axiom-labs/arc-daemon": "workspace:*"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  }
+}
