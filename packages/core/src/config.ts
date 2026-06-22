@@ -3,7 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { getArcDir, getConfigPath, getProfileDir } from "./paths.js";
 import { deepMerge } from "./shared-fs.js";
-import type { ArcConfig, Profile } from "./types.js";
+import { providerPresets } from "./provider-presets.js";
+import type { ArcConfig, Profile, ProviderConfig } from "./types.js";
 
 const AUTH_TYPES = new Set(["oauth", "api-key", "bedrock", "vertex", "foundry", "openai-compat"]);
 
@@ -207,6 +208,62 @@ export function resolveInstructions(profile: Profile): string | undefined {
     }
   }
   return profile.instructions;
+}
+
+/**
+ * Built-in defaults applied when a provider extends a known adapter. These are
+ * the "base" fields a profile inherits before its own values override. For now
+ * the adapter-level defaults are minimal — the meaningful env/model data lives
+ * in {@link providerPresets}, which the CLI applies by copying the preset into
+ * the profile's provider config.
+ */
+const ADAPTER_DEFAULTS: Record<string, Partial<ProviderConfig>> = {
+  claude: {},
+  codex: {},
+  gemini: {},
+  opencode: {},
+};
+
+/**
+ * Resolve the effective provider config for a profile.
+ *
+ * Merge rules:
+ *  1. If `profile.provider` is undefined → returns `undefined`.
+ *  2. If `provider.extends` is unset → returns a fresh shallow copy (idempotent).
+ *  3. If `provider.extends` names a known source (an adapter or a preset id),
+ *     the source fields are layered **under** the profile's own values. Scalar
+ *     fields: profile wins on conflict. `env` is shallow-merged key-by-key
+ *     (source first, profile last). `models` is replaced by the profile when
+ *     explicitly set; otherwise taken from the source.
+ *
+ * The returned object is always a fresh shallow copy — the profile is not
+ * mutated.
+ */
+export function resolveProvider(profile: Profile): ProviderConfig | undefined {
+  const own = profile.provider;
+  if (!own) return undefined;
+  if (!own.extends) return { ...own };
+
+  // `extends` may reference a builtin adapter OR (via CLI copy-through) carry
+  // over to the preset-id lookup. Adapter defaults take precedence if both match.
+  const base: Partial<ProviderConfig> | undefined =
+    ADAPTER_DEFAULTS[own.extends] ?? providerPresets[own.extends];
+  if (!base) return { ...own };
+
+  // Scalar merge: base defaults, profile overrides win.
+  const merged: ProviderConfig = { ...base, ...own };
+
+  // env: shallow merge (base first, profile last).
+  if (base.env || own.env) {
+    merged.env = { ...(base.env ?? {}), ...(own.env ?? {}) };
+  }
+
+  // models: profile replaces base when set; otherwise inherit.
+  if (own.models === undefined && base.models) {
+    merged.models = [...base.models];
+  }
+
+  return merged;
 }
 
 export interface CloneProfileOptions {

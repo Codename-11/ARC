@@ -748,11 +748,12 @@ Examples:
   provider
     .command("set <name>")
     .description("Set provider config on a profile")
+    .option("--preset <id>", "Apply a builtin preset (e.g. zai-glm, qwen-max, claude-work)")
     .option("--base-url <url>", "API base URL (e.g. https://openrouter.ai/api/v1)")
     .option("--model <model>", "Model identifier (e.g. anthropic/claude-3.5-sonnet)")
     .option("--api-key-var <var>", "Env var name for the API key (default: OPENAI_API_KEY)")
     .option("--display-name <name>", "Provider display name (e.g. OpenRouter, Ollama)")
-    .action(async (name: string, opts: { baseUrl?: string; model?: string; apiKeyVar?: string; displayName?: string }) => {
+    .action(async (name: string, opts: { preset?: string; baseUrl?: string; model?: string; apiKeyVar?: string; displayName?: string }) => {
       const mod = await import("./commands/provider.js");
       await mod.handleProviderSet(name, opts);
     });
