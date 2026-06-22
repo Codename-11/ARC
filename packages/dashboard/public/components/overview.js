@@ -2,6 +2,26 @@
 import { api } from '../scripts/api.js';
 import { registerView } from '../scripts/router.js';
 import { escapeHtml } from '../scripts/utils.js';
+import { ensureArcClient } from './arc-client-bridge.js';
+
+/**
+ * Fetch daemon-side health + agent summary via the WS SDK when possible.
+ * Returns null when the daemon isn't reachable — callers fall back to
+ * the HTTP-backed /api/overview route.
+ */
+async function loadDaemonSnapshot() {
+  const client = await ensureArcClient();
+  if (!client) return null;
+  try {
+    const [health, agents] = await Promise.all([
+      client.call('health.get'),
+      client.call('agent.list'),
+    ]);
+    return { health, agents: Array.isArray(agents?.agents) ? agents.agents : [] };
+  } catch {
+    return null;
+  }
+}
 
 function heroCard(label, value, unit, status) {
   const colorClass = status === 'ok' ? '' : status === 'warn' ? ' stat-row__value--warning' : status === 'error' ? ' stat-row__value--error' : '';
@@ -123,17 +143,29 @@ function traceRow(trace) {
 }
 
 async function render() {
-  // Fetch overview, traces, and hooks in parallel
-  const [overviewResult, tracesResult, hooksResult] = await Promise.allSettled([
+  // Fetch overview, traces, hooks, and (if the daemon is up) its snapshot
+  // in parallel. Any failure falls back to empty / defaults.
+  const [overviewResult, tracesResult, hooksResult, daemonResult] = await Promise.allSettled([
     api.overview(),
     api.traces('', 5),
-    api.hooks()
+    api.hooks(),
+    loadDaemonSnapshot(),
   ]);
 
   const data = overviewResult.status === 'fulfilled' ? overviewResult.value : { sessions: { active: 0, total: 0 }, tasks: { working: 0, completed: 0, total: 0 }, skills: { total: 0 }, agents: { online: 0, total: 0 }, factory: null, health: 'ok' };
   let traces = tracesResult.status === 'fulfilled' ? tracesResult.value : [];
   if (!Array.isArray(traces)) traces = [];
   const hooks = hooksResult.status === 'fulfilled' ? hooksResult.value : null;
+  const daemon = daemonResult.status === 'fulfilled' ? daemonResult.value : null;
+
+  // Prefer daemon-reported agent/health numbers when available — these are
+  // the canonical v3 source-of-truth; the HTTP /api/overview path is a
+  // legacy snapshot from ~/.arc/*.json.
+  if (daemon) {
+    const running = daemon.agents.filter((a) => a.status === 'running').length;
+    data.agents = { ...(data.agents ?? {}), online: running, total: daemon.agents.length };
+    if (daemon.health?.ok) data.health = 'ok';
+  }
 
   const s = data.sessions || {};
   const t = data.tasks || {};

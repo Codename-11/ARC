@@ -2,6 +2,39 @@
 import { api } from '../scripts/api.js';
 import { registerView, navigateTo } from '../scripts/router.js';
 import { escapeHtml } from '../scripts/utils.js';
+import { ensureArcClient } from './arc-client-bridge.js';
+
+/**
+ * Fetch profiles via the daemon SDK (binary-mux WS) when available,
+ * falling back to the existing HTTP endpoint when the daemon isn't
+ * running. The two shapes differ — the daemon returns
+ *   { profiles: [{ name, tool, active }] }
+ * while /api/profiles returns the richer dashboard-enhanced rows.
+ */
+async function loadProfiles() {
+  const client = await ensureArcClient();
+  if (client) {
+    try {
+      const res = await client.call('profile.list');
+      if (res && Array.isArray(res.profiles)) {
+        return res.profiles.map((p) => ({
+          name: p.name,
+          tool: p.tool,
+          active: Boolean(p.active),
+          authType: p.authType ?? 'unknown',
+          configDir: p.configDir ?? '',
+          description: p.description ?? '',
+          createdAt: p.createdAt ?? '',
+          useShared: p.useShared ?? false,
+          inherits: p.inherits ?? null,
+        }));
+      }
+    } catch {
+      // Fall through to HTTP.
+    }
+  }
+  return api.profiles();
+}
 
 const TOOL_LABELS = {
   claude: 'Claude Code',
@@ -94,7 +127,7 @@ function attachActionHandlers() {
 async function render() {
   let profiles;
   try {
-    profiles = await api.profiles();
+    profiles = await loadProfiles();
   } catch {
     profiles = [];
   }
